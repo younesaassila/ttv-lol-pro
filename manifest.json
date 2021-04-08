@@ -14,7 +14,6 @@
    "icons": {
       "128": "images/icon.png"
    },
-   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx5wGmUxlKN2dFl5GB7BiqcDOrJhuFc6OAeuHhXsXRz8nBzETBDrDBaGrhHe/YDKUaEKA2rq2hGpXCuIa6/jHAnlYeeF0bnguOr13l+w3pFeVtp6VYEpZx0ZjegyVkhh4Dks6zdN7lrNUHM6nItS8Oa1n2YULE2r7aSiLFVT2MHBrVzPTUJHyqTnQkhga0UeIC60fJsJPwIEfSwi+xML97cOpEAlbtJTp/QLPaggh/5Iyfc92/pG2Yv5EhtqUWMpH+YviWF7WGosdxY0Z/b7gG0uE9HOLCq9Ism8CbP3VnW+8fz+iJiVVdyf2Nw3mt3jxr3jwfehfW6FwEzLmfDLFKwIDAQAB",
    "manifest_version": 2,
    "name": "TTV LOL",
    "permissions": [ "webRequest", "webRequestBlocking", "https://*.twitch.tv/*", "https://usher.ttvnw.net/*", "cookies", "https://api.ttv.lol/playlist/*" ],
