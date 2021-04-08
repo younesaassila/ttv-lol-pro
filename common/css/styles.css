@@ -33,13 +33,6 @@ html {
   .button:not(:first-of-type) {
     margin-left: 15px;
   }
-  .button.bg-blue {
-    background-color: #202127;
-    color: #c3c4ca;
-  }
-  .button.bg-blue:hover {
-    background-color: #452e7c;
-  }
   .discord  {
     overflow: visible;
     margin-right: 3px;
@@ -48,7 +41,14 @@ html {
   .button-arrow .arrow-icon {
     overflow: visible;
     margin-left: 3px;
+    margin-bottom: -2px;
     width: 8px;
+  }
+  .icon {
+    margin-bottom: -3px;
+  }
+  .buton-text{
+   margin-bottom: 10px;
   }
   .button-arrow .arrow-head {
     transform: translateX(0);
