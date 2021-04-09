@@ -1,12 +1,23 @@
 function onBeforeRequest(details) {
   const match = /hls\/(.+?)$/gim.exec(details.url);
 
-  console.log("details:", details);
-
   if (match !== null && match.length > 1) {
-    return { 
-      redirectUrl: `https://api.ttv.lol/playlist/${encodeURIComponent(match[1])}`,
-    };
+
+    var req = new XMLHttpRequest();
+    req.open("GET", `https://api.ttv.lol/ping`, false);
+    req.send();
+
+    // validate that our API is online, if not fallback to standard stream with ads
+    if (req.status != 200) {
+      return {
+        redirectUrl: details.url
+      };
+    } else {
+      return {
+        redirectUrl: `https://api.ttv.lol/playlist/${encodeURIComponent(match[1])}`,
+      };
+    }
+
   }
 }
 
@@ -17,8 +28,7 @@ chrome.webRequest.onBeforeRequest.addListener(
 );
 
 function onBeforeSendHeaders(req) {
-  console.log("onBeforeSendHeaders:", req.requestHeaders);
-  req.requestHeaders.push({name:'X-Donate-To', value:"http://bowlcuts-r-us.com"})
+  req.requestHeaders.push({ name: 'X-Donate-To', value: "https://ttv.lol/donate" })
   return {
     requestHeaders: req.requestHeaders
   }
@@ -27,5 +37,5 @@ function onBeforeSendHeaders(req) {
 chrome.webRequest.onBeforeSendHeaders.addListener(
   onBeforeSendHeaders,
   { urls: ["https://api.ttv.lol/playlist/*"] },
-  ["blocking","requestHeaders"]
+  ["blocking", "requestHeaders"]
 );
