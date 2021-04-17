@@ -23,7 +23,7 @@
       "webRequestBlocking",
       "https://*.twitch.tv/*",
       "https://usher.ttvnw.net/*",
-      "https://api.ttv.lol/playlist/*"
+      "https://api.ttv.lol/*"
    ],
-   "version": "0.0.0.2"
+   "version": "0.0.0.3"
 }

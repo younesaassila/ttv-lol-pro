@@ -1,7 +1,10 @@
-function onBeforeRequest(details) {
-  const match = /hls\/(.+?)$/gim.exec(details.url);
+function onPlaylistBeforeRequest(details) {
+
+  // (hls\/|vod\/)(.+?)$
+  const match = /(hls|vod)\/(.+?)$/gim.exec(details.url);
 
   if (match !== null && match.length > 1) {
+    var playlistType = match[1] == "vod" ? "vod" : "playlist";
 
     var req = new XMLHttpRequest();
     req.open("GET", `https://api.ttv.lol/ping`, false);
@@ -14,7 +17,7 @@ function onBeforeRequest(details) {
       };
     } else {
       return {
-        redirectUrl: `https://api.ttv.lol/playlist/${encodeURIComponent(match[1])}`,
+        redirectUrl: `https://api.ttv.lol/${playlistType}/${encodeURIComponent(match[2])}`,
       };
     }
 
@@ -22,8 +25,8 @@ function onBeforeRequest(details) {
 }
 
 chrome.webRequest.onBeforeRequest.addListener(
-  onBeforeRequest,
-  { urls: ["https://usher.ttvnw.net/api/channel/hls/*"] },
+  onPlaylistBeforeRequest,
+  { urls: ["https://usher.ttvnw.net/api/channel/hls/*", "https://usher.ttvnw.net/vod/*"] },
   ["blocking", "extraHeaders"]
 );
 
@@ -36,6 +39,6 @@ function onBeforeSendHeaders(req) {
 
 chrome.webRequest.onBeforeSendHeaders.addListener(
   onBeforeSendHeaders,
-  { urls: ["https://api.ttv.lol/playlist/*"] },
+  { urls: ["https://api.ttv.lol/playlist/*", "https://api.ttv.lol/vod/*"] },
   ["blocking", "requestHeaders"]
 );
