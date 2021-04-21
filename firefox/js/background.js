@@ -6,39 +6,40 @@ function onPlaylistBeforeRequest(details) {
   if (match !== null && match.length > 1) {
     var playlistType = match[1] == "vod" ? "vod" : "playlist";
 
-    var req = new XMLHttpRequest();
-    req.open("GET", `https://api.ttv.lol/ping`, false);
-    req.send();
+    return new Promise(resolve => {
+      fetch(
+        'https://api.ttv.lol/ping',
+        {
+          method: 'GET',
+        }).then(r => {
+          if (r.status == 200) {
+            resolve({ redirectUrl: `https://api.ttv.lol/${playlistType}/${encodeURIComponent(match[2])}` });
+          } else {
+            resolve({});
+          }
+        }).catch((error) => {
+          resolve({});
+        });
+    });
 
-    // validate that our API is online, if not fallback to standard stream with ads
-    if (req.status != 200) {
-      return {
-        redirectUrl: details.url
-      };
-    } else {
-      return {
-        redirectUrl: `https://api.ttv.lol/${playlistType}/${encodeURIComponent(match[2])}`,
-      };
+  }
+}
+
+  browser.webRequest.onBeforeRequest.addListener(
+    onPlaylistBeforeRequest,
+    { urls: ["https://usher.ttvnw.net/api/channel/hls/*", "https://usher.ttvnw.net/vod/*"] },
+    ["blocking"]
+  );
+
+  function onBeforeSendHeaders(req) {
+    req.requestHeaders.push({ name: 'X-Donate-To', value: "https://ttv.lol/donate" })
+    return {
+      requestHeaders: req.requestHeaders
     }
-
   }
-}
 
-browser.webRequest.onBeforeRequest.addListener(
-  onPlaylistBeforeRequest,
-  { urls: ["https://usher.ttvnw.net/api/channel/hls/*", "https://usher.ttvnw.net/vod/*"] },
-  ["blocking"]
-);
-
-function onBeforeSendHeaders(req) {
-  req.requestHeaders.push({ name: 'X-Donate-To', value: "https://ttv.lol/donate" })
-  return {
-    requestHeaders: req.requestHeaders
-  }
-}
-
-browser.webRequest.onBeforeSendHeaders.addListener(
-  onBeforeSendHeaders,
-  { urls: ["https://api.ttv.lol/playlist/*", "https://api.ttv.lol/vod/*"] },
-  ["blocking", "requestHeaders"]
-);
+  browser.webRequest.onBeforeSendHeaders.addListener(
+    onBeforeSendHeaders,
+    { urls: ["https://api.ttv.lol/playlist/*", "https://api.ttv.lol/vod/*"] },
+    ["blocking", "requestHeaders"]
+  );
