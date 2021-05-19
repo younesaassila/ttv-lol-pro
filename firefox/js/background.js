@@ -1,4 +1,17 @@
+function stripUnusedParams(str, params) {
+    if (!params) {
+        params = [ 'token', 'sig' ];
+    }
+    var tempUrl = new URL('https://localhost/' + str);
+    for (var i = 0; i < params.length; i++) {
+        tempUrl.searchParams.delete(params[i]);
+    }
+    return tempUrl.pathname.substring(1) + tempUrl.search;
+}
+
 function onPlaylistBeforeRequest(details) {
+
+  details.url = stripUnusedParams(details.url, null);
 
   // (hls\/|vod\/)(.+?)$
   const match = /(hls|vod)\/(.+?)$/gim.exec(details.url);
