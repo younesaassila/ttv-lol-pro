@@ -13,7 +13,7 @@ export interface Token {
   channel: string;
   channel_id: number;
   chansub: {
-    restricted_bitrates?: [];
+    restricted_bitrates?: number[];
     view_until: number;
   };
   ci_gb: boolean;
@@ -37,7 +37,7 @@ export interface Token {
   show_ads: boolean;
   subscriber: boolean;
   turbo: boolean;
-  user_id?: string;
+  user_id?: number;
   user_ip: string;
   version: number;
 }
