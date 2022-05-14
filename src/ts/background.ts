@@ -1,5 +1,5 @@
 import browser, { WebRequest } from "webextension-polyfill";
-import { PlaylistType } from "../types";
+import { PlaylistType, Token } from "../types";
 
 function onBeforeRequest(details: WebRequest.OnBeforeRequestDetailsType) {
   const match = /(hls|vod)\/(.+?)$/gim.exec(details.url);
@@ -10,6 +10,26 @@ function onBeforeRequest(details: WebRequest.OnBeforeRequestDetailsType) {
 
   const playlistType =
     type.toLowerCase() === "vod" ? PlaylistType.VOD : PlaylistType.Playlist;
+  const searchParams = new URLSearchParams(path);
+
+  let token: Token;
+  try {
+    token = JSON.parse(searchParams.get("token"));
+  } catch {}
+
+  if (token != null) {
+    // Note: When watching a VOD, `subscriber` always returns `false`, even if
+    // the user is a subscriber.
+    const isSubscriber =
+      playlistType === PlaylistType.Playlist && token.subscriber === true;
+
+    if (isSubscriber) {
+      console.info("[TTV LOL] User is a subscriber; plugin disabled.");
+      return {};
+    } else {
+      console.info("[TTV LOL] User is NOT a subscriber; plugin enabled.");
+    }
+  }
 
   // Synchronous XMLHttpRequest is required for the plugin to work in Chrome.
   const request = new XMLHttpRequest();
