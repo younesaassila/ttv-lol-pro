@@ -53,7 +53,7 @@ This fork:
 
 ### Firefox
 
-1. Download the latest version of this extension in the "Releases" section (ZIP file)
+1. Download the latest version of this extension in the "Releases" section (XPI file)
 1. Go to `about:addons`
 1. Click on the gear icon then select "Install Add-on From File…"
-1. Select the ZIP file you just downloaded
+1. Select the XPI file you just downloaded
