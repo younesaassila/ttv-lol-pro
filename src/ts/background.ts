@@ -2,11 +2,11 @@ import browser, { WebRequest } from "webextension-polyfill";
 import { PlaylistType, Token } from "../types";
 
 function stripUnusedParams(path: string, params = ["token", "sig"]) {
-  let tempUrl = new URL("https://localhost/" + path);
+  let tempUrl = new URL(`https://localhost/${path}`);
   for (const param of params) {
     tempUrl.searchParams.delete(param);
   }
-  return tempUrl.pathname.substring(1) + tempUrl.search;
+  return `${tempUrl.pathname.substring(1)}${tempUrl.search}`;
 }
 
 function onBeforeRequest(details: WebRequest.OnBeforeRequestDetailsType) {
