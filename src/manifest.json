@@ -14,6 +14,11 @@
     "default_title": "TTV LOL",
     "default_popup": "common/html/popup.html"
   },
+  "browser_specific_settings": {
+    "gecko": {
+      "update_url": "https://younesaassila.github.io/ttv-lol/updates.json"
+    }
+  },
   "icons": {
     "128": "images/icon.png"
   },
