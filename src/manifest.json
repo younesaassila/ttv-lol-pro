@@ -1,0 +1,27 @@
+{
+  "manifest_version": 2,
+  "name": "TTV LOL (Younes Aassila's Fork)",
+  "description": "TTV LOL removes livestream ads from twitch.tv",
+  "version": "1.0.0",
+  "background": {
+    "persistent": true,
+    "scripts": ["ts/background.ts"]
+  },
+  "browser_action": {
+    "default_icon": {
+      "128": "images/icon.png"
+    },
+    "default_title": "TTV LOL",
+    "default_popup": "common/html/popup.html"
+  },
+  "icons": {
+    "128": "images/icon.png"
+  },
+  "permissions": [
+    "webRequest",
+    "webRequestBlocking",
+    "https://*.twitch.tv/*",
+    "https://usher.ttvnw.net/*",
+    "https://api.ttv.lol/*"
+  ]
+}
