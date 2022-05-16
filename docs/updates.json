@@ -1,3 +1,12 @@
 {
-  "addons": {}
+  "addons": {
+    "{76ef94a4-e3d0-4c6f-961a-d38a429a332b}": {
+      "updates": [
+        {
+          "version": "1.0.0",
+          "update_link": "https://github.com/younesaassila/ttv-lol/releases/download/v1.0.0/v1.0.0-firefox.xpi"
+        }
+      ]
+    }
+  }
 }
