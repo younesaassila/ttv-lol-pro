@@ -44,6 +44,8 @@ This fork:
 
 ### Chrome
 
+> ❌ The extension does not update automatically.
+
 1. Download the latest version of this extension in the "Releases" section (ZIP file)
 1. Unzip the ZIP file you just downloaded
 1. Go to `chrome://extensions`
@@ -52,6 +54,8 @@ This fork:
 1. Select the unzipped folder you just created
 
 ### Firefox
+
+> ✅ The add-on updates automatically.
 
 1. Download the latest version of this extension in the "Releases" section (XPI file)
 1. Go to `about:addons`
