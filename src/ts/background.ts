@@ -34,10 +34,9 @@ function onBeforeRequest(details: WebRequest.OnBeforeRequestDetailsType) {
   } catch {}
 
   if (token != null) {
-    // Note: When watching a VOD, `subscriber` always returns `false`, even if
+    // Remark: When watching a VOD, `subscriber` always returns `false`, even if
     // the user is a subscriber.
-    const isSubscriber =
-      playlistType === PlaylistType.Playlist && token.subscriber === true;
+    const isSubscriber = token.subscriber === true;
 
     if (isSubscriber) {
       console.info("[TTV LOL] User is a subscriber; plugin disabled.");
