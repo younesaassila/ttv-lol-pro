@@ -1,5 +1,4 @@
 import browser, { WebRequest } from "webextension-polyfill";
-import removeUnusedParams from "../lib/removeUnusedParams";
 import { PlaylistType, Token } from "../types";
 
 function onBeforeRequest(details: WebRequest.OnBeforeRequestDetailsType) {
@@ -19,8 +18,6 @@ function onBeforeRequest(details: WebRequest.OnBeforeRequestDetailsType) {
   } catch {}
 
   if (token != null) {
-    // Remark: When watching a VOD, `subscriber` always returns `false`, even if
-    // the user is a subscriber.
     const isSubscriber = token.subscriber === true;
 
     if (isSubscriber) {
@@ -29,6 +26,12 @@ function onBeforeRequest(details: WebRequest.OnBeforeRequestDetailsType) {
     } else {
       console.info("[TTV LOL] User is NOT a subscriber; plugin enabled.");
     }
+
+    // Remove sensitive information from the token (when possible).
+    if (playlistType === PlaylistType.Playlist) delete token.device_id;
+    if (playlistType === PlaylistType.Playlist) delete token.user_id;
+    delete token.user_ip;
+    searchParams.set("token", JSON.stringify(token));
   }
 
   // Synchronous XMLHttpRequest is required for the plugin to work in Chrome.
@@ -37,11 +40,7 @@ function onBeforeRequest(details: WebRequest.OnBeforeRequestDetailsType) {
   request.send();
 
   if (request.status === 200) {
-    // Do not reset server errors here, a successful ping does not imply a
-    // successful m3u8 request.
     console.info("[TTV LOL] Successfully pinged TTV LOL's server.");
-    // Remove sensitive information from the query params.
-    removeUnusedParams(searchParams);
     return {
       redirectUrl: `https://api.ttv.lol/${playlistType}/${encodeURIComponent(
         `${channel}.m3u8?${searchParams.toString()}`
