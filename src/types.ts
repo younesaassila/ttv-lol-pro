@@ -3,11 +3,6 @@ export enum PlaylistType {
   VOD = "vod",
 }
 
-export interface ServerError {
-  timestamp: number;
-  statusCode: number;
-}
-
 export interface Token {
   adblock: boolean;
   authorization: {
