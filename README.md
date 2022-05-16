@@ -38,7 +38,8 @@ This is a fork of the original project at https://github.com/TTV-LOL/extensions
 
 This fork:
 
-- disables TTV LOL for channels you are subscribed to.
+- disables TTV LOL for channels you are subscribed to,
+- prevents error #2000 by temporarily falling back to the stream/VOD with ads.
 
 ## Installation
 
