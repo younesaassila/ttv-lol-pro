@@ -1,9 +1,9 @@
 import { WebRequest } from "webextension-polyfill";
 import { PlaylistType, Token } from "../../../types";
 
-const twitchApiUrlRegex = /\/(hls|vod)\/(.+)\.m3u8(?:\?(.*))?$/gim;
-
 export default function (details: WebRequest.OnBeforeRequestDetailsType) {
+  const twitchApiUrlRegex = /\/(hls|vod)\/(.+)\.m3u8(?:\?(.*))?$/gim;
+
   const match = twitchApiUrlRegex.exec(details.url);
   if (match == null) return {};
 
