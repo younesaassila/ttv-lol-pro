@@ -26,6 +26,9 @@ export default function (details: WebRequest.OnBeforeRequestDetailsType) {
       token.turbo === true ||
       token.partner === true
     ) {
+      console.log(
+        `${channelName}: TTV LOL disabled (User is a subscriber, has Twitch Turbo, or is a partner)`
+      );
       return {};
     }
 
@@ -44,12 +47,13 @@ export default function (details: WebRequest.OnBeforeRequestDetailsType) {
   // @ts-ignore
   const isChrome = !!chrome.app;
   if (isChrome) {
-    // Synchronous XMLHttpRequest is required for the plugin to work in Chrome.
+    // Synchronous XMLHttpRequest is required for the extension to work in Chrome.
     const request = new XMLHttpRequest();
     request.open("GET", pingUrl, false);
     request.send();
 
     if (request.status === 200) {
+      console.log(`${channelName}: TTV LOL enabled`);
       return {
         redirectUrl,
       };
@@ -61,6 +65,7 @@ export default function (details: WebRequest.OnBeforeRequestDetailsType) {
       fetch(pingUrl)
         .then(response => {
           if (response.status === 200) {
+            console.log(`${channelName}: TTV LOL enabled`);
             resolve({
               redirectUrl,
             });
