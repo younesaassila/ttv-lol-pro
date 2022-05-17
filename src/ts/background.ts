@@ -18,13 +18,12 @@ function onBeforeRequest(details: WebRequest.OnBeforeRequestDetailsType) {
   } catch {}
 
   if (token != null) {
-    const isSubscriber = token.subscriber === true;
-
-    if (isSubscriber) {
-      console.info("[TTV LOL] User is a subscriber; plugin disabled.");
+    if (
+      token.subscriber === true ||
+      token.turbo === true ||
+      token.partner === true
+    ) {
       return {};
-    } else {
-      console.info("[TTV LOL] User is NOT a subscriber; plugin enabled.");
     }
 
     // Remove sensitive information from the token (when possible).
@@ -36,7 +35,7 @@ function onBeforeRequest(details: WebRequest.OnBeforeRequestDetailsType) {
 
   // Synchronous XMLHttpRequest is required for the plugin to work in Chrome.
   const request = new XMLHttpRequest();
-  request.open("GET", `https://api.ttv.lol/ping`, false);
+  request.open("GET", "https://api.ttv.lol/ping", false);
   request.send();
 
   if (request.status === 200) {
