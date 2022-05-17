@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "TTV LOL (Younes Aassila's Fork)",
   "description": "TTV LOL removes livestream ads from twitch.tv",
-  "version": "1.1.0",
+  "version": "1.0.1",
   "background": {
     "persistent": true,
     "scripts": ["ts/background/background.ts"]
