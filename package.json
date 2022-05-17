@@ -1,6 +1,6 @@
 {
   "name": "ttv-lol",
-  "version": "1.0.0-younesaassila",
+  "version": "1.0.1-younesaassila",
   "description": "TTV LOL removes livestream ads from twitch.tv",
   "targets": {
     "webext-dev": {
@@ -11,6 +11,7 @@
     },
     "webext-prod": {}
   },
+  "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "dev": "parcel src/manifest.json --host localhost --target webext-dev",
     "lint": "prettier --write ./src",
