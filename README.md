@@ -34,18 +34,17 @@ This is a fork of the original project at https://github.com/TTV-LOL/extensions
 
 >
 
-[TTV LOL](https://ttv.lol/) removes livestream ads from [Twitch](https://www.twitch.tv/).
+[TTV LOL](https://ttv.lol/) removes livestream ads from [twitch.tv](https://www.twitch.tv/)
 
 This fork:
 
-- disables TTV LOL for channels you are subscribed to,
-- prevents error #2000 by temporarily falling back to the stream/VOD with ads.
+- disables TTV LOL for channels you are subscribed to.
 
 ## Installation
 
 ### Chrome
 
-> ❌ The extension does not update automatically.
+`❌ The extension does not update automatically.`
 
 1. Download the latest version of this extension in the "Releases" section (ZIP file)
 1. Unzip the ZIP file you just downloaded
@@ -56,7 +55,7 @@ This fork:
 
 ### Firefox
 
-> ✅ The add-on updates automatically.
+`✅ The add-on updates automatically.`
 
 1. Download the latest version of this extension in the "Releases" section (XPI file)
 1. Go to `about:addons`
