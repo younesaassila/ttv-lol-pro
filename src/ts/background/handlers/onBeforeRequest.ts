@@ -33,8 +33,10 @@ export default function (details: WebRequest.OnBeforeRequestDetailsType) {
     }
 
     // Remove sensitive information from the token (when possible).
-    if (playlistType === PlaylistType.Playlist) delete token.device_id;
-    if (playlistType === PlaylistType.Playlist) delete token.user_id;
+    if (playlistType === PlaylistType.Playlist) {
+      delete token.device_id;
+      delete token.user_id;
+    }
     delete token.user_ip;
     searchParams.set("token", JSON.stringify(token));
   }
