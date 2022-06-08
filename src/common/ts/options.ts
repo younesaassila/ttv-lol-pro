@@ -3,31 +3,33 @@ import browser from "webextension-polyfill";
 const whitelistedChannelsList = document.getElementById(
   "whitelisted-channels-list"
 ) as HTMLUListElement;
-const apiServerSelect = document.getElementById(
-  "api-server-select"
+const serverSelect = document.getElementById(
+  "server-select"
 ) as HTMLSelectElement;
-const customApiServerInput = document.getElementById(
-  "custom-api-server-input"
+const customServerInput = document.getElementById(
+  "custom-server-input"
 ) as HTMLInputElement;
 
 let whitelistedChannels: string[] = [];
-
-(async () => {
+let servers: string[] = ["https://api.ttv.lol"];
+async function init() {
   const storage = await browser.storage.local.get({
     whitelistedChannels: [],
+    servers: ["https://api.ttv.lol"],
   });
   whitelistedChannels = storage.whitelistedChannels;
+  servers = storage.servers;
+}
+init().then(() => {
   for (const whitelistedChannel of whitelistedChannels) {
     appendWhitelistedChannel(whitelistedChannel);
   }
-  showChannelPrompt();
-})();
-
-apiServerSelect.addEventListener("change", e => {
-  const select = e.target as HTMLSelectElement;
-  const value = select.value;
-  if (value === "Custom") customApiServerInput.style.display = "inline-block";
-  else customApiServerInput.style.display = "";
+  appendAddChannelInput();
+  if (servers.length > 1) {
+    serverSelect.value = "custom";
+    customServerInput.value = servers[0];
+    customServerInput.style.display = "inline-block";
+  }
 });
 
 function appendWhitelistedChannel(whitelistedChannel: string) {
@@ -37,6 +39,7 @@ function appendWhitelistedChannel(whitelistedChannel: string) {
   input.value = whitelistedChannel;
   input.placeholder = `Leave empty to remove '${whitelistedChannel}' from the list`;
   input.spellcheck = false;
+  input.addEventListener("focus", () => input.select());
   input.addEventListener("change", async e => {
     const input = e.target as HTMLInputElement;
     const value = input.value.trim();
@@ -44,7 +47,7 @@ function appendWhitelistedChannel(whitelistedChannel: string) {
       channel => channel.toLowerCase() === whitelistedChannel.toLowerCase()
     );
     if (index === -1) return;
-
+    // Update channel name, or remove it if text input is left empty.
     if (value !== "") whitelistedChannels[index] = value;
     else whitelistedChannels.splice(index, 1);
     await browser.storage.local.set({ whitelistedChannels });
@@ -54,7 +57,7 @@ function appendWhitelistedChannel(whitelistedChannel: string) {
   whitelistedChannelsList.appendChild(li);
 }
 
-function showChannelPrompt() {
+function appendAddChannelInput() {
   const li = document.createElement("li");
   const input = document.createElement("input");
   input.type = "text";
@@ -63,24 +66,41 @@ function showChannelPrompt() {
   input.addEventListener("change", async e => {
     const input = e.target as HTMLInputElement;
     const value = input.value.trim();
+    if (value === "") return;
 
-    if (value !== "") {
-      const alreadyIncluded = whitelistedChannels.some(
-        channel => channel.toLowerCase() === value.toLowerCase()
-      );
-      if (!alreadyIncluded) {
-        whitelistedChannels.push(value);
-        await browser.storage.local.set({ whitelistedChannels });
-        li.remove();
-        appendWhitelistedChannel(value);
-        showChannelPrompt();
-        const promptInput = document.querySelector(
-          "#whitelisted-channels-list > li:last-child > input"
-        ) as HTMLInputElement;
-        if (promptInput) promptInput.focus();
-      }
+    const channelName = value.toLowerCase();
+    const alreadyWhitelisted = whitelistedChannels.some(
+      channel => channel.toLowerCase() === channelName
+    );
+    if (!alreadyWhitelisted) {
+      whitelistedChannels.push(value);
+      await browser.storage.local.set({ whitelistedChannels });
+      li.remove();
+      appendWhitelistedChannel(value);
+      appendAddChannelInput();
+
+      const addChannelInput = document.querySelector(
+        "#whitelisted-channels-list > li:last-child > input"
+      ) as HTMLInputElement;
+      if (addChannelInput) addChannelInput.focus();
     }
   });
   li.appendChild(input);
   whitelistedChannelsList.appendChild(li);
 }
+
+serverSelect.addEventListener("change", e => {
+  // Toggle visibility of custom server input.
+  const { value } = e.target as HTMLSelectElement;
+  if (value === "custom") customServerInput.style.display = "inline-block";
+  else customServerInput.style.display = "none";
+});
+
+customServerInput.addEventListener("change", async e => {
+  // Update `servers` configuration option.
+  const input = e.target as HTMLInputElement;
+  const value = input.value.trim();
+  if (value !== "") servers = [value, "https://api.ttv.lol"];
+  else servers = ["https://api.ttv.lol"];
+  await browser.storage.local.set({ servers });
+});

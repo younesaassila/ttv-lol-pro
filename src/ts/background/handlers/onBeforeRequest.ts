@@ -2,18 +2,22 @@ import browser, { WebRequest } from "webextension-polyfill";
 import { PlaylistType, Token } from "../../../types";
 
 let whitelistedChannels: string[] = [];
-async function initWhitelistedChannels() {
+let servers: string[] = ["https://api.ttv.lol"];
+async function init() {
   const storage = await browser.storage.local.get({
     whitelistedChannels: [],
+    servers: ["https://api.ttv.lol"],
   });
   whitelistedChannels = storage.whitelistedChannels;
+  servers = storage.servers;
 }
-initWhitelistedChannels();
+init();
 browser.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;
   if (changes.whitelistedChannels) {
     whitelistedChannels = changes.whitelistedChannels.newValue;
   }
+  if (changes.servers) servers = changes.servers.newValue;
 });
 
 export default function onBeforeRequest(
@@ -27,18 +31,19 @@ export default function onBeforeRequest(
   const [_, _type, filename, _params] = match;
   if (_type == null || filename == null) return {};
 
+  const playlistType =
+    _type.toLowerCase() === "vod" ? PlaylistType.VOD : PlaylistType.Playlist;
+  const searchParams = new URLSearchParams(_params);
+
   // No redirect if the channel is whitelisted.
+  const channelName = filename.toLowerCase();
   const isWhitelistedChannel = whitelistedChannels.some(
-    channel => channel.toLowerCase() === filename.toLowerCase()
+    channel => channel.toLowerCase() === channelName
   );
   if (isWhitelistedChannel) {
     console.log(`${filename}: TTV LOL disabled (Channel is whitelisted)`);
     return {};
   }
-
-  const playlistType =
-    _type.toLowerCase() === "vod" ? PlaylistType.VOD : PlaylistType.Playlist;
-  const searchParams = new URLSearchParams(_params);
 
   let token: Token;
   try {
@@ -67,41 +72,87 @@ export default function onBeforeRequest(
     searchParams.set("token", JSON.stringify(token));
   }
 
-  const pingUrl = "https://api.ttv.lol/ping";
-  const redirectUrl = `https://api.ttv.lol/${playlistType}/${encodeURIComponent(
-    `${filename}.m3u8?${searchParams.toString()}`
-  )}`;
-
   // @ts-ignore
   const isChrome = !!chrome.app;
-  if (isChrome) {
+  if (isChrome) return handleChrome(playlistType, filename, searchParams);
+  else return handleFirefox(playlistType, filename, searchParams);
+}
+
+function handleChrome(
+  playlistType: PlaylistType,
+  filename: string,
+  searchParams: URLSearchParams
+) {
+  for (const server of servers) {
+    const pingUrl = `${server}/ping`;
+    const redirectUrl = `${server}/${playlistType}/${encodeURIComponent(
+      `${filename}.m3u8?${searchParams.toString()}`
+    )}`;
+
     // Synchronous XMLHttpRequest is required for the extension to work in Chrome.
     const request = new XMLHttpRequest();
     request.open("GET", pingUrl, false);
     request.send();
 
     if (request.status === 200) {
-      console.log(`${filename}: TTV LOL enabled`);
+      console.log(`${filename}: TTV LOL enabled (via ${server})`);
       return {
         redirectUrl,
       };
     } else {
-      return {};
+      console.log(`${filename}: Ping to ${server} failed`);
+      continue;
     }
-  } else {
-    return new Promise(resolve => {
+  }
+
+  console.log(`${filename}: TTV LOL disabled (Failed to connect to server)`);
+  return {};
+}
+
+function handleFirefox(
+  playlistType: PlaylistType,
+  filename: string,
+  searchParams: URLSearchParams
+) {
+  return new Promise(resolve => {
+    let i = 0;
+
+    function pingServer(server: string) {
+      const pingUrl = `${server}/ping`;
+      const redirectUrl = `${server}/${playlistType}/${encodeURIComponent(
+        `${filename}.m3u8?${searchParams.toString()}`
+      )}`;
+
       fetch(pingUrl)
         .then(response => {
           if (response.status === 200) {
-            console.log(`${filename}: TTV LOL enabled`);
-            resolve({
-              redirectUrl,
-            });
+            console.log(`${filename}: TTV LOL enabled (via ${server})`);
+            resolve({ redirectUrl });
           } else {
-            resolve({});
+            console.log(`${filename}: Ping to ${server} failed`);
+            i += 1;
+            if (servers[i]) pingServer(servers[i]);
+            else {
+              console.log(
+                `${filename}: TTV LOL disabled (Failed to connect to server)`
+              );
+              resolve({});
+            }
           }
         })
-        .catch(() => resolve({}));
-    });
-  }
+        .catch(() => {
+          console.log(`${filename}: Ping to ${server} failed`);
+          i += 1;
+          if (servers[i]) pingServer(servers[i]);
+          else {
+            console.log(
+              `${filename}: TTV LOL disabled (Failed to connect to server)`
+            );
+            resolve({});
+          }
+        });
+    }
+
+    if (servers[i]) pingServer(servers[i]);
+  });
 }

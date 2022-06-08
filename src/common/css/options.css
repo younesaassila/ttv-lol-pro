@@ -38,9 +38,10 @@ input[type="text"]::placeholder {
   font-style: italic;
 }
 
-input[type="text"]::-moz-selection,
-input[type="text"]::selection {
+::-moz-selection,
+::selection {
   background-color: var(--brand-color);
+  color: #ffffff;
 }
 
 small {
@@ -68,6 +69,6 @@ header {
   min-width: 300px;
 }
 
-#custom-api-server-input {
+#custom-server-input {
   display: none;
 }
