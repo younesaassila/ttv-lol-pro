@@ -1,0 +1,73 @@
+:root {
+  --font-primary: "Open Sans", "Segoe UI", sans-serif;
+
+  --brand-color: #9147ff;
+  --ui-background-color: #151619;
+
+  --text-primary: #c9cbcd;
+  --text-secondary: #9da1a4;
+
+  --input-background-color: #1d1f23;
+  --input-border-color: #353840;
+  --input-text-primary: #c3c4ca;
+
+  --header-height: 2.5rem;
+}
+
+body {
+  accent-color: var(--brand-color);
+  background-color: var(--ui-background-color);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  margin: 1.5rem;
+  font-size: 100%;
+}
+
+input[type="text"],
+select {
+  background-color: var(--input-background-color);
+  color: var(--input-text-primary);
+  border: 1px solid var(--input-border-color);
+  border-radius: 6px;
+  height: 30px;
+  padding: 0 0.65rem;
+  vertical-align: middle;
+}
+
+input[type="text"]::placeholder {
+  font-style: italic;
+}
+
+input[type="text"]::-moz-selection,
+input[type="text"]::selection {
+  background-color: var(--brand-color);
+}
+
+small {
+  color: var(--text-secondary);
+}
+
+header {
+  height: var(--header-height);
+}
+
+.logo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  height: var(--header-height);
+}
+
+.logo > img {
+  max-height: 100%;
+}
+
+#whitelisted-channels-list > li > input {
+  margin-bottom: 0.25rem;
+  min-width: 300px;
+}
+
+#custom-api-server-input {
+  display: none;
+}
