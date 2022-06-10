@@ -1,28 +1,14 @@
-import browser, { WebRequest } from "webextension-polyfill";
+import { WebRequest } from "webextension-polyfill";
 import { PlaylistType, Token } from "../../../types";
-
-let whitelistedChannels: string[] = [];
-let servers: string[] = ["https://api.ttv.lol"];
-async function init() {
-  const storage = await browser.storage.local.get({
-    whitelistedChannels: [],
-    servers: ["https://api.ttv.lol"],
-  });
-  whitelistedChannels = storage.whitelistedChannels;
-  servers = storage.servers;
-}
-init();
-browser.storage.onChanged.addListener((changes, area) => {
-  if (area !== "local") return;
-  if (changes.whitelistedChannels) {
-    whitelistedChannels = changes.whitelistedChannels.newValue;
-  }
-  if (changes.servers) servers = changes.servers.newValue;
-});
+import storage from "../../storage";
 
 export default function onBeforeRequest(
   details: WebRequest.OnBeforeRequestDetailsType
 ) {
+  const whitelistedChannels: string[] =
+    storage.get("whitelistedChannels") || [];
+  const removeToken: boolean = storage.get("removeToken") || false;
+
   const twitchApiUrlRegex = /\/(hls|vod)\/(.+)\.m3u8(?:\?(.*))?$/gim;
 
   const match = twitchApiUrlRegex.exec(details.url);
@@ -45,9 +31,9 @@ export default function onBeforeRequest(
     return {};
   }
 
-  let token: Token;
+  let token: Token | undefined;
   try {
-    token = JSON.parse(searchParams.get("token"));
+    token = JSON.parse(`${searchParams.get("token")}`);
   } catch {}
 
   if (token != null) {
@@ -63,13 +49,16 @@ export default function onBeforeRequest(
       return {};
     }
 
-    // Remove sensitive information from the token (when possible).
-    if (playlistType === PlaylistType.Playlist) {
-      delete token.device_id;
-      delete token.user_id;
+    if (removeToken) searchParams.delete("token");
+    else {
+      // Remove sensitive information from the token (when possible).
+      if (playlistType === PlaylistType.Playlist) {
+        delete token.device_id;
+        delete token.user_id;
+      }
+      delete token.user_ip;
+      searchParams.set("token", JSON.stringify(token));
     }
-    delete token.user_ip;
-    searchParams.set("token", JSON.stringify(token));
   }
 
   // @ts-ignore
@@ -83,6 +72,8 @@ function handleChrome(
   filename: string,
   searchParams: URLSearchParams
 ) {
+  const servers: string[] = storage.get("servers") || ["https://api.ttv.lol"];
+
   for (const server of servers) {
     const pingUrl = `${server}/ping`;
     const redirectUrl = `${server}/${playlistType}/${encodeURIComponent(
@@ -114,6 +105,8 @@ function handleFirefox(
   filename: string,
   searchParams: URLSearchParams
 ) {
+  const servers: string[] = storage.get("servers") || ["https://api.ttv.lol"];
+
   return new Promise(resolve => {
     let i = 0;
 

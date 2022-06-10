@@ -18,26 +18,53 @@
     <main>
       <h1>Options</h1>
 
-      <section id="whitelisted-channels">
-        <p>Whitelisted channels:</p>
+      <section id="whitelisted-channels-section">
+        <h2>Whitelisted channels</h2>
         <ul id="whitelisted-channels-list"></ul>
       </section>
 
-      <details>
-        <summary>Developer Options</summary>
+      <section id="privacy-section">
+        <h2>Privacy</h2>
+        <ul class="options-list">
+          <li>
+            <input
+              type="checkbox"
+              name="remove-token-checkbox"
+              id="remove-token-checkbox"
+            />
+            <label for="remove-token-checkbox">
+              Remove token from API requests
+            </label>
+            <span class="tag">not recommended</span>
+            <br />
+            <small>
+              TTV LOL already removes <code>device_id</code>,
+              <code>user_id</code>, and <code>user_ip</code>
+              parameters when possible. If enabled, VODs won't play if using
+              api.ttv.lol
+            </small>
+          </li>
+        </ul>
+      </section>
 
-        <label for="server">Server:</label>
-        <select name="server" id="server-select">
-          <option value="https://api.ttv.lol">api.ttv.lol</option>
-          <option value="custom">Custom</option>
-        </select>
-        <input
-          type="text"
-          name="custom-server"
-          id="custom-server-input"
-          placeholder="http://"
-        />
-      </details>
+      <section id="advanced-section">
+        <h2>Advanced</h2>
+        <ul class="options-list">
+          <li>
+            <label for="server-select">Server:</label>
+            <select name="server-select" id="server-select">
+              <option value="default">api.ttv.lol</option>
+              <option value="local">Local</option>
+            </select>
+            <input
+              type="text"
+              name="local-server"
+              id="local-server-input"
+              placeholder="http://"
+            />
+          </li>
+        </ul>
+      </section>
     </main>
 
     <script type="module" src="../ts/options.ts"></script>

@@ -1,35 +1,33 @@
-import browser from "webextension-polyfill";
+import $ from "../../utils/$";
+import storage from "../../ts/storage";
+import isPrivateIP from "private-ip";
 
-const whitelistedChannelsList = document.getElementById(
-  "whitelisted-channels-list"
+const whitelistedChannelsList = $(
+  "#whitelisted-channels-list"
 ) as HTMLUListElement;
-const serverSelect = document.getElementById(
-  "server-select"
-) as HTMLSelectElement;
-const customServerInput = document.getElementById(
-  "custom-server-input"
-) as HTMLInputElement;
+const removeTokenCheckbox = $("#remove-token-checkbox") as HTMLInputElement;
+const serverSelect = $("#server-select") as HTMLSelectElement;
+const localServerInput = $("#local-server-input") as HTMLInputElement;
 
-let whitelistedChannels: string[] = [];
-let servers: string[] = ["https://api.ttv.lol"];
-async function init() {
-  const storage = await browser.storage.local.get({
-    whitelistedChannels: [],
-    servers: ["https://api.ttv.lol"],
-  });
-  whitelistedChannels = storage.whitelistedChannels;
-  servers = storage.servers;
-}
-init().then(() => {
+let whitelistedChannels: string[] = storage.get("whitelistedChannels") || [];
+let servers: string[] = storage.get("servers") || ["https://api.ttv.lol"];
+let removeToken: boolean = storage.get("removeToken") || false;
+
+storage.addEventListener("load", () => {
+  whitelistedChannels = storage.get("whitelistedChannels") || [];
+  servers = storage.get("servers") || ["https://api.ttv.lol"];
+  removeToken = storage.get("removeToken") || false;
+
   for (const whitelistedChannel of whitelistedChannels) {
     appendWhitelistedChannel(whitelistedChannel);
   }
   appendAddChannelInput();
   if (servers.length > 1) {
-    serverSelect.value = "custom";
-    customServerInput.value = servers[0];
-    customServerInput.style.display = "inline-block";
+    serverSelect.value = "local";
+    localServerInput.value = servers[0];
+    localServerInput.style.display = "inline-block";
   }
+  removeTokenCheckbox.checked = removeToken;
 });
 
 function appendWhitelistedChannel(whitelistedChannel: string) {
@@ -47,10 +45,10 @@ function appendWhitelistedChannel(whitelistedChannel: string) {
       channel => channel.toLowerCase() === whitelistedChannel.toLowerCase()
     );
     if (index === -1) return;
-    // Update channel name, or remove it if text input is left empty.
+    // Update channel name, or remove it if text field is left empty.
     if (value !== "") whitelistedChannels[index] = value;
     else whitelistedChannels.splice(index, 1);
-    await browser.storage.local.set({ whitelistedChannels });
+    storage.set("whitelistedChannels", whitelistedChannels);
     if (value === "") li.remove();
   });
   li.appendChild(input);
@@ -74,12 +72,12 @@ function appendAddChannelInput() {
     );
     if (!alreadyWhitelisted) {
       whitelistedChannels.push(value);
-      await browser.storage.local.set({ whitelistedChannels });
+      storage.set("whitelistedChannels", whitelistedChannels);
       li.remove();
       appendWhitelistedChannel(value);
       appendAddChannelInput();
 
-      const addChannelInput = document.querySelector(
+      const addChannelInput = $(
         "#whitelisted-channels-list > li:last-child > input"
       ) as HTMLInputElement;
       if (addChannelInput) addChannelInput.focus();
@@ -89,18 +87,49 @@ function appendAddChannelInput() {
   whitelistedChannelsList.appendChild(li);
 }
 
-serverSelect.addEventListener("change", e => {
-  // Toggle visibility of custom server input.
-  const { value } = e.target as HTMLSelectElement;
-  if (value === "custom") customServerInput.style.display = "inline-block";
-  else customServerInput.style.display = "none";
+removeTokenCheckbox.addEventListener("change", e => {
+  const { checked } = e.target as HTMLInputElement;
+  removeToken = checked;
+  storage.set("removeToken", checked);
 });
 
-customServerInput.addEventListener("change", async e => {
+function setLocalServer(server: string) {
+  let newServers: string[] = [];
+  let url: URL;
+  try {
+    url = new URL(server);
+    const isLocalhost = url.hostname === "localhost";
+    if (isLocalhost || isPrivateIP(url.hostname)) newServers.push(server);
+    else {
+      alert(`'${server}' is not a local address.`);
+      localServerInput.value = "";
+    }
+  } catch {
+    if (!!server) {
+      alert(`'${server}' is not a valid URL.`);
+      localServerInput.value = "";
+    }
+  }
+  newServers.push("https://api.ttv.lol"); // Fallback
+  servers = newServers;
+  storage.set("servers", servers);
+}
+
+serverSelect.addEventListener("change", e => {
+  // Toggle visibility of local server input.
+  const { value } = e.target as HTMLSelectElement;
+  if (value === "local") {
+    localServerInput.style.display = "inline-block";
+    setLocalServer(localServerInput.value);
+  } else {
+    localServerInput.style.display = "none";
+    setLocalServer("");
+  }
+});
+
+localServerInput.addEventListener("change", async e => {
   // Update `servers` configuration option.
   const input = e.target as HTMLInputElement;
   const value = input.value.trim();
-  if (value !== "") servers = [value, "https://api.ttv.lol"];
-  else servers = ["https://api.ttv.lol"];
-  await browser.storage.local.set({ servers });
+  setLocalServer(value);
 });

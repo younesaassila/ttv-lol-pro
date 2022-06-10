@@ -5,7 +5,7 @@
   --ui-background-color: #151619;
 
   --text-primary: #c9cbcd;
-  --text-secondary: #9da1a4;
+  --text-secondary: #8d9296;
 
   --input-background-color: #1d1f23;
   --input-border-color: #353840;
@@ -23,6 +23,12 @@ body {
   font-size: 100%;
 }
 
+::-moz-selection,
+::selection {
+  background-color: var(--brand-color);
+  color: #ffffff;
+}
+
 input[type="text"],
 select {
   background-color: var(--input-background-color);
@@ -36,16 +42,6 @@ select {
 
 input[type="text"]::placeholder {
   font-style: italic;
-}
-
-::-moz-selection,
-::selection {
-  background-color: var(--brand-color);
-  color: #ffffff;
-}
-
-small {
-  color: var(--text-secondary);
 }
 
 header {
@@ -64,11 +60,39 @@ header {
   max-height: 100%;
 }
 
+section > h2 {
+  font-size: 1.15rem;
+}
+
+.tag {
+  background-color: var(--input-border-color);
+  color: var(--input-text-primary);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  margin-left: 0.25rem;
+}
+
+small {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
 #whitelisted-channels-list > li > input {
   margin-bottom: 0.25rem;
   min-width: 300px;
 }
 
-#custom-server-input {
+.options-list {
+  list-style-type: none;
+}
+
+summary {
+  margin-bottom: 0.5rem;
+}
+
+#local-server-input {
   display: none;
 }
