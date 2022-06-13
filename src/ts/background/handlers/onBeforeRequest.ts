@@ -5,9 +5,8 @@ import storage from "../../storage";
 export default function onBeforeRequest(
   details: WebRequest.OnBeforeRequestDetailsType
 ) {
-  const whitelistedChannels: string[] =
-    storage.get("whitelistedChannels") || [];
-  const removeToken: boolean = storage.get("removeToken") || false;
+  const whitelistedChannels: string[] = storage.get("whitelistedChannels");
+  const removeToken: boolean = storage.get("removeToken");
 
   const twitchApiUrlRegex = /\/(hls|vod)\/(.+)\.m3u8(?:\?(.*))?$/gim;
 
@@ -72,7 +71,7 @@ function handleChrome(
   filename: string,
   searchParams: URLSearchParams
 ) {
-  const servers: string[] = storage.get("servers") || ["https://api.ttv.lol"];
+  const servers: string[] = storage.get("servers");
 
   for (const server of servers) {
     const pingUrl = `${server}/ping`;
@@ -105,7 +104,7 @@ function handleFirefox(
   filename: string,
   searchParams: URLSearchParams
 ) {
-  const servers: string[] = storage.get("servers") || ["https://api.ttv.lol"];
+  const servers: string[] = storage.get("servers");
 
   return new Promise(resolve => {
     let i = 0;
@@ -147,5 +146,11 @@ function handleFirefox(
     }
 
     if (servers[i]) pingServer(servers[i]);
+    else {
+      console.log(
+        `${filename}: TTV LOL disabled (Failed to connect to server)`
+      );
+      resolve({});
+    }
   });
 }

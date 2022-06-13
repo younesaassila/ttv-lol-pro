@@ -77,7 +77,7 @@ section > h2 {
 
 small {
   color: var(--text-secondary);
-  font-style: italic;
+  font-size: 9pt;
 }
 
 #whitelisted-channels-list > li > input {
@@ -87,6 +87,16 @@ small {
 
 .options-list {
   list-style-type: none;
+}
+
+.options-list > li {
+  position: relative;
+}
+
+.options-list > li > input[type="checkbox"] {
+  position: absolute;
+  left: -1.6rem;
+  margin-top: 0.3rem;
 }
 
 summary {

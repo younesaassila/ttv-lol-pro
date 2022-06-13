@@ -1,12 +1,27 @@
 import browser from "webextension-polyfill";
 
+type Area = "sync" | "local" | "managed";
+type EventType = "load";
+
+const defaultValues = {
+  whitelistedChannels: [],
+  removeToken: false,
+  servers: ["https://api.ttv.lol"],
+};
+
+/**
+ * Synchronous wrapper around `browser.storage`.
+ */
 class Storage {
   storage: { [key: string]: any } = {};
-  private areaName: "sync" | "local" | "managed";
+  private areaName: Area;
+  private defaultValues: { [key: string]: any } = {};
   private listenersByEvent: { [type: string]: Function[] } = {};
 
-  constructor(areaName: "sync" | "local" | "managed") {
+  constructor(areaName: Area, defaultValues: { [key: string]: any } = {}) {
     this.areaName = areaName;
+    this.defaultValues = defaultValues;
+    this.storage = this.defaultValues;
     this.init().then(() => this.dispatchEvent("load"));
     browser.storage.onChanged.addListener((changes, area) => {
       if (area !== areaName) return;
@@ -19,7 +34,11 @@ class Storage {
   async init() {
     // Retrieve the entire storage contents.
     // See https://stackoverflow.com/questions/18150774/get-all-keys-from-chrome-storage
-    this.storage = await browser.storage[this.areaName].get(null);
+    const storage = await browser.storage[this.areaName].get(null);
+    for (const [key, defaultValue] of Object.entries(this.defaultValues)) {
+      if (storage[key] == null) storage[key] = defaultValue;
+    }
+    this.storage = storage;
   }
 
   get(key: string) {
@@ -41,12 +60,12 @@ class Storage {
     browser.storage[this.areaName].clear();
   }
 
-  addEventListener(type: string, listener: Function) {
+  addEventListener(type: EventType, listener: Function) {
     if (!this.listenersByEvent[type]) this.listenersByEvent[type] = [];
     this.listenersByEvent[type].push(listener);
   }
 
-  private dispatchEvent(type: string) {
+  private dispatchEvent(type: EventType) {
     const listeners = this.listenersByEvent[type] || [];
     listeners.forEach(listener => listener());
   }
@@ -60,6 +79,6 @@ class Storage {
   }
 }
 
-const storage = new Storage("local");
+const storage = new Storage("local", defaultValues);
 
 export default storage;

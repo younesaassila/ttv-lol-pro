@@ -9,25 +9,25 @@ const removeTokenCheckbox = $("#remove-token-checkbox") as HTMLInputElement;
 const serverSelect = $("#server-select") as HTMLSelectElement;
 const localServerInput = $("#local-server-input") as HTMLInputElement;
 
-let whitelistedChannels: string[] = storage.get("whitelistedChannels") || [];
-let servers: string[] = storage.get("servers") || ["https://api.ttv.lol"];
-let removeToken: boolean = storage.get("removeToken") || false;
+let whitelistedChannels: string[] = storage.get("whitelistedChannels");
+let removeToken: boolean = storage.get("removeToken");
+let servers: string[] = storage.get("servers");
 
 storage.addEventListener("load", () => {
-  whitelistedChannels = storage.get("whitelistedChannels") || [];
-  servers = storage.get("servers") || ["https://api.ttv.lol"];
-  removeToken = storage.get("removeToken") || false;
+  whitelistedChannels = storage.get("whitelistedChannels");
+  removeToken = storage.get("removeToken");
+  servers = storage.get("servers");
 
   for (const whitelistedChannel of whitelistedChannels) {
     appendWhitelistedChannel(whitelistedChannel);
   }
   appendAddChannelInput();
+  removeTokenCheckbox.checked = removeToken;
   if (servers.length > 1) {
     serverSelect.value = "local";
     localServerInput.value = servers[0];
     localServerInput.style.display = "inline-block";
   }
-  removeTokenCheckbox.checked = removeToken;
 });
 
 function appendWhitelistedChannel(whitelistedChannel: string) {
@@ -105,10 +105,8 @@ function setLocalServer(server: string) {
       localServerInput.value = "";
     }
   } catch {
-    if (!!server) {
-      alert(`'${server}' is not a valid URL.`);
-      localServerInput.value = "";
-    }
+    if (!!server) alert(`'${server}' is not a valid URL.`);
+    localServerInput.value = "";
   }
   newServers.push("https://api.ttv.lol"); // Fallback
   servers = newServers;
