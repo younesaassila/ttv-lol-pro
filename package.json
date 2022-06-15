@@ -13,7 +13,7 @@
   },
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
-    "dev": "parcel src/manifest.json --host localhost --target webext-dev",
+    "dev": "parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
     "lint": "prettier --write ./src",
     "build": "parcel build src/manifest.json --target webext-prod"
   },
