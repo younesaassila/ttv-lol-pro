@@ -59,16 +59,18 @@ export default function onBeforeRequest(
 
   // @ts-ignore
   const isChrome = !!chrome.app;
-  if (isChrome) return handleChrome(playlistType, filename, searchParams);
-  else return handleFirefox(playlistType, filename, searchParams);
+  if (isChrome) return redirectChrome(playlistType, filename, searchParams);
+  else return redirectFirefox(playlistType, filename, searchParams);
 }
 
-function handleChrome(
+function redirectChrome(
   playlistType: PlaylistType,
   filename: string,
   searchParams: URLSearchParams
 ) {
-  for (const server of store.state.servers) {
+  const servers = store.state.servers;
+
+  for (const server of servers) {
     const pingUrl = `${server}/ping`;
     const redirectUrl = `${server}/${playlistType}/${encodeURIComponent(
       `${filename}.m3u8?${searchParams.toString()}`
@@ -80,21 +82,19 @@ function handleChrome(
     request.send();
 
     if (request.status === 200) {
-      console.log(`${filename}: TTV LOL enabled (via ${server})`);
-      return {
-        redirectUrl,
-      };
+      console.log(`${filename}: TTV LOL enabled (Server: ${server})`);
+      return { redirectUrl };
     } else {
       console.log(`${filename}: Ping to ${server} failed`);
       continue;
     }
   }
 
-  console.log(`${filename}: TTV LOL disabled (Failed to connect to server)`);
+  console.log(`${filename}: TTV LOL disabled (All pings failed)`);
   return {};
 }
 
-function handleFirefox(
+function redirectFirefox(
   playlistType: PlaylistType,
   filename: string,
   searchParams: URLSearchParams
@@ -103,49 +103,32 @@ function handleFirefox(
 
   return new Promise(resolve => {
     let i = 0;
+    tryRedirect(servers[i]);
 
-    function pingServer(server: string) {
+    function tryRedirect(server: string) {
+      if (server == null) {
+        // We've reached the end of the `servers` array.
+        console.log(`${filename}: TTV LOL disabled (All pings failed)`);
+        return resolve({});
+      }
+
       const pingUrl = `${server}/ping`;
       const redirectUrl = `${server}/${playlistType}/${encodeURIComponent(
         `${filename}.m3u8?${searchParams.toString()}`
       )}`;
+      const fallback = () => {
+        console.log(`${filename}: Ping to ${server} failed`);
+        tryRedirect(servers[++i]);
+      };
 
       fetch(pingUrl)
         .then(response => {
           if (response.status === 200) {
-            console.log(`${filename}: TTV LOL enabled (via ${server})`);
+            console.log(`${filename}: TTV LOL enabled (Server: ${server})`);
             resolve({ redirectUrl });
-          } else {
-            console.log(`${filename}: Ping to ${server} failed`);
-            i += 1;
-            if (servers[i]) pingServer(servers[i]);
-            else {
-              console.log(
-                `${filename}: TTV LOL disabled (Failed to connect to server)`
-              );
-              resolve({});
-            }
-          }
+          } else fallback();
         })
-        .catch(() => {
-          console.log(`${filename}: Ping to ${server} failed`);
-          i += 1;
-          if (servers[i]) pingServer(servers[i]);
-          else {
-            console.log(
-              `${filename}: TTV LOL disabled (Failed to connect to server)`
-            );
-            resolve({});
-          }
-        });
-    }
-
-    if (servers[i]) pingServer(servers[i]);
-    else {
-      console.log(
-        `${filename}: TTV LOL disabled (Failed to connect to server)`
-      );
-      resolve({});
+        .catch(fallback);
     }
   });
 }
