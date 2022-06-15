@@ -1,28 +1,26 @@
 import $ from "../../utils/$";
-import storage from "../../ts/storage";
+import store from "../../store";
 import isPrivateIP from "private-ip";
 
 const whitelistedChannelsList = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
-const removeTokenCheckbox = $("#remove-token-checkbox") as HTMLInputElement;
+const removeTokenFromRequestsCheckbox = $(
+  "#remove-token-checkbox"
+) as HTMLInputElement;
 const serverSelect = $("#server-select") as HTMLSelectElement;
 const localServerInput = $("#local-server-input") as HTMLInputElement;
 
-let whitelistedChannels: string[] = storage.get("whitelistedChannels");
-let removeToken: boolean = storage.get("removeToken");
-let servers: string[] = storage.get("servers");
-
-storage.addEventListener("load", () => {
-  whitelistedChannels = storage.get("whitelistedChannels");
-  removeToken = storage.get("removeToken");
-  servers = storage.get("servers");
+store.addEventListener("load", () => {
+  let whitelistedChannels = store.state.whitelistedChannels;
+  let removeTokenFromRequests = store.state.removeTokenFromRequests;
+  let servers = store.state.servers;
 
   for (const whitelistedChannel of whitelistedChannels) {
     appendWhitelistedChannel(whitelistedChannel);
   }
   appendAddChannelInput();
-  removeTokenCheckbox.checked = removeToken;
+  removeTokenFromRequestsCheckbox.checked = removeTokenFromRequests;
   if (servers.length > 1) {
     serverSelect.value = "local";
     localServerInput.value = servers[0];
@@ -39,6 +37,7 @@ function appendWhitelistedChannel(whitelistedChannel: string) {
   input.spellcheck = false;
   input.addEventListener("focus", () => input.select());
   input.addEventListener("change", async e => {
+    const whitelistedChannels = store.state.whitelistedChannels;
     const input = e.target as HTMLInputElement;
     const value = input.value.trim();
     const index = whitelistedChannels.findIndex(
@@ -47,9 +46,11 @@ function appendWhitelistedChannel(whitelistedChannel: string) {
     if (index === -1) return;
     // Update channel name, or remove it if text field is left empty.
     if (value !== "") whitelistedChannels[index] = value;
-    else whitelistedChannels.splice(index, 1);
-    storage.set("whitelistedChannels", whitelistedChannels);
-    if (value === "") li.remove();
+    else {
+      whitelistedChannels.splice(index, 1);
+      li.remove();
+    }
+    store.state.whitelistedChannels = whitelistedChannels;
   });
   li.appendChild(input);
   whitelistedChannelsList.appendChild(li);
@@ -62,6 +63,7 @@ function appendAddChannelInput() {
   input.placeholder = "Enter a channel name…";
   input.spellcheck = false;
   input.addEventListener("change", async e => {
+    const whitelistedChannels = store.state.whitelistedChannels;
     const input = e.target as HTMLInputElement;
     const value = input.value.trim();
     if (value === "") return;
@@ -72,7 +74,7 @@ function appendAddChannelInput() {
     );
     if (!alreadyWhitelisted) {
       whitelistedChannels.push(value);
-      storage.set("whitelistedChannels", whitelistedChannels);
+      store.state.whitelistedChannels = whitelistedChannels;
       li.remove();
       appendWhitelistedChannel(value);
       appendAddChannelInput();
@@ -87,10 +89,9 @@ function appendAddChannelInput() {
   whitelistedChannelsList.appendChild(li);
 }
 
-removeTokenCheckbox.addEventListener("change", e => {
+removeTokenFromRequestsCheckbox.addEventListener("change", e => {
   const { checked } = e.target as HTMLInputElement;
-  removeToken = checked;
-  storage.set("removeToken", checked);
+  store.state.removeTokenFromRequests = checked;
 });
 
 function setLocalServer(server: string) {
@@ -109,8 +110,7 @@ function setLocalServer(server: string) {
     localServerInput.value = "";
   }
   newServers.push("https://api.ttv.lol"); // Fallback
-  servers = newServers;
-  storage.set("servers", servers);
+  store.state.servers = newServers;
 }
 
 serverSelect.addEventListener("change", e => {

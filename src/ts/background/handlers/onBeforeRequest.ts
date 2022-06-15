@@ -1,13 +1,10 @@
 import { WebRequest } from "webextension-polyfill";
 import { PlaylistType, Token } from "../../../types";
-import storage from "../../storage";
+import store from "../../../store";
 
 export default function onBeforeRequest(
   details: WebRequest.OnBeforeRequestDetailsType
 ) {
-  const whitelistedChannels: string[] = storage.get("whitelistedChannels");
-  const removeToken: boolean = storage.get("removeToken");
-
   const twitchApiUrlRegex = /\/(hls|vod)\/(.+)\.m3u8(?:\?(.*))?$/gim;
 
   const match = twitchApiUrlRegex.exec(details.url);
@@ -22,7 +19,7 @@ export default function onBeforeRequest(
 
   // No redirect if the channel is whitelisted.
   const channelName = filename.toLowerCase();
-  const isWhitelistedChannel = whitelistedChannels.some(
+  const isWhitelistedChannel = store.state.whitelistedChannels.some(
     channel => channel.toLowerCase() === channelName
   );
   if (isWhitelistedChannel) {
@@ -48,7 +45,7 @@ export default function onBeforeRequest(
       return {};
     }
 
-    if (removeToken) searchParams.delete("token");
+    if (store.state.removeTokenFromRequests) searchParams.delete("token");
     else {
       // Remove sensitive information from the token (when possible).
       if (playlistType === PlaylistType.Playlist) {
@@ -71,9 +68,7 @@ function handleChrome(
   filename: string,
   searchParams: URLSearchParams
 ) {
-  const servers: string[] = storage.get("servers");
-
-  for (const server of servers) {
+  for (const server of store.state.servers) {
     const pingUrl = `${server}/ping`;
     const redirectUrl = `${server}/${playlistType}/${encodeURIComponent(
       `${filename}.m3u8?${searchParams.toString()}`
@@ -104,7 +99,7 @@ function handleFirefox(
   filename: string,
   searchParams: URLSearchParams
 ) {
-  const servers: string[] = storage.get("servers");
+  const servers = store.state.servers;
 
   return new Promise(resolve => {
     let i = 0;
