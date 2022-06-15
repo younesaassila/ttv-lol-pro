@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Options - TTV LOL</title>
+    <link rel="stylesheet" href="../css/boilerplate.css" />
+    <link rel="stylesheet" href="../css/options.css" />
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <img src="../../images/icon.png" alt="Icon of TTV LOL" />
+        <img src="../img/ttvlol.png" alt="TTV LOL" />
+      </div>
+    </header>
+    <main>
+      <h1>Options</h1>
+
+      <section id="whitelisted-channels-section">
+        <h2>Whitelisted channels</h2>
+        <ul id="whitelisted-channels-list"></ul>
+      </section>
+
+      <section id="privacy-section">
+        <h2>Privacy</h2>
+        <ul class="options-list">
+          <li>
+            <input
+              type="checkbox"
+              name="remove-token-checkbox"
+              id="remove-token-checkbox"
+            />
+            <label for="remove-token-checkbox">
+              Remove token from API requests
+            </label>
+            <span class="tag">not recommended</span>
+            <br />
+            <small>
+              TTV LOL already removes <code>device_id</code>,
+              <code>user_id</code>, and <code>user_ip</code>
+              parameters when possible. If enabled, VODs might not play if using
+              api.ttv.lol
+            </small>
+          </li>
+        </ul>
+      </section>
+
+      <section id="advanced-section">
+        <h2>Advanced</h2>
+        <ul class="options-list">
+          <li>
+            <label for="server-select">Server:</label>
+            <select name="server-select" id="server-select">
+              <option value="default">api.ttv.lol</option>
+              <option value="local">Local</option>
+            </select>
+            <input
+              type="text"
+              name="local-server"
+              id="local-server-input"
+              placeholder="http://"
+            />
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <script type="module" src="../ts/options.ts"></script>
+  </body>
+</html>

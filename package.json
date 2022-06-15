@@ -35,5 +35,8 @@
     "typescript": "^4.6.4",
     "webextension-polyfill": "^0.9.0"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "private-ip": "^2.3.3"
+  }
 }

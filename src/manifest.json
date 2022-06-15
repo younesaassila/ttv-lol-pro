@@ -22,7 +22,13 @@
   "icons": {
     "128": "images/icon.png"
   },
+  "options_ui": {
+    "browser_style": false,
+    "open_in_tab": true,
+    "page": "common/html/options.html"
+  },
   "permissions": [
+    "storage",
     "webRequest",
     "webRequestBlocking",
     "https://*.twitch.tv/*",

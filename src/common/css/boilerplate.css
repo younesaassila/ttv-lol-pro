@@ -1,0 +1,23 @@
+*,
+*::before,
+*::after {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100vh; /* Fixes https://stackoverflow.com/questions/59823681/webapp-on-iphone-with-black-translucent-statusbar-viewport-height-seems-to-be-w */
+  font-size: 100%; /* See https://whitep4nth3r.com/blog/how-to-make-your-font-sizes-accessible-with-css/#set-font-size-100-on-the-html-tag */
+}
+
+body {
+  -webkit-text-size-adjust: 100%; /* Fixes https://stackoverflow.com/questions/2710764/preserve-html-font-size-when-iphone-orientation-changes-from-portrait-to-landsca */
+  text-size-adjust: 100%;
+}
+
+input,
+textarea,
+button {
+  font-family: inherit; /* Fixes https://stackoverflow.com/questions/26140050/why-is-font-family-not-inherited-in-button-tags-automatically */
+}

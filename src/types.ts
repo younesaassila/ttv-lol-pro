@@ -18,7 +18,7 @@ export interface Token {
   };
   ci_gb?: boolean;
   geoblock_reason?: string;
-  device_id: string;
+  device_id?: string;
   expires: number;
   extended_history_allowed?: boolean;
   game?: string;
