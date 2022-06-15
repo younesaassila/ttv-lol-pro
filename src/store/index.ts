@@ -28,6 +28,17 @@ const handler: ProxyHandler<State> = {
     browser.storage[areaName].remove(property.toString());
     return true;
   },
+  get: (target, property) => {
+    if (typeof target[property] === "object" && target[property] !== null) {
+      return new Proxy(target[property], {
+        set: (propertyObj, subproperty, subpropertyValue) => {
+          propertyObj[subproperty] = subpropertyValue;
+          browser.storage[areaName].set({ [property]: state[property] });
+          return true;
+        },
+      });
+    } else return target[property];
+  },
   set: (target, property, value) => {
     target[property] = value;
     browser.storage[areaName].set({ [property]: value });
