@@ -5,14 +5,14 @@
   "version": "1.1.0",
   "background": {
     "persistent": true,
-    "scripts": ["ts/background/background.ts"]
+    "scripts": ["background/background.ts"]
   },
   "browser_action": {
     "default_icon": {
-      "128": "images/icon.png"
+      "128": "assets/icon.png"
     },
     "default_title": "TTV LOL",
-    "default_popup": "common/html/popup.html"
+    "default_popup": "popup/menu.html"
   },
   "browser_specific_settings": {
     "gecko": {
@@ -20,12 +20,12 @@
     }
   },
   "icons": {
-    "128": "images/icon.png"
+    "128": "assets/icon.png"
   },
   "options_ui": {
     "browser_style": false,
     "open_in_tab": true,
-    "page": "common/html/options.html"
+    "page": "options/page.html"
   },
   "permissions": [
     "storage",

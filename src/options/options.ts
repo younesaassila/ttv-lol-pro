@@ -1,5 +1,5 @@
-import $ from "../../utils/$";
-import store from "../../store";
+import $ from "../common/ts/$";
+import store from "../store";
 import isPrivateIP from "private-ip";
 
 const whitelistedChannelsList = $(

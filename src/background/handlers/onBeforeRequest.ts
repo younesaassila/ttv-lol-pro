@@ -1,6 +1,6 @@
 import { WebRequest } from "webextension-polyfill";
-import { PlaylistType, Token } from "../../../types";
-import store from "../../../store";
+import { PlaylistType, Token } from "../../types";
+import store from "../../store";
 
 export default function onBeforeRequest(
   details: WebRequest.OnBeforeRequestDetailsType
@@ -98,7 +98,7 @@ function handleFirefox(
   playlistType: PlaylistType,
   filename: string,
   searchParams: URLSearchParams
-) {
+): Promise<WebRequest.BlockingResponse> {
   const servers = store.state.servers;
 
   return new Promise(resolve => {
