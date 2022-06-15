@@ -20,28 +20,69 @@ const state = getDefaultState();
 const handler: ProxyHandler<State> = {
   defineProperty: (target, key, descriptor) => {
     target[key] = descriptor;
-    browser.storage[areaName].set({ [key]: descriptor });
+    browser.storage[areaName].set({ [key]: descriptor }).catch(console.error);
     return true;
   },
   deleteProperty: (target, property) => {
     delete target[property];
-    browser.storage[areaName].remove(property.toString());
+    browser.storage[areaName].remove(property.toString()).catch(console.error);
     return true;
   },
   get: (target, property) => {
     if (typeof target[property] === "object" && target[property] !== null) {
-      return new Proxy(target[property], {
-        set: (propertyObj, subproperty, subpropertyValue) => {
-          propertyObj[subproperty] = subpropertyValue;
-          browser.storage[areaName].set({ [property]: state[property] });
+      const propertyHandler: ProxyHandler<object> = {
+        defineProperty: (propertyObj, subproperty, subpropertyDescriptor) => {
+          propertyObj[subproperty] = subpropertyDescriptor;
+          browser.storage[areaName]
+            .set({ [property]: state[property] })
+            .catch((error: Error) => {
+              if (error.toString().includes("DataCloneError")) return;
+              console.error(error);
+            });
           return true;
         },
-      });
+        deleteProperty: (propertyObj, subproperty) => {
+          delete propertyObj[subproperty];
+          browser.storage[areaName]
+            .set({ [property]: state[property] })
+            .catch((error: Error) => {
+              if (error.toString().includes("DataCloneError")) return;
+              console.error(error);
+            });
+          return true;
+        },
+        get: (propertyObj, subproperty) => {
+          const subpropertyValue = propertyObj[subproperty];
+          const containsObjects = (parent: object) =>
+            Object.values(parent).some(
+              childValue =>
+                typeof childValue === "object" && childValue !== null
+            );
+          if (
+            typeof subpropertyValue === "object" &&
+            subpropertyValue !== null &&
+            containsObjects(subpropertyValue)
+          ) {
+            return new Proxy(subpropertyValue, propertyHandler);
+          } else return subpropertyValue;
+        },
+        set: (propertyObj, subproperty, subpropertyValue) => {
+          propertyObj[subproperty] = subpropertyValue;
+          browser.storage[areaName]
+            .set({ [property]: state[property] })
+            .catch((error: Error) => {
+              if (error.toString().includes("DataCloneError")) return;
+              console.error(error);
+            });
+          return true;
+        },
+      };
+      return new Proxy(target[property], propertyHandler);
     } else return target[property];
   },
   set: (target, property, value) => {
     target[property] = value;
-    browser.storage[areaName].set({ [property]: value });
+    browser.storage[areaName].set({ [property]: value }).catch(console.error);
     return true;
   },
 };
