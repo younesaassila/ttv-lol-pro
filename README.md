@@ -38,7 +38,11 @@ This is a fork of the original project at https://github.com/TTV-LOL/extensions
 
 This fork:
 
-- disables TTV LOL for channels you are subscribed to.
+- disables TTV LOL for channels you are subscribed to,
+- lets you whitelist channels on which TTV LOL should be disabled,
+- improves your privacy by allowing you to remove your Twitch token from TTV LOL API requests,
+- improves reliability by falling back to stream with ads if TTV LOL's API errors out even if ping is successful,
+- lets you use a local server to enable additional features (not recommended unless you know what you're doing).
 
 ## Installation
 
