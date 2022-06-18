@@ -9,7 +9,6 @@ export default function onBeforeRequest(
 
   const match = twitchApiUrlRegex.exec(details.url);
   if (match == null) return {};
-
   const [_, _type, streamId, _params] = match;
   if (_type == null || streamId == null) return {};
 

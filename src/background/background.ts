@@ -22,6 +22,7 @@ browser.webRequest.onBeforeSendHeaders.addListener(
   ["blocking", "requestHeaders"]
 );
 
+// Monitor API error responses.
 browser.webRequest.onHeadersReceived.addListener(
   onHeadersReceived,
   { urls: ["https://api.ttv.lol/playlist/*", "https://api.ttv.lol/vod/*"] },

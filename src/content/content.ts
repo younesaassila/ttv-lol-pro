@@ -6,12 +6,11 @@ store.addEventListener("load", () => {
 
   const match = twitchUrlRegex.exec(location.href);
   if (match == null) return;
-
   const [_, streamId] = match;
   if (streamId == null) return;
 
   if (store.state.streamStatuses[streamId] != null) {
-    console.log(`${streamId}: Status errors have been reset`);
+    // Clear errors for stream on page load/reload.
     store.state.streamStatuses[streamId].errors = [];
   }
 });

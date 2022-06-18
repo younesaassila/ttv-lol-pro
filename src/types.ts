@@ -1,4 +1,4 @@
-export enum PlaylistType {
+export const enum PlaylistType {
   Playlist = "playlist",
   VOD = "vod",
 }
@@ -43,7 +43,7 @@ export interface Token {
   vod_id?: number;
 }
 
-export enum ProxyFlags {
+export const enum ProxyFlags {
   IS_PROXY = "__isProxy",
   RAW = "__raw",
 }
