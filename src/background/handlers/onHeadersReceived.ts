@@ -5,6 +5,7 @@ export default function onHeadersReceived(
   details: WebRequest.OnHeadersReceivedDetailsType
 ) {
   const isServerError = 500 <= details.statusCode && details.statusCode < 600;
+
   if (isServerError) {
     const ttvlolApiUrlRegex = /\/playlist|vod\/(.+)\.m3u8/gim;
 
@@ -13,7 +14,11 @@ export default function onHeadersReceived(
     const [_, streamId] = match;
     if (streamId == null) return {};
 
-    const status = store.state.streamStatuses[streamId];
+    const status = store.state.streamStatuses[streamId] || {
+      redirected: true,
+      reason: "",
+      errors: [],
+    };
     store.state.streamStatuses[streamId] = {
       redirected: status.redirected,
       reason: status.reason,
