@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="src/images/icon.png" height="100" width="100" alt="Icon" />
+  <img src="src/assets/icon.png" height="100" width="100" alt="Icon" />
   <br />
   TTV LOL
   <br />
@@ -38,7 +38,16 @@ This is a fork of the original project at https://github.com/TTV-LOL/extensions
 
 This fork:
 
-- disables TTV LOL for channels you are subscribed to.
+- disables TTV LOL for channels you are subscribed to,
+- lets you whitelist channels for which you would like TTV LOL to be disabled,
+- improves your privacy by letting you remove the token parameter from API requests,
+- improves streaming reliability by falling back to the stream with ads if the API errors out,
+- lets you use a local server to enable additional features (not recommended).
+
+In addition, use [uBlock Origin](https://ublockorigin.com/) to:
+
+- remove banner ads,
+- block ads on VODs.
 
 ## Installation
 

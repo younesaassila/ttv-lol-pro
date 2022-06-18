@@ -1,4 +1,4 @@
-export enum PlaylistType {
+export const enum PlaylistType {
   Playlist = "playlist",
   VOD = "vod",
 }
@@ -18,7 +18,7 @@ export interface Token {
   };
   ci_gb?: boolean;
   geoblock_reason?: string;
-  device_id: string;
+  device_id?: string;
   expires: number;
   extended_history_allowed?: boolean;
   game?: string;
@@ -41,4 +41,9 @@ export interface Token {
   user_ip?: string;
   version: number;
   vod_id?: number;
+}
+
+export const enum ProxyFlags {
+  IS_PROXY = "__isProxy",
+  RAW = "__raw",
 }
