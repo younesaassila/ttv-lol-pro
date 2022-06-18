@@ -42,3 +42,8 @@ export interface Token {
   version: number;
   vod_id?: number;
 }
+
+export enum ProxyFlags {
+  IS_PROXY = "__isProxy",
+  RAW = "__raw",
+}

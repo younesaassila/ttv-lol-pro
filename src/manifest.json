@@ -19,6 +19,13 @@
       "update_url": "https://younesaassila.github.io/ttv-lol/updates.json"
     }
   },
+  "content_scripts": [
+    {
+      "matches": ["*://*.twitch.tv/*"],
+      "js": ["content/content.ts"],
+      "run_at": "document_start"
+    }
+  ],
   "icons": {
     "128": "assets/icon.png"
   },

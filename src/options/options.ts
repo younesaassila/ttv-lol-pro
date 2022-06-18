@@ -37,20 +37,18 @@ function appendWhitelistedChannel(whitelistedChannel: string) {
   input.spellcheck = false;
   input.addEventListener("focus", () => input.select());
   input.addEventListener("change", async e => {
-    const whitelistedChannels = store.state.whitelistedChannels;
     const input = e.target as HTMLInputElement;
     const value = input.value.trim();
-    const index = whitelistedChannels.findIndex(
+    const index = store.state.whitelistedChannels.findIndex(
       channel => channel.toLowerCase() === whitelistedChannel.toLowerCase()
     );
     if (index === -1) return;
     // Update channel name, or remove it if text field is left empty.
-    if (value !== "") whitelistedChannels[index] = value;
+    if (value !== "") store.state.whitelistedChannels[index] = value;
     else {
-      whitelistedChannels.splice(index, 1);
+      store.state.whitelistedChannels.splice(index, 1);
       li.remove();
     }
-    store.state.whitelistedChannels = whitelistedChannels;
   });
   li.appendChild(input);
   whitelistedChannelsList.appendChild(li);
@@ -63,18 +61,16 @@ function appendAddChannelInput() {
   input.placeholder = "Enter a channel name…";
   input.spellcheck = false;
   input.addEventListener("change", async e => {
-    const whitelistedChannels = store.state.whitelistedChannels;
     const input = e.target as HTMLInputElement;
     const value = input.value.trim();
     if (value === "") return;
 
     const channelName = value.toLowerCase();
-    const alreadyWhitelisted = whitelistedChannels.some(
+    const alreadyWhitelisted = store.state.whitelistedChannels.some(
       channel => channel.toLowerCase() === channelName
     );
     if (!alreadyWhitelisted) {
-      whitelistedChannels.push(value);
-      store.state.whitelistedChannels = whitelistedChannels;
+      store.state.whitelistedChannels.push(value);
       li.remove();
       appendWhitelistedChannel(value);
       appendAddChannelInput();

@@ -10,20 +10,20 @@ export default function onBeforeRequest(
   const match = twitchApiUrlRegex.exec(details.url);
   if (match == null) return {};
 
-  const [_, _type, filename, _params] = match;
-  if (_type == null || filename == null) return {};
+  const [_, _type, streamId, _params] = match;
+  if (_type == null || streamId == null) return {};
 
   const playlistType =
     _type.toLowerCase() === "vod" ? PlaylistType.VOD : PlaylistType.Playlist;
   const searchParams = new URLSearchParams(_params);
 
   // No redirect if the channel is whitelisted.
-  const channelName = filename.toLowerCase();
+  const channelName = streamId.toLowerCase();
   const isWhitelistedChannel = store.state.whitelistedChannels.some(
     channel => channel.toLowerCase() === channelName
   );
   if (isWhitelistedChannel) {
-    console.log(`${filename}: TTV LOL disabled (Channel is whitelisted)`);
+    console.log(`${streamId}: No redirect (Channel is whitelisted)`);
     return {};
   }
 
@@ -40,7 +40,7 @@ export default function onBeforeRequest(
       token.partner === true
     ) {
       console.log(
-        `${filename}: TTV LOL disabled (User is a subscriber, has Twitch Turbo, or is a partner)`
+        `${streamId}: No redirect (User is a subscriber, has Twitch Turbo, or is a partner)`
       );
       return {};
     }
@@ -57,15 +57,26 @@ export default function onBeforeRequest(
     }
   }
 
+  const status = store.state.streamStatuses[streamId];
+  if (status != null) {
+    if (
+      status.errors.filter(error => Date.now() - error.timestamp < 20000)
+        .length >= 2
+    ) {
+      console.log(`${streamId}: No redirect (Too many errors occurred)`);
+      return {};
+    }
+  }
+
   // @ts-ignore
   const isChrome = !!chrome.app;
-  if (isChrome) return redirectChrome(playlistType, filename, searchParams);
-  else return redirectFirefox(playlistType, filename, searchParams);
+  if (isChrome) return redirectChrome(playlistType, streamId, searchParams);
+  else return redirectFirefox(playlistType, streamId, searchParams);
 }
 
 function redirectChrome(
   playlistType: PlaylistType,
-  filename: string,
+  streamId: string,
   searchParams: URLSearchParams
 ) {
   const servers = store.state.servers;
@@ -73,7 +84,7 @@ function redirectChrome(
   for (const server of servers) {
     const pingUrl = `${server}/ping`;
     const redirectUrl = `${server}/${playlistType}/${encodeURIComponent(
-      `${filename}.m3u8?${searchParams.toString()}`
+      `${streamId}.m3u8?${searchParams.toString()}`
     )}`;
 
     // Synchronous XMLHttpRequest is required for the extension to work in Chrome.
@@ -82,21 +93,45 @@ function redirectChrome(
     request.send();
 
     if (request.status === 200) {
-      console.log(`${filename}: TTV LOL enabled (Server: ${server})`);
+      console.log(`${streamId}: Redirecting to ${server}…`);
+      const status = store.state.streamStatuses[streamId];
+      store.state.streamStatuses[streamId] = status
+        ? {
+            redirected: true,
+            reason: "",
+            errors: status.errors,
+          }
+        : {
+            redirected: true,
+            reason: "",
+            errors: [],
+          };
       return { redirectUrl };
     } else {
-      console.log(`${filename}: Ping to ${server} failed`);
+      console.log(`${streamId}: Ping to ${server} failed`);
       continue;
     }
   }
 
-  console.log(`${filename}: TTV LOL disabled (All pings failed)`);
+  console.log(`${streamId}: No redirect (All pings failed)`);
+  const status = store.state.streamStatuses[streamId];
+  store.state.streamStatuses[streamId] = status
+    ? {
+        redirected: false,
+        reason: "All server pings failed",
+        errors: status.errors,
+      }
+    : {
+        redirected: false,
+        reason: "All server pings failed",
+        errors: [],
+      };
   return {};
 }
 
 function redirectFirefox(
   playlistType: PlaylistType,
-  filename: string,
+  streamId: string,
   searchParams: URLSearchParams
 ): Promise<WebRequest.BlockingResponse> {
   const servers = store.state.servers;
@@ -108,23 +143,47 @@ function redirectFirefox(
     function tryRedirect(server: string) {
       if (server == null) {
         // We've reached the end of the `servers` array.
-        console.log(`${filename}: TTV LOL disabled (All pings failed)`);
+        console.log(`${streamId}: No redirect (All pings failed)`);
+        const status = store.state.streamStatuses[streamId];
+        store.state.streamStatuses[streamId] = status
+          ? {
+              redirected: false,
+              reason: "All server pings failed",
+              errors: status.errors,
+            }
+          : {
+              redirected: false,
+              reason: "All server pings failed",
+              errors: [],
+            };
         return resolve({});
       }
 
       const pingUrl = `${server}/ping`;
       const redirectUrl = `${server}/${playlistType}/${encodeURIComponent(
-        `${filename}.m3u8?${searchParams.toString()}`
+        `${streamId}.m3u8?${searchParams.toString()}`
       )}`;
       const fallback = () => {
-        console.log(`${filename}: Ping to ${server} failed`);
+        console.log(`${streamId}: Ping to ${server} failed`);
         tryRedirect(servers[++i]);
       };
 
       fetch(pingUrl)
         .then(response => {
           if (response.status === 200) {
-            console.log(`${filename}: TTV LOL enabled (Server: ${server})`);
+            console.log(`${streamId}: Redirecting to ${server}…`);
+            const status = store.state.streamStatuses[streamId];
+            store.state.streamStatuses[streamId] = status
+              ? {
+                  redirected: true,
+                  reason: "",
+                  errors: status.errors,
+                }
+              : {
+                  redirected: true,
+                  reason: "",
+                  errors: [],
+                };
             resolve({ redirectUrl });
           } else fallback();
         })
