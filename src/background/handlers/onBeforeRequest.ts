@@ -2,6 +2,12 @@ import { WebRequest } from "webextension-polyfill";
 import { PlaylistType, Token } from "../../types";
 import store from "../../store";
 
+const defaultStatus = {
+  redirected: true,
+  reason: "",
+  errors: [],
+};
+
 export default function onBeforeRequest(
   details: WebRequest.OnBeforeRequestDetailsType
 ) {
@@ -93,18 +99,12 @@ function redirectChrome(
 
     if (request.status === 200) {
       console.log(`${streamId}: Redirecting to ${server}…`);
-      const status = store.state.streamStatuses[streamId];
-      store.state.streamStatuses[streamId] = status
-        ? {
-            redirected: true,
-            reason: "",
-            errors: status.errors,
-          }
-        : {
-            redirected: true,
-            reason: "",
-            errors: [],
-          };
+      const status = store.state.streamStatuses[streamId] || defaultStatus;
+      store.state.streamStatuses[streamId] = {
+        redirected: true,
+        reason: "",
+        errors: status.errors,
+      };
       return { redirectUrl };
     } else {
       console.log(`${streamId}: Ping to ${server} failed`);
@@ -113,18 +113,12 @@ function redirectChrome(
   }
 
   console.log(`${streamId}: No redirect (All pings failed)`);
-  const status = store.state.streamStatuses[streamId];
-  store.state.streamStatuses[streamId] = status
-    ? {
-        redirected: false,
-        reason: "All server pings failed",
-        errors: status.errors,
-      }
-    : {
-        redirected: false,
-        reason: "All server pings failed",
-        errors: [],
-      };
+  const status = store.state.streamStatuses[streamId] || defaultStatus;
+  store.state.streamStatuses[streamId] = {
+    redirected: false,
+    reason: "All server pings failed",
+    errors: status.errors,
+  };
   return {};
 }
 
@@ -143,18 +137,12 @@ function redirectFirefox(
       if (server == null) {
         // We've reached the end of the `servers` array.
         console.log(`${streamId}: No redirect (All pings failed)`);
-        const status = store.state.streamStatuses[streamId];
-        store.state.streamStatuses[streamId] = status
-          ? {
-              redirected: false,
-              reason: "All server pings failed",
-              errors: status.errors,
-            }
-          : {
-              redirected: false,
-              reason: "All server pings failed",
-              errors: [],
-            };
+        const status = store.state.streamStatuses[streamId] || defaultStatus;
+        store.state.streamStatuses[streamId] = {
+          redirected: false,
+          reason: "All server pings failed",
+          errors: status.errors,
+        };
         return resolve({});
       }
 
@@ -171,18 +159,13 @@ function redirectFirefox(
         .then(response => {
           if (response.status === 200) {
             console.log(`${streamId}: Redirecting to ${server}…`);
-            const status = store.state.streamStatuses[streamId];
-            store.state.streamStatuses[streamId] = status
-              ? {
-                  redirected: true,
-                  reason: "",
-                  errors: status.errors,
-                }
-              : {
-                  redirected: true,
-                  reason: "",
-                  errors: [],
-                };
+            const status =
+              store.state.streamStatuses[streamId] || defaultStatus;
+            store.state.streamStatuses[streamId] = {
+              redirected: true,
+              reason: "",
+              errors: status.errors,
+            };
             resolve({ redirectUrl });
           } else fallback();
         })
