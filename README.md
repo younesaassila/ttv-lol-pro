@@ -39,10 +39,15 @@ This is a fork of the original project at https://github.com/TTV-LOL/extensions
 This fork:
 
 - disables TTV LOL for channels you are subscribed to,
-- lets you whitelist channels on which TTV LOL should be disabled,
-- improves your privacy by allowing you to remove your Twitch token from TTV LOL API requests,
-- improves reliability by falling back to stream with ads if TTV LOL's API errors out even if ping is successful,
-- lets you use a local server to enable additional features (not recommended unless you know what you're doing).
+- lets you whitelist channels for which you would like TTV LOL to be disabled,
+- improves your privacy by letting you remove the token parameter from API requests,
+- improves streaming reliability by falling back to the stream with ads if the API errors out,
+- lets you use a local server to enable additional features (not recommended).
+
+In addition, use [uBlock Origin](https://ublockorigin.com/) to:
+
+- remove banner ads,
+- block ads on VODs.
 
 ## Installation
 
