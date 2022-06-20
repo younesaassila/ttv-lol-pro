@@ -28,11 +28,11 @@
   ],
   "license": "UNLICENSED",
   "devDependencies": {
-    "@parcel/config-webextension": "^2.5.0",
-    "@types/webextension-polyfill": "^0.8.3",
-    "parcel": "^2.5.0",
-    "prettier": "^2.6.2",
-    "typescript": "^4.6.4",
+    "@parcel/config-webextension": "^2.6.1",
+    "@types/webextension-polyfill": "^0.9.0",
+    "parcel": "^2.6.1",
+    "prettier": "^2.7.1",
+    "typescript": "^4.7.4",
     "webextension-polyfill": "^0.9.0"
   },
   "private": true,
