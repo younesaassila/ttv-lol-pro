@@ -2,6 +2,11 @@
   "name": "ttv-lol",
   "version": "1.1.1-younesaassila",
   "description": "TTV LOL removes livestream ads from twitch.tv",
+  "@parcel/bundler-default": {
+    "minBundles": 10000000,
+    "minBundleSize": 3000,
+    "maxParallelRequests": 20
+  },
   "targets": {
     "webext-dev": {
       "sourceMap": {
@@ -15,7 +20,7 @@
   "scripts": {
     "dev": "parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
     "lint": "prettier --write ./src",
-    "build": "parcel build src/manifest.json --target webext-prod"
+    "build": "parcel build src/manifest.json --target webext-prod --no-content-hash"
   },
   "keywords": [
     "twitch",
