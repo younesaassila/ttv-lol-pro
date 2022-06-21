@@ -49,6 +49,10 @@ In addition, use [uBlock Origin](https://ublockorigin.com/) to:
 - remove banner ads,
 - block ads on VODs.
 
+Use [TTV LOL extended](https://github.com/younesaassila/ttv-lol-extended) to:
+
+- watch sub-only VODs.
+
 ## Installation
 
 ### Chrome
