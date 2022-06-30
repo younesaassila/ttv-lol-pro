@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import { ProxyFlags } from "../types";
 
-type Area = "sync" | "local" | "managed";
+type Area = "local" | "managed" | "session" | "sync";
 type EventType = "load";
 type State = {
   whitelistedChannels: string[];
