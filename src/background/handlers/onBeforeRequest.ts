@@ -2,12 +2,6 @@ import { WebRequest } from "webextension-polyfill";
 import { PlaylistType, Token } from "../../types";
 import store from "../../store";
 
-const defaultStatus = {
-  redirected: true,
-  reason: "",
-  errors: [],
-};
-
 export default function onBeforeRequest(
   details: WebRequest.OnBeforeRequestDetailsType
 ) {
@@ -29,6 +23,7 @@ export default function onBeforeRequest(
   );
   if (isWhitelistedChannel) {
     console.log(`${streamId}: No redirect (Channel is whitelisted)`);
+    setStreamStatus(streamId, false, "Channel is whitelisted");
     return {};
   }
 
@@ -46,6 +41,11 @@ export default function onBeforeRequest(
     ) {
       console.log(
         `${streamId}: No redirect (User is a subscriber, has Twitch Turbo, or is a partner)`
+      );
+      setStreamStatus(
+        streamId,
+        false,
+        "User is a subscriber, has Twitch Turbo, or is a partner"
       );
       return {};
     }
@@ -69,6 +69,7 @@ export default function onBeforeRequest(
         .length >= 2
     ) {
       console.log(`${streamId}: No redirect (Too many errors occurred)`);
+      setStreamStatus(streamId, false, "Too many errors occurred");
       return {};
     }
   }
@@ -77,6 +78,20 @@ export default function onBeforeRequest(
   const isChrome = !!chrome.app;
   if (isChrome) return redirectChrome(playlistType, streamId, searchParams);
   else return redirectFirefox(playlistType, streamId, searchParams);
+}
+
+function setStreamStatus(
+  streamId: string,
+  redirected: boolean,
+  reason: string
+) {
+  const status = store.state.streamStatuses[streamId];
+  const errors = status ? status.errors : [];
+  store.state.streamStatuses[streamId] = {
+    redirected,
+    reason,
+    errors,
+  };
 }
 
 function redirectChrome(
@@ -99,12 +114,7 @@ function redirectChrome(
 
     if (request.status === 200) {
       console.log(`${streamId}: Redirecting to ${server}…`);
-      const status = store.state.streamStatuses[streamId] || defaultStatus;
-      store.state.streamStatuses[streamId] = {
-        redirected: true,
-        reason: "",
-        errors: status.errors,
-      };
+      setStreamStatus(streamId, true, `Redirected to ${server}`);
       return { redirectUrl };
     } else {
       console.log(`${streamId}: Ping to ${server} failed`);
@@ -113,12 +123,7 @@ function redirectChrome(
   }
 
   console.log(`${streamId}: No redirect (All pings failed)`);
-  const status = store.state.streamStatuses[streamId] || defaultStatus;
-  store.state.streamStatuses[streamId] = {
-    redirected: false,
-    reason: "All server pings failed",
-    errors: status.errors,
-  };
+  setStreamStatus(streamId, false, "All server pings failed");
   return {};
 }
 
@@ -137,12 +142,7 @@ function redirectFirefox(
       if (server == null) {
         // We've reached the end of the `servers` array.
         console.log(`${streamId}: No redirect (All pings failed)`);
-        const status = store.state.streamStatuses[streamId] || defaultStatus;
-        store.state.streamStatuses[streamId] = {
-          redirected: false,
-          reason: "All server pings failed",
-          errors: status.errors,
-        };
+        setStreamStatus(streamId, false, "All server pings failed");
         return resolve({});
       }
 
@@ -159,13 +159,7 @@ function redirectFirefox(
         .then(response => {
           if (response.status === 200) {
             console.log(`${streamId}: Redirecting to ${server}…`);
-            const status =
-              store.state.streamStatuses[streamId] || defaultStatus;
-            store.state.streamStatuses[streamId] = {
-              redirected: true,
-              reason: "",
-              errors: status.errors,
-            };
+            setStreamStatus(streamId, true, `Redirected to ${server}`);
             resolve({ redirectUrl });
           } else fallback();
         })

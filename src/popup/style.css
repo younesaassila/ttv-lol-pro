@@ -11,14 +11,25 @@ html {
   text-rendering: optimizeLegibility;
 }
 
+body {
+  font-size: 100%;
+}
+
 .container {
   text-align: center;
   padding-bottom: 10px;
 }
 
+.logo-wrapper {
+  background-color: #202127;
+  border-radius: 8px;
+  margin: 30px 30px 15px 30px;
+}
+
 .button-group {
   display: flex;
   justify-content: center;
+  padding-top: 15px;
 }
 
 .button {
@@ -67,4 +78,27 @@ html {
 .button-arrow:hover .arrow-body {
   opacity: 1;
   transform: scaleX(2);
+}
+
+#stream-status {
+  background-color: #202127;
+  border-radius: 8px;
+  display: none;
+  gap: 7px;
+  margin: 0 30px;
+  padding: 15px;
+  text-align: start;
+}
+#stream-status #redirected.success {
+  color: #43b581;
+}
+#stream-status #redirected.error {
+  color: #f04747;
+}
+#stream-status #stream-id {
+  font-weight: bold;
+}
+#stream-status #reason {
+  font-size: 9pt;
+  opacity: 0.8;
 }
