@@ -28,9 +28,7 @@
 
 <br />
 
-```text
-This is a fork of the original project at https://github.com/TTV-LOL/extensions
-```
+> ℹ️ **This is a fork of the original project at https://github.com/TTV-LOL/extensions**
 
 >
 
@@ -39,19 +37,20 @@ This is a fork of the original project at https://github.com/TTV-LOL/extensions
 This fork:
 
 - disables TTV LOL for channels you are subscribed to,
-- lets you whitelist channels for which you would like TTV LOL to be disabled,
-- improves your privacy by letting you remove the token parameter from API requests,
-- improves streaming reliability by falling back to the stream with ads if the API errors out,
-- lets you use a local server to enable additional features (not recommended).
+- lets you whitelist channels you wish ads to be played on,
+- lets you remove the token parameter from API requests,
+- falls back to the stream with ads if the API server errors out,
+- lets you redirect API requests to a local server.
 
-In addition, use [uBlock Origin](https://ublockorigin.com/) to:
+**Recommendations:**
 
-- remove banner ads,
-- block ads on VODs.
+- [uBlock Origin](https://ublockorigin.com/)
 
-Use [TTV LOL extended](https://github.com/younesaassila/ttv-lol-extended) to:
+  - remove banner ads,
+  - block ads on VODs.
 
-- watch sub-only VODs.
+- [TTV LOL PogU](https://github.com/younesaassila/ttv-lol-pogu)
+  - watch sub-only VODs.
 
 ## Installation
 

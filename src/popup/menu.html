@@ -7,8 +7,18 @@
 
   <body>
     <div class="container">
-      <div style="background-color: #202127; border-radius: 8px; margin: 30px">
+      <div class="logo-wrapper">
         <img width="60%" src="../assets/logo.png" />
+      </div>
+      <div id="stream-status">
+        <div>
+          <span id="redirected">●</span>
+        </div>
+        <div>
+          <span id="stream-id"></span>
+          <br />
+          <small id="reason"></small>
+        </div>
       </div>
       <div class="button-group">
         <a
@@ -93,5 +103,6 @@
         </a>
       </div>
     </div>
+    <script type="module" src="./popup.ts"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 {
   "name": "ttv-lol",
-  "version": "1.1.1-younesaassila",
+  "version": "1.2.0-younesaassila",
   "description": "TTV LOL removes livestream ads from twitch.tv",
   "@parcel/bundler-default": {
     "minBundles": 10000000,
@@ -19,7 +19,8 @@
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "dev": "parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
-    "lint": "prettier --write ./src",
+    "lint": "prettier --check ./src",
+    "lint:fix": "prettier --write ./src",
     "build": "parcel build src/manifest.json --target webext-prod --no-content-hash"
   },
   "keywords": [
@@ -33,15 +34,15 @@
   ],
   "license": "UNLICENSED",
   "dependencies": {
-    "private-ip": "^2.3.3"
+    "private-ip": "^2.3.4"
   },
   "devDependencies": {
-    "@parcel/config-webextension": "^2.6.1",
+    "@parcel/config-webextension": "^2.7.0",
     "@types/webextension-polyfill": "^0.9.0",
-    "parcel": "^2.6.1",
+    "parcel": "^2.7.0",
     "prettier": "^2.7.1",
-    "typescript": "^4.7.4",
-    "webextension-polyfill": "^0.9.0"
+    "typescript": "^4.8.2",
+    "webextension-polyfill": "^0.10.0"
   },
   "private": true
 }
