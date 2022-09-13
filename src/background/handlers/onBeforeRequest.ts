@@ -1,6 +1,7 @@
 import { PlaylistType, Token } from "../../types";
 import { TWITCH_API_URL_REGEX } from "../../common/ts/regexes";
 import { WebRequest } from "webextension-polyfill";
+import isChrome from "../../common/ts/isChrome";
 import store from "../../store";
 
 export default function onBeforeRequest(
@@ -73,8 +74,6 @@ export default function onBeforeRequest(
     }
   }
 
-  // @ts-ignore
-  const isChrome = !!chrome.app;
   if (isChrome) return redirectChrome(playlistType, streamId, searchParams);
   else return redirectFirefox(playlistType, streamId, searchParams);
 }
