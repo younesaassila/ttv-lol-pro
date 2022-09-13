@@ -1,12 +1,11 @@
+import { TTV_LOL_API_URL_REGEX } from "../../common/ts/regexes";
 import { WebRequest } from "webextension-polyfill";
 import store from "../../store";
 
 export default function onHeadersReceived(
   details: WebRequest.OnHeadersReceivedDetailsType
-) {
-  const ttvlolApiUrlRegex = /\/playlist|vod\/(.+)\.m3u8/gim;
-
-  const match = ttvlolApiUrlRegex.exec(details.url);
+): WebRequest.BlockingResponse {
+  const match = TTV_LOL_API_URL_REGEX.exec(details.url);
   if (match == null) return {};
   const [_, streamId] = match;
   if (streamId == null) return {};
@@ -15,8 +14,7 @@ export default function onHeadersReceived(
   if (isServerError) {
     const status = getStreamStatus(streamId);
     store.state.streamStatuses[streamId] = {
-      redirected: status.redirected,
-      reason: status.reason,
+      ...status,
       errors: [
         ...status.errors,
         {
@@ -34,8 +32,7 @@ export default function onHeadersReceived(
   } else {
     const status = getStreamStatus(streamId);
     store.state.streamStatuses[streamId] = {
-      redirected: status.redirected,
-      reason: status.reason,
+      ...status,
       errors: [],
     };
 

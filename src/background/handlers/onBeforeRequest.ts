@@ -1,13 +1,12 @@
-import { WebRequest } from "webextension-polyfill";
 import { PlaylistType, Token } from "../../types";
+import { TWITCH_API_URL_REGEX } from "../../common/ts/regexes";
+import { WebRequest } from "webextension-polyfill";
 import store from "../../store";
 
 export default function onBeforeRequest(
   details: WebRequest.OnBeforeRequestDetailsType
-) {
-  const twitchApiUrlRegex = /\/(hls|vod)\/(.+)\.m3u8(?:\?(.*))?$/gim;
-
-  const match = twitchApiUrlRegex.exec(details.url);
+): WebRequest.BlockingResponse | Promise<WebRequest.BlockingResponse> {
+  const match = TWITCH_API_URL_REGEX.exec(details.url);
   if (match == null) return {};
   const [_, _type, streamId, _params] = match;
   if (_type == null || streamId == null) return {};

@@ -12,6 +12,7 @@ type State = {
       redirected: boolean;
       reason: string;
       errors: { timestamp: number; status: number }[];
+      proxyCountry?: string;
     };
   };
 };
@@ -26,7 +27,7 @@ const getDefaultState = (): State => ({
 });
 
 function isProxy(value: any) {
-  return !!value[ProxyFlags.IS_PROXY];
+  return value != null && value[ProxyFlags.IS_PROXY];
 }
 function toRaw(value: any) {
   if (isProxy(value)) return value[ProxyFlags.RAW];

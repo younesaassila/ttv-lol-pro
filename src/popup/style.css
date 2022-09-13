@@ -102,3 +102,9 @@ body {
   font-size: 9pt;
   opacity: 0.8;
 }
+#stream-status #proxy-country {
+  display: inline-block;
+  font-size: 7pt;
+  margin-top: 5px;
+  opacity: 0.6;
+}
