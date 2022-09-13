@@ -22,6 +22,7 @@ export default function onHeadersReceived(
           status: details.statusCode,
         },
       ],
+      proxyCountry: undefined,
     };
     console.log(`${streamId}: ${status.errors.length + 1} errors`);
     console.log(`${streamId}: Redirect canceled (Error ${details.statusCode})`);
