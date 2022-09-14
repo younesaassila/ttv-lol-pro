@@ -38,10 +38,10 @@
   },
   "devDependencies": {
     "@parcel/config-webextension": "^2.7.0",
-    "@types/webextension-polyfill": "^0.9.0",
+    "@types/webextension-polyfill": "^0.9.1",
     "parcel": "^2.7.0",
     "prettier": "^2.7.1",
-    "typescript": "^4.8.2",
+    "typescript": "^4.8.3",
     "webextension-polyfill": "^0.10.0"
   },
   "private": true
