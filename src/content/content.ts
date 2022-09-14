@@ -1,10 +1,8 @@
+import { TWITCH_URL_REGEX } from "../common/ts/regexes";
 import store from "../store";
 
 store.addEventListener("load", () => {
-  const twitchUrlRegex =
-    /^https?:\/\/(?:www\.)?twitch\.tv\/(?:videos\/)?([a-z0-9-_]+)/gi;
-
-  const match = twitchUrlRegex.exec(location.href);
+  const match = TWITCH_URL_REGEX.exec(location.href);
   if (match == null) return;
   const [_, streamId] = match;
   if (streamId == null) return;
