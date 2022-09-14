@@ -9,7 +9,7 @@
   },
   "browser_action": {
     "default_icon": {
-      "128": "assets/icon.png"
+      "128": "assets/icon-gray.png"
     },
     "default_title": "TTV LOL",
     "default_popup": "popup/menu.html"
