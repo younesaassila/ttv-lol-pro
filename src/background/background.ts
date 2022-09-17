@@ -1,11 +1,7 @@
 import browser from "webextension-polyfill";
-import onActivated from "./handlers/onActivated";
 import onBeforeRequest from "./handlers/onBeforeRequest";
 import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
 import onHeadersReceived from "./handlers/onHeadersReceived";
-
-// Update browser action icon.
-browser.tabs.onActivated.addListener(onActivated);
 
 // Redirect the HLS master manifest request to TTV LOL's API.
 browser.webRequest.onBeforeRequest.addListener(
