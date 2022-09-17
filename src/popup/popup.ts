@@ -2,6 +2,7 @@ import { TWITCH_URL_REGEX } from "../common/ts/regexes";
 import $ from "../common/ts/$";
 import browser from "webextension-polyfill";
 import store from "../store";
+import toTitleCase from "../common/ts/toTitleCase";
 
 const streamStatusElement = $("#stream-status") as HTMLDivElement;
 const redirectedElement = $("#redirected") as HTMLSpanElement;
@@ -31,14 +32,14 @@ store.addEventListener("load", async () => {
     } else {
       redirectedElement.classList.add("error");
     }
-    streamIdElement.textContent = streamId;
+    streamIdElement.textContent = toTitleCase(streamId);
     if (status.reason) {
       reasonElement.textContent = status.reason;
     } else {
       reasonElement.style.display = "none";
     }
     if (status.proxyCountry) {
-      proxyCountryElement.textContent = `Proxy Country: ${status.proxyCountry}`;
+      proxyCountryElement.textContent = `Proxy country: ${status.proxyCountry}`;
     } else {
       proxyCountryElement.style.display = "none";
     }
