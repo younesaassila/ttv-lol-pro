@@ -90,6 +90,9 @@ function appendAddChannelInput() {
         "#whitelisted-channels-list > li:last-child > input"
       ) as HTMLInputElement;
       if (addChannelInput) addChannelInput.focus();
+    } else {
+      alert(`'${value}' is already whitelisted.`);
+      input.value = "";
     }
   });
   li.appendChild(input);
