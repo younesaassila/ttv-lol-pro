@@ -1,7 +1,7 @@
 html {
   background: #151619;
   color: #c9cbcd;
-  font-family: Open Sans, Segoe UI, sans-serif;
+  font-family: "Open Sans", "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -115,7 +115,10 @@ body {
   margin-bottom: 0;
   margin-left: 30px;
   margin-right: 30px;
-  padding: 8px 15px;
+  transition: background-color 150ms ease-in-out;
+}
+#whitelist-toggle-wrapper:hover {
+  background-color: #292b32;
 }
 #whitelist-toggle {
   display: none;
@@ -128,6 +131,6 @@ body {
   display: block;
   font-size: 11pt;
   font-weight: bold;
-  height: 100%;
-  width: 100%;
+  margin: 0;
+  padding: 8px 15px;
 }
