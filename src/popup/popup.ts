@@ -27,6 +27,23 @@ store.addEventListener("load", async () => {
   const [_, streamId] = match;
   if (streamId == null) return;
 
+  setStreamStatusElement(streamId);
+  setWhitelistToggleElement(streamId);
+
+  store.addEventListener("change", () => {
+    setStreamStatusElement(streamId);
+  });
+});
+
+function updateWhitelistToggleLabel(checked: boolean) {
+  if (checked) {
+    whitelistToggleLabel.textContent = "✓ Whitelisted";
+  } else {
+    whitelistToggleLabel.textContent = "+ Whitelist";
+  }
+}
+
+function setStreamStatusElement(streamId: string) {
   const status = store.state.streamStatuses[streamId];
   if (status != null) {
     streamStatusElement.style.display = "flex";
@@ -48,7 +65,14 @@ store.addEventListener("load", async () => {
     } else {
       proxyCountryElement.style.display = "none";
     }
+  } else {
+    streamStatusElement.style.display = "none";
+  }
+}
 
+function setWhitelistToggleElement(streamId: string) {
+  const status = store.state.streamStatuses[streamId];
+  if (status != null) {
     whitelistToggle.checked =
       store.state.whitelistedChannels.includes(streamId);
     whitelistToggle.addEventListener("change", e => {
@@ -65,15 +89,6 @@ store.addEventListener("load", async () => {
     updateWhitelistToggleLabel(whitelistToggle.checked);
     whitelistToggleWrapper.style.display = "block";
   } else {
-    streamStatusElement.style.display = "none";
     whitelistToggleWrapper.style.display = "none";
-  }
-});
-
-function updateWhitelistToggleLabel(checked: boolean) {
-  if (checked) {
-    whitelistToggleLabel.textContent = "✓ Whitelisted";
-  } else {
-    whitelistToggleLabel.textContent = "+ Whitelist";
   }
 }

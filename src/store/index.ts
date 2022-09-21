@@ -2,7 +2,7 @@ import browser from "webextension-polyfill";
 import { ProxyFlags } from "../types";
 
 type Area = "local" | "managed" | "session" | "sync";
-type EventType = "load";
+type EventType = "load" | "change";
 type State = {
   whitelistedChannels: string[];
   removeTokenFromRequests: boolean;
@@ -118,6 +118,7 @@ browser.storage.onChanged.addListener((changes, area) => {
   for (const [key, { newValue }] of Object.entries(changes)) {
     state[key] = newValue;
   }
+  dispatchEvent("change");
 });
 
 function addEventListener(type: EventType, listener: Function) {
