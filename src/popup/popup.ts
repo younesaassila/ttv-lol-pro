@@ -2,8 +2,8 @@ import { TWITCH_URL_REGEX } from "../common/ts/regexes";
 import $ from "../common/ts/$";
 import browser from "webextension-polyfill";
 import store from "../store";
-import toTitleCase from "../common/ts/toTitleCase";
 
+//#region HTML Elements
 const streamStatusElement = $("#stream-status") as HTMLDivElement;
 const redirectedElement = $("#redirected") as HTMLSpanElement;
 const streamIdElement = $("#stream-id") as HTMLSpanElement;
@@ -12,39 +12,26 @@ const proxyCountryElement = $("#proxy-country") as HTMLElement;
 const whitelistToggleWrapper = $("#whitelist-toggle-wrapper") as HTMLDivElement;
 const whitelistToggle = $("#whitelist-toggle") as HTMLInputElement;
 const whitelistToggleLabel = $("#whitelist-toggle-label") as HTMLLabelElement;
+//#endregion
 
 store.addEventListener("load", async () => {
-  const tabs = await browser.tabs.query({
-    active: true,
-    currentWindow: true,
-  });
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   const activeTab = tabs[0];
-  if (activeTab == null) return;
-  if (activeTab.url == null) return;
+  if (!activeTab || !activeTab.url) return;
 
   const match = TWITCH_URL_REGEX.exec(activeTab.url);
-  if (match == null) return;
+  if (!match) return;
   const [_, streamId] = match;
-  if (streamId == null) return;
+  if (!streamId) return;
 
   setStreamStatusElement(streamId);
   setWhitelistToggleElement(streamId);
-
-  store.addEventListener("change", () => {
-    setStreamStatusElement(streamId);
-  });
+  store.addEventListener("change", () => setStreamStatusElement(streamId));
 });
 
-function updateWhitelistToggleLabel(checked: boolean) {
-  if (checked) {
-    whitelistToggleLabel.textContent = "✓ Whitelisted";
-  } else {
-    whitelistToggleLabel.textContent = "+ Whitelist";
-  }
-}
-
 function setStreamStatusElement(streamId: string) {
-  const status = store.state.streamStatuses[streamId];
+  const streamIdLower = streamId.toLowerCase();
+  const status = store.state.streamStatuses[streamIdLower];
   if (status != null) {
     streamStatusElement.style.display = "flex";
     if (status.redirected) {
@@ -54,7 +41,7 @@ function setStreamStatusElement(streamId: string) {
       redirectedElement.classList.remove("success");
       redirectedElement.classList.add("error");
     }
-    streamIdElement.textContent = toTitleCase(streamId);
+    streamIdElement.textContent = streamId;
     if (status.reason) {
       reasonElement.textContent = status.reason;
     } else {
@@ -71,7 +58,8 @@ function setStreamStatusElement(streamId: string) {
 }
 
 function setWhitelistToggleElement(streamId: string) {
-  const status = store.state.streamStatuses[streamId];
+  const streamIdLower = streamId.toLowerCase();
+  const status = store.state.streamStatuses[streamIdLower];
   if (status != null) {
     whitelistToggle.checked =
       store.state.whitelistedChannels.includes(streamId);
@@ -90,5 +78,13 @@ function setWhitelistToggleElement(streamId: string) {
     whitelistToggleWrapper.style.display = "block";
   } else {
     whitelistToggleWrapper.style.display = "none";
+  }
+}
+
+function updateWhitelistToggleLabel(checked: boolean) {
+  if (checked) {
+    whitelistToggleLabel.textContent = "✓ Whitelisted";
+  } else {
+    whitelistToggleLabel.textContent = "+ Whitelist";
   }
 }
