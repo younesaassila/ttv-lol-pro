@@ -50,16 +50,17 @@ export default function onBeforeRequest(
       return {};
     }
 
-    if (store.state.removeTokenFromRequests) searchParams.delete("token");
-    else {
-      // Remove sensitive information from the token (when possible).
-      if (playlistType === PlaylistType.Playlist) {
-        delete token.device_id;
-        delete token.user_id;
-      }
+    if (store.state.removeTokenFromRequests) {
+      ["token", "sig"].forEach(param => searchParams.delete(param));
+    } else if (playlistType === PlaylistType.Playlist) {
+      // Remove sensitive information for live streams.
+      delete token.device_id;
+      delete token.user_id;
       delete token.user_ip;
+      searchParams.delete("sig");
       searchParams.set("token", JSON.stringify(token));
     }
+    // Token signature is checked for VODs, so we can't remove it.
   }
 
   const status = store.state.streamStatuses[streamId];
