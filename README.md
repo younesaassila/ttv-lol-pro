@@ -28,11 +28,11 @@
 
 <br />
 
-> ℹ️ **This is a fork of the original project at https://github.com/TTV-LOL/extensions**
+> ℹ️ This is a fork of the original project at https://github.com/TTV-LOL/extensions
 
 >
 
-TTV LOL PRO removes livestream ads from [twitch.tv](https://www.twitch.tv/)
+TTV LOL PRO removes livestream ads from [Twitch](https://www.twitch.tv/).
 
 This fork:
 
