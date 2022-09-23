@@ -16,7 +16,7 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "update_url": "https://younesaassila.github.io/ttv-lol/updates.json"
+      "update_url": "https://younesaassila.github.io/ttv-lol-pro/updates.json"
     }
   },
   "content_scripts": [

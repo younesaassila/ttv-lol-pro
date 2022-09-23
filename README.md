@@ -6,22 +6,22 @@
 </h1>
 
 <div align="center">
-  <a href="https://github.com/younesaassila/ttv-lol/issues">
+  <a href="https://github.com/younesaassila/ttv-lol-pro/issues">
     <img
       alt="GitHub issues"
-      src="https://img.shields.io/github/issues/younesaassila/ttv-lol"
+      src="https://img.shields.io/github/issues/younesaassila/ttv-lol-pro"
     />
   </a>
-  <a href="https://github.com/younesaassila/ttv-lol/network">
+  <a href="https://github.com/younesaassila/ttv-lol-pro/network">
     <img
       alt="GitHub forks"
-      src="https://img.shields.io/github/forks/younesaassila/ttv-lol"
+      src="https://img.shields.io/github/forks/younesaassila/ttv-lol-pro"
     />
   </a>
-  <a href="https://github.com/younesaassila/ttv-lol/stargazers">
+  <a href="https://github.com/younesaassila/ttv-lol-pro/stargazers">
     <img
       alt="GitHub stars"
-      src="https://img.shields.io/github/stars/younesaassila/ttv-lol"
+      src="https://img.shields.io/github/stars/younesaassila/ttv-lol-pro"
     />
   </a>
 </div>
