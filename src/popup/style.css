@@ -124,7 +124,7 @@ body {
   display: none;
 }
 #whitelist-toggle:checked + #whitelist-toggle-label {
-  color: #bc8fff;
+  color: #d1b3ff;
 }
 #whitelist-toggle-label {
   cursor: pointer;
