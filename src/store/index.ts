@@ -1,29 +1,18 @@
+// TODO: Refactor to use a Store class with exported instances for each area.
+
 import browser from "webextension-polyfill";
-import { ProxyFlags } from "../types";
+import { ProxyFlags, State } from "../types";
 
-type Area = "local" | "managed" | "session" | "sync";
+type StorageArea = "local" | "managed" | "session" | "sync";
 type EventType = "load" | "change";
-type State = {
-  whitelistedChannels: string[];
-  removeTokenFromRequests: boolean;
-  servers: string[];
-  streamStatuses: {
-    [streamId: string]: {
-      redirected: boolean;
-      reason: string;
-      errors: { timestamp: number; status: number }[];
-      proxyCountry?: string;
-    };
-  };
-};
 
-const areaName: Area = "local";
+const areaName: StorageArea = "local";
 const listenersByEvent: { [type: string]: Function[] } = {};
 const getDefaultState = (): State => ({
-  whitelistedChannels: [],
   removeTokenFromRequests: false,
   servers: ["https://api.ttv.lol"],
   streamStatuses: {},
+  whitelistedChannels: [],
 });
 
 function isProxy(value: any) {
