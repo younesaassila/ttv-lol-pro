@@ -38,10 +38,10 @@
             <span class="tag">Recommended for streamers</span>
             <br />
             <small>
-              TTV LOL already removes <code>device_id</code>,
-              <code>user_id</code>, and <code>user_ip</code>
-              parameters when possible. If enabled and using api.ttv.lol, VODs
-              might show ads.
+              TTV LOL removes <code>device_id</code>, <code>user_id</code>, and
+              <code>user_ip</code> parameters for live streams by default. Since
+              TTV LOL's API checks the token signature for VODs, VODs will not
+              be proxied if you enable this option.
             </small>
           </li>
         </ul>
