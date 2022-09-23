@@ -32,7 +32,7 @@
   "contributors": [
     "Younes Aassila (https://github.com/younesaassila)"
   ],
-  "license": "UNLICENSED",
+  "license": "GPL-3.0",
   "dependencies": {
     "private-ip": "^2.3.4"
   },
