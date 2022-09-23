@@ -1,7 +1,7 @@
 <h1 align="center">
   <img src="src/assets/icon.png" height="100" width="100" alt="Icon" />
   <br />
-  TTV LOL
+  TTV LOL PRO
   <br />
 </h1>
 
@@ -32,7 +32,7 @@
 
 >
 
-[TTV LOL](https://ttv.lol/) removes livestream ads from [twitch.tv](https://www.twitch.tv/)
+TTV LOL PRO removes livestream ads from [twitch.tv](https://www.twitch.tv/)
 
 This fork:
 

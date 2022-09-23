@@ -1,13 +1,13 @@
-import { WebRequest } from "webextension-polyfill";
 import { PlaylistType, Token } from "../../types";
+import { TWITCH_API_URL_REGEX } from "../../common/ts/regexes";
+import { WebRequest } from "webextension-polyfill";
+import isChrome from "../../common/ts/isChrome";
 import store from "../../store";
 
 export default function onBeforeRequest(
   details: WebRequest.OnBeforeRequestDetailsType
-) {
-  const twitchApiUrlRegex = /\/(hls|vod)\/(.+)\.m3u8(?:\?(.*))?$/gim;
-
-  const match = twitchApiUrlRegex.exec(details.url);
+): WebRequest.BlockingResponse | Promise<WebRequest.BlockingResponse> {
+  const match = TWITCH_API_URL_REGEX.exec(details.url);
   if (match == null) return {};
   const [_, _type, streamId, _params] = match;
   if (_type == null || streamId == null) return {};
@@ -50,16 +50,17 @@ export default function onBeforeRequest(
       return {};
     }
 
-    if (store.state.removeTokenFromRequests) searchParams.delete("token");
-    else {
-      // Remove sensitive information from the token (when possible).
-      if (playlistType === PlaylistType.Playlist) {
-        delete token.device_id;
-        delete token.user_id;
-      }
+    if (store.state.removeTokenFromRequests) {
+      ["token", "sig"].forEach(param => searchParams.delete(param));
+    } else if (playlistType === PlaylistType.Playlist) {
+      // Remove sensitive information for live streams.
+      delete token.device_id;
+      delete token.user_id;
       delete token.user_ip;
+      searchParams.delete("sig");
       searchParams.set("token", JSON.stringify(token));
     }
+    // Token signature is checked for VODs, so we can't remove it.
   }
 
   const status = store.state.streamStatuses[streamId];
@@ -74,8 +75,6 @@ export default function onBeforeRequest(
     }
   }
 
-  // @ts-ignore
-  const isChrome = !!chrome.app;
   if (isChrome) return redirectChrome(playlistType, streamId, searchParams);
   else return redirectFirefox(playlistType, streamId, searchParams);
 }

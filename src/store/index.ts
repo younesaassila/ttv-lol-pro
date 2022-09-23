@@ -1,32 +1,22 @@
+// TODO: Refactor to use a Store class with exported instances for each area.
+
 import browser from "webextension-polyfill";
-import { ProxyFlags } from "../types";
+import { ProxyFlags, State } from "../types";
 
-type Area = "local" | "managed" | "session" | "sync";
-type EventType = "load";
-type State = {
-  whitelistedChannels: string[];
-  removeTokenFromRequests: boolean;
-  servers: string[];
-  streamStatuses: {
-    [streamId: string]: {
-      redirected: boolean;
-      reason: string;
-      errors: { timestamp: number; status: number }[];
-    };
-  };
-};
+type StorageArea = "local" | "managed" | "session" | "sync";
+type EventType = "load" | "change";
 
-const areaName: Area = "local";
+const areaName: StorageArea = "local";
 const listenersByEvent: { [type: string]: Function[] } = {};
 const getDefaultState = (): State => ({
-  whitelistedChannels: [],
   removeTokenFromRequests: false,
   servers: ["https://api.ttv.lol"],
   streamStatuses: {},
+  whitelistedChannels: [],
 });
 
 function isProxy(value: any) {
-  return !!value[ProxyFlags.IS_PROXY];
+  return value != null && value[ProxyFlags.IS_PROXY];
 }
 function toRaw(value: any) {
   if (isProxy(value)) return value[ProxyFlags.RAW];
@@ -117,6 +107,7 @@ browser.storage.onChanged.addListener((changes, area) => {
   for (const [key, { newValue }] of Object.entries(changes)) {
     state[key] = newValue;
   }
+  dispatchEvent("change");
 });
 
 function addEventListener(type: EventType, listener: Function) {

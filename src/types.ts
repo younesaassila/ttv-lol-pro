@@ -47,3 +47,22 @@ export const enum ProxyFlags {
   IS_PROXY = "__isProxy",
   RAW = "__raw",
 }
+
+export interface StreamStatusError {
+  timestamp: number;
+  status: number;
+}
+
+export interface StreamStatus {
+  redirected: boolean;
+  reason: string;
+  errors: StreamStatusError[];
+  proxyCountry?: string;
+}
+
+export interface State {
+  removeTokenFromRequests: boolean;
+  servers: string[];
+  streamStatuses: Record<string, StreamStatus>;
+  whitelistedChannels: string[];
+}
