@@ -1,7 +1,5 @@
-import {
-  TTV_LOL_API_URL_REGEX,
-  MANIFEST_PROXY_COUNTRY_REGEX,
-} from "../../common/ts/regexes";
+import { MANIFEST_PROXY_COUNTRY_REGEX } from "../../common/ts/regexes";
+import { TTV_LOL_API_URL_REGEX } from "../../common/ts/regexes";
 import { WebRequest } from "webextension-polyfill";
 import browser from "webextension-polyfill";
 import isChrome from "../../common/ts/isChrome";
