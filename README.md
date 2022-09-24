@@ -49,10 +49,20 @@ This fork:
   - remove banner ads,
   - block ads on VODs.
 
-- [TTV LOL PogU](https://github.com/younesaassila/ttv-lol-pogu)
-  - watch sub-only VODs.
+## Screenshots
+
+![Popup](https://i.imgur.com/VucfuL6.png)
 
 ## Installation
+
+### Firefox (Recommended)
+
+`✅ The add-on updates automatically.`
+
+1. Download the latest version of this extension in the "Releases" section (XPI file)
+1. Go to `about:addons`
+1. Click on the gear icon then select "Install Add-on From File…"
+1. Select the XPI file you just downloaded
 
 ### Chrome
 
@@ -64,12 +74,3 @@ This fork:
 1. Turn on `Developer mode`
 1. Click on `Load unpacked`
 1. Select the unzipped folder you just created
-
-### Firefox
-
-`✅ The add-on updates automatically.`
-
-1. Download the latest version of this extension in the "Releases" section (XPI file)
-1. Go to `about:addons`
-1. Click on the gear icon then select "Install Add-on From File…"
-1. Select the XPI file you just downloaded
