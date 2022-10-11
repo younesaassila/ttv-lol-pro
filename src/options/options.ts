@@ -11,10 +11,6 @@ const removeTokenFromRequestsCheckbox = $(
 const serverSelect = $("#server-select") as HTMLSelectElement;
 const localServerInput = $("#local-server-input") as HTMLInputElement;
 
-const knownLocalUrls = {
-  TTV_LOL_POGU_URL: "http://localhost:38565",
-};
-
 store.addEventListener("load", () => {
   let whitelistedChannels = store.state.whitelistedChannels;
   let removeTokenFromRequests = store.state.removeTokenFromRequests;
@@ -26,16 +22,9 @@ store.addEventListener("load", () => {
   appendAddChannelInput();
   removeTokenFromRequestsCheckbox.checked = removeTokenFromRequests;
   if (servers.length && servers[0] != "https://api.ttv.lol") {
-    switch (servers[0]) {
-      case knownLocalUrls.TTV_LOL_POGU_URL:
-        serverSelect.value = "ttv-lol-pogu";
-        break;
-      default:
-        serverSelect.value = "local";
-        localServerInput.value = servers[0];
-        localServerInput.style.display = "inline-block";
-        break;
-    }
+    serverSelect.value = "local";
+    localServerInput.value = servers[0];
+    localServerInput.style.display = "inline-block";
   }
 });
 
@@ -131,11 +120,6 @@ serverSelect.addEventListener("change", e => {
       // Local server
       localServerInput.style.display = "inline-block";
       setLocalServer(localServerInput.value);
-      break;
-    case "ttv-lol-pogu":
-      // TTV LOL PogU
-      localServerInput.style.display = "none";
-      setLocalServer(knownLocalUrls.TTV_LOL_POGU_URL);
       break;
     default:
       // TTV LOL API
