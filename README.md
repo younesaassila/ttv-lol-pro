@@ -12,16 +12,16 @@
       src="https://img.shields.io/github/issues/younesaassila/ttv-lol-pro"
     />
   </a>
-  <a href="https://github.com/younesaassila/ttv-lol-pro/network">
-    <img
-      alt="GitHub forks"
-      src="https://img.shields.io/github/forks/younesaassila/ttv-lol-pro"
-    />
-  </a>
   <a href="https://github.com/younesaassila/ttv-lol-pro/stargazers">
     <img
       alt="GitHub stars"
       src="https://img.shields.io/github/stars/younesaassila/ttv-lol-pro"
+    />
+  </a>
+  <a href="https://github.com/younesaassila/ttv-lol-pro/releases">
+    <img
+      alt="GitHub all releases"
+      src="https://img.shields.io/github/downloads/younesaassila/ttv-lol-pro/total"
     />
   </a>
 </div>
