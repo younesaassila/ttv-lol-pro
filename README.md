@@ -55,11 +55,11 @@ This fork:
 
 ## Installation
 
-**⚠️ Please disable/uninstall the official TTV LOL extension to avoid conflicts.**
+`⚠️ Please disable/uninstall the official TTV LOL extension to avoid conflicts.`
 
 ### Firefox (Recommended)
 
-`✅ The add-on updates automatically.`
+> ✅ The add-on updates automatically.
 
 1. Download the latest version of this extension in the "Releases" section (XPI file)
 1. Go to `about:addons`
@@ -68,7 +68,7 @@ This fork:
 
 ### Chrome
 
-`❌ The extension does not update automatically.`
+> ❌ The extension does not update automatically.
 
 1. Download the latest version of this extension in the "Releases" section (ZIP file)
 1. Unzip the ZIP file you just downloaded
