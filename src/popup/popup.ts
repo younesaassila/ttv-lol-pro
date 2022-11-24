@@ -1,6 +1,6 @@
-import { TWITCH_URL_REGEX } from "../common/ts/regexes";
-import $ from "../common/ts/$";
 import browser from "webextension-polyfill";
+import $ from "../common/ts/$";
+import { TWITCH_URL_REGEX } from "../common/ts/regexes";
 import store from "../store";
 
 //#region HTML Elements

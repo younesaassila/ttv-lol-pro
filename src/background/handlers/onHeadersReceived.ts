@@ -1,5 +1,5 @@
-import { TTV_LOL_API_URL_REGEX } from "../../common/ts/regexes";
 import { WebRequest } from "webextension-polyfill";
+import { TTV_LOL_API_URL_REGEX } from "../../common/ts/regexes";
 import store from "../../store";
 
 export default function onHeadersReceived(

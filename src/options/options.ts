@@ -1,6 +1,6 @@
+import isPrivateIP from "private-ip";
 import $ from "../common/ts/$";
 import store from "../store";
-import isPrivateIP from "private-ip";
 
 const whitelistedChannelsList = $(
   "#whitelisted-channels-list"

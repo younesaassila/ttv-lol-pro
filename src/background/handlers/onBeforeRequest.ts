@@ -1,8 +1,8 @@
-import { PlaylistType, Token } from "../../types";
-import { TWITCH_API_URL_REGEX } from "../../common/ts/regexes";
 import { WebRequest } from "webextension-polyfill";
 import isChrome from "../../common/ts/isChrome";
+import { TWITCH_API_URL_REGEX } from "../../common/ts/regexes";
 import store from "../../store";
+import { PlaylistType, Token } from "../../types";
 
 export default function onBeforeRequest(
   details: WebRequest.OnBeforeRequestDetailsType

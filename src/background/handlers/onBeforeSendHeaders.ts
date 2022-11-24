@@ -1,8 +1,9 @@
-import { MANIFEST_PROXY_COUNTRY_REGEX } from "../../common/ts/regexes";
-import { TTV_LOL_API_URL_REGEX } from "../../common/ts/regexes";
-import { WebRequest } from "webextension-polyfill";
-import browser from "webextension-polyfill";
+import browser, { WebRequest } from "webextension-polyfill";
 import isChrome from "../../common/ts/isChrome";
+import {
+  MANIFEST_PROXY_COUNTRY_REGEX,
+  TTV_LOL_API_URL_REGEX,
+} from "../../common/ts/regexes";
 import store from "../../store";
 
 function extractProxyCountry(string: string) {
