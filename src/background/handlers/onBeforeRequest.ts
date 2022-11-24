@@ -65,10 +65,10 @@ export default function onBeforeRequest(
 
   const status = store.state.streamStatuses[streamId];
   if (status) {
-    if (
-      status.errors.filter(error => Date.now() - error.timestamp < 20000)
-        .length >= 2
-    ) {
+    const recentErrors = status.errors.filter(
+      error => Date.now() - error.timestamp <= 20000 // 20s
+    );
+    if (recentErrors.length >= 2) {
       console.log(`${streamId}: No redirect (Too many errors occurred)`);
       setStreamStatus(streamId, false, "Too many errors occurred");
       return {};
