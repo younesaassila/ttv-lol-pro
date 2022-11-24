@@ -14,7 +14,10 @@ const whitelistToggle = $("#whitelist-toggle") as HTMLInputElement;
 const whitelistToggleLabel = $("#whitelist-toggle-label") as HTMLLabelElement;
 //#endregion
 
-store.addEventListener("load", async () => {
+if (store.readyState === "complete") main();
+else store.addEventListener("load", main);
+
+async function main() {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   const activeTab = tabs[0];
   if (!activeTab || !activeTab.url) return;
@@ -27,7 +30,7 @@ store.addEventListener("load", async () => {
   setStreamStatusElement(streamId);
   setWhitelistToggleElement(streamId);
   store.addEventListener("change", () => setStreamStatusElement(streamId));
-});
+}
 
 function setStreamStatusElement(streamId: string) {
   const streamIdLower = streamId.toLowerCase();

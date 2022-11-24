@@ -2,6 +2,7 @@ import isPrivateIP from "private-ip";
 import $ from "../common/ts/$";
 import store from "../store";
 
+//#region HTML Elements
 const whitelistedChannelsList = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
@@ -10,8 +11,12 @@ const removeTokenFromRequestsCheckbox = $(
 ) as HTMLInputElement;
 const serverSelect = $("#server-select") as HTMLSelectElement;
 const localServerInput = $("#local-server-input") as HTMLInputElement;
+//#endregion
 
-store.addEventListener("load", () => {
+if (store.readyState === "complete") main();
+else store.addEventListener("load", main);
+
+function main() {
   let whitelistedChannels = store.state.whitelistedChannels;
   let removeTokenFromRequests = store.state.removeTokenFromRequests;
   let servers = store.state.servers;
@@ -26,7 +31,7 @@ store.addEventListener("load", () => {
     localServerInput.value = servers[0];
     localServerInput.style.display = "inline-block";
   }
-});
+}
 
 function appendWhitelistedChannel(whitelistedChannel: string) {
   const li = document.createElement("li");
