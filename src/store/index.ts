@@ -16,7 +16,7 @@ const getDefaultState = (): State => ({
 });
 
 function isProxy(value: any) {
-  return value != null && value[ProxyFlags.IS_PROXY];
+  return value && value[ProxyFlags.IS_PROXY];
 }
 function toRaw(value: any) {
   if (isProxy(value)) return value[ProxyFlags.RAW];

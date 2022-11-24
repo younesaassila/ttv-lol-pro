@@ -7,7 +7,7 @@ store.addEventListener("load", () => {
   const [, streamId] = match;
   if (!streamId) return;
 
-  if (store.state.streamStatuses[streamId] != null) {
+  if (store.state.streamStatuses[streamId]) {
     // Clear errors for stream on page load/reload.
     store.state.streamStatuses[streamId].errors = [];
   }

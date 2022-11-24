@@ -32,7 +32,7 @@ store.addEventListener("load", async () => {
 function setStreamStatusElement(streamId: string) {
   const streamIdLower = streamId.toLowerCase();
   const status = store.state.streamStatuses[streamIdLower];
-  if (status != null) {
+  if (status) {
     streamStatusElement.style.display = "flex";
     if (status.redirected) {
       redirectedElement.classList.remove("error");
@@ -60,7 +60,7 @@ function setStreamStatusElement(streamId: string) {
 function setWhitelistToggleElement(streamId: string) {
   const streamIdLower = streamId.toLowerCase();
   const status = store.state.streamStatuses[streamIdLower];
-  if (status != null) {
+  if (status) {
     whitelistToggle.checked =
       store.state.whitelistedChannels.includes(streamId);
     whitelistToggle.addEventListener("change", e => {

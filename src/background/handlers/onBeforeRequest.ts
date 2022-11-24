@@ -32,7 +32,7 @@ export default function onBeforeRequest(
     token = JSON.parse(`${searchParams.get("token")}`);
   } catch {}
 
-  if (token != null) {
+  if (token) {
     // No redirect if the user is a subscriber, has Twitch Turbo, or is a partner.
     if (
       token.subscriber === true ||
@@ -64,7 +64,7 @@ export default function onBeforeRequest(
   }
 
   const status = store.state.streamStatuses[streamId];
-  if (status != null) {
+  if (status) {
     if (
       status.errors.filter(error => Date.now() - error.timestamp < 20000)
         .length >= 2
