@@ -58,7 +58,7 @@ body {
 .icon {
   margin-bottom: -3px;
 }
-.buton-text {
+.button-text {
   margin-bottom: 10px;
 }
 .button-arrow .arrow-head {
@@ -80,6 +80,9 @@ body {
 
 #stream-status {
   background-color: #202127;
+  border-bottom: 1px solid hsl(210, 4%, 25%);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   border-radius: 8px;
   display: none;
   gap: 7px;
@@ -110,8 +113,10 @@ body {
 #whitelist-toggle-wrapper {
   background-color: #202127;
   border-radius: 8px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
   display: none;
-  margin-top: 5px;
+  margin-top: 0;
   margin-bottom: 0;
   margin-left: 30px;
   margin-right: 30px;
@@ -124,7 +129,7 @@ body {
   display: none;
 }
 #whitelist-toggle:checked + #whitelist-toggle-label {
-  color: #2997ff;
+  color: #baaadb;
 }
 #whitelist-toggle-label {
   cursor: pointer;
@@ -132,5 +137,5 @@ body {
   font-size: 11pt;
   font-weight: bold;
   margin: 0;
-  padding: 8px 15px;
+  padding: 10px 15px;
 }
