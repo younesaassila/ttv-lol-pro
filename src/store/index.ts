@@ -130,7 +130,7 @@ async function init() {
   const storage = await browser.storage[areaName].get(null);
   // Set default values for undefined properties.
   for (const [key, value] of Object.entries(getDefaultState())) {
-    if (storage[key] == null) storage[key] = value;
+    if (!storage[key]) storage[key] = value;
   }
   // Update state.
   for (const [key, value] of Object.entries(storage)) {

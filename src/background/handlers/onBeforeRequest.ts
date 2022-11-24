@@ -8,9 +8,9 @@ export default function onBeforeRequest(
   details: WebRequest.OnBeforeRequestDetailsType
 ): WebRequest.BlockingResponse | Promise<WebRequest.BlockingResponse> {
   const match = TWITCH_API_URL_REGEX.exec(details.url);
-  if (match == null) return {};
-  const [_, _type, streamId, _params] = match;
-  if (_type == null || streamId == null) return {};
+  if (!match) return {};
+  const [, _type, streamId, _params] = match;
+  if (!_type || !streamId) return {};
 
   const playlistType =
     _type.toLowerCase() === "vod" ? PlaylistType.VOD : PlaylistType.Playlist;
@@ -138,7 +138,7 @@ function redirectFirefox(
     tryRedirect(servers[i]);
 
     function tryRedirect(server: string) {
-      if (server == null) {
+      if (!server) {
         // We've reached the end of the `servers` array.
         console.log(`${streamId}: No redirect (All pings failed)`);
         setStreamStatus(streamId, false, "All server pings failed");

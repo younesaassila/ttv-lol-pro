@@ -6,9 +6,9 @@ export default function onHeadersReceived(
   details: WebRequest.OnHeadersReceivedDetailsType
 ): WebRequest.BlockingResponse {
   const match = TTV_LOL_API_URL_REGEX.exec(details.url);
-  if (match == null) return {};
-  const [_, streamId] = match;
-  if (streamId == null) return {};
+  if (!match) return {};
+  const [, streamId] = match;
+  if (!streamId) return {};
 
   const isServerError = 500 <= details.statusCode && details.statusCode < 600;
   if (isServerError) {

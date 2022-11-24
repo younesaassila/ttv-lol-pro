@@ -7,8 +7,8 @@ import store from "../../store";
 
 function extractProxyCountry(string: string) {
   const match = MANIFEST_PROXY_COUNTRY_REGEX.exec(string);
-  if (match == null) return;
-  const [_, proxyCountry] = match;
+  if (!match) return;
+  const [, proxyCountry] = match;
   return proxyCountry;
 }
 
@@ -43,9 +43,9 @@ export default function onBeforeSendHeaders(
   if (isChrome) return response;
 
   const match = TTV_LOL_API_URL_REGEX.exec(details.url);
-  if (match == null) return response;
-  const [_, streamId] = match;
-  if (streamId == null) return response;
+  if (!match) return response;
+  const [, streamId] = match;
+  if (!streamId) return response;
 
   const filter = browser.webRequest.filterResponseData(details.requestId);
   const decoder = new TextDecoder("utf-8");

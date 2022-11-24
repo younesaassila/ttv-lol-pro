@@ -21,7 +21,7 @@ store.addEventListener("load", async () => {
 
   const match = TWITCH_URL_REGEX.exec(activeTab.url);
   if (!match) return;
-  const [_, streamId] = match;
+  const [, streamId] = match;
   if (!streamId) return;
 
   setStreamStatusElement(streamId);
