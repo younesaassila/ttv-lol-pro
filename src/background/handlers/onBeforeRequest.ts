@@ -97,7 +97,7 @@ function redirectChrome(
   playlistType: PlaylistType,
   streamId: string,
   searchParams: URLSearchParams
-) {
+): WebRequest.BlockingResponse {
   const servers = store.state.servers;
 
   for (const server of servers) {

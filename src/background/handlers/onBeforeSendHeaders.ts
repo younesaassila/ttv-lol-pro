@@ -6,30 +6,11 @@ import {
 } from "../../common/ts/regexes";
 import store from "../../store";
 
-function extractProxyCountry(string: string) {
-  const match = MANIFEST_PROXY_COUNTRY_REGEX.exec(string);
-  if (!match) return;
-  const [, proxyCountry] = match;
-  return proxyCountry;
-}
-
-function setStreamStatusProxyCountry(
-  streamId: string,
-  proxyCountry: string | undefined = undefined
-) {
-  if (!proxyCountry) return;
-  const status = store.state.streamStatuses[streamId];
-  store.state.streamStatuses[streamId] = {
-    ...status,
-    proxyCountry: proxyCountry,
-  };
-}
-
 export default function onBeforeSendHeaders(
   details: WebRequest.OnBeforeSendHeadersDetailsType
 ): WebRequest.BlockingResponse {
   if (!details.requestHeaders) {
-    console.error("details.requestHeaders is undefined");
+    console.error("`details.requestHeaders` is undefined");
     return {};
   }
   details.requestHeaders.push({
@@ -52,8 +33,8 @@ export default function onBeforeSendHeaders(
   const decoder = new TextDecoder("utf-8");
 
   filter.ondata = event => {
-    const string = decoder.decode(event.data, { stream: true });
-    const proxyCountry = extractProxyCountry(string);
+    const data = decoder.decode(event.data, { stream: true });
+    const proxyCountry = extractProxyCountry(data);
     if (proxyCountry) {
       setStreamStatusProxyCountry(streamId, proxyCountry);
     }
@@ -65,4 +46,23 @@ export default function onBeforeSendHeaders(
   filter.onstop = () => filter.disconnect();
 
   return response;
+}
+
+function extractProxyCountry(data: string) {
+  const match = MANIFEST_PROXY_COUNTRY_REGEX.exec(data);
+  if (!match) return;
+  const [, proxyCountry] = match;
+  return proxyCountry;
+}
+
+function setStreamStatusProxyCountry(
+  streamId: string,
+  proxyCountry: string | undefined = undefined
+) {
+  if (!proxyCountry) return;
+  const status = store.state.streamStatuses[streamId];
+  store.state.streamStatuses[streamId] = {
+    ...status,
+    proxyCountry: proxyCountry,
+  };
 }
