@@ -138,7 +138,7 @@ function redirectFirefox(
     tryRedirect(servers[i]);
 
     function tryRedirect(server: string) {
-      if (!server) {
+      if (server == null) {
         // We've reached the end of the `servers` array.
         console.log(`${streamId}: No redirect (All pings failed)`);
         setStreamStatus(streamId, false, "All server pings failed");
