@@ -5,7 +5,7 @@ import { EventType, ReadyState, State, StorageArea } from "./types";
 
 class Store {
   private _state = getDefaultState();
-  private listenersByEvent: Record<string, Function[]> = {};
+  private _listenersByEvent: Record<string, Function[]> = {};
 
   areaName: StorageArea;
   readyState: ReadyState = "loading";
@@ -23,13 +23,13 @@ class Store {
       }
       this.dispatchEvent("change");
     });
-    this.init().then(() => {
+    this._init().then(() => {
       this.readyState = "complete";
       this.dispatchEvent("load");
     });
   }
 
-  async init() {
+  private async _init() {
     // Retrieve the entire storage contents.
     // See https://stackoverflow.com/questions/18150774/get-all-keys-from-chrome-storage
     const storage = await browser.storage[this.areaName].get(null);
@@ -44,18 +44,18 @@ class Store {
   }
 
   addEventListener(type: EventType, listener: Function) {
-    if (!this.listenersByEvent[type]) this.listenersByEvent[type] = [];
-    this.listenersByEvent[type].push(listener);
+    if (!this._listenersByEvent[type]) this._listenersByEvent[type] = [];
+    this._listenersByEvent[type].push(listener);
   }
 
   removeEventListener(type: EventType, listener: Function) {
-    if (!this.listenersByEvent[type]) return;
-    const index = this.listenersByEvent[type].findIndex(x => x === listener);
-    if (index !== -1) this.listenersByEvent[type].splice(index, 1);
+    if (!this._listenersByEvent[type]) return;
+    const index = this._listenersByEvent[type].findIndex(x => x === listener);
+    if (index !== -1) this._listenersByEvent[type].splice(index, 1);
   }
 
   dispatchEvent(type: EventType) {
-    const listeners = this.listenersByEvent[type] || [];
+    const listeners = this._listenersByEvent[type] || [];
     listeners.forEach(listener => listener());
   }
 }
