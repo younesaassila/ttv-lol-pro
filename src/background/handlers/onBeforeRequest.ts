@@ -16,9 +16,12 @@ export default function onBeforeRequest(
     _type.toLowerCase() === "vod" ? PlaylistType.VOD : PlaylistType.Playlist;
   const searchParams = new URLSearchParams(_params);
 
+  // No redirect if VOD proxying is disabled.
   if (playlistType === PlaylistType.VOD && store.state.disableVodRedirect) {
-    console.log(`${streamId}: VOD proxying is disabled (Options)`);
-    setStreamStatus(streamId, false, "VOD proxying is disabled (Options)");
+    console.log(
+      `${streamId}: No redirect (VOD proxying is disabled in Options)`
+    );
+    setStreamStatus(streamId, false, "VOD proxying is disabled in Options");
     return {};
   }
 
@@ -60,7 +63,7 @@ export default function onBeforeRequest(
       // Remove sensitive information for live streams.
       ["token", "sig"].forEach(param => searchParams.delete(param));
     }
-    // Note: TTV LOL's API requires Twitch token for VODs, so we can't remove it.
+    // Note: TTV LOL's API requires a Twitch token for VODs, so we can't remove it.
   }
 
   const status = store.state.streamStatuses[streamId];
