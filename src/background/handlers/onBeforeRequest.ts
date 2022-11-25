@@ -56,17 +56,11 @@ export default function onBeforeRequest(
       return {};
     }
 
-    if (store.state.removeTokenFromRequests) {
-      ["token", "sig"].forEach(param => searchParams.delete(param));
-    } else if (playlistType === PlaylistType.Playlist) {
+    if (playlistType === PlaylistType.Playlist) {
       // Remove sensitive information for live streams.
-      delete token.device_id;
-      delete token.user_id;
-      delete token.user_ip;
-      searchParams.delete("sig");
-      searchParams.set("token", JSON.stringify(token));
+      ["token", "sig"].forEach(param => searchParams.delete(param));
     }
-    // Token signature is checked for VODs, so we can't remove it.
+    // Note: TTV LOL's API requires Twitch token for VODs, so we can't remove it.
   }
 
   const status = store.state.streamStatuses[streamId];
