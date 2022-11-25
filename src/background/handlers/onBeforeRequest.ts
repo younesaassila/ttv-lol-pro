@@ -16,6 +16,12 @@ export default function onBeforeRequest(
     _type.toLowerCase() === "vod" ? PlaylistType.VOD : PlaylistType.Playlist;
   const searchParams = new URLSearchParams(_params);
 
+  if (playlistType === PlaylistType.VOD && store.state.disableVodRedirect) {
+    console.log(`${streamId}: VOD proxying is disabled (Options)`);
+    setStreamStatus(streamId, false, "VOD proxying is disabled (Options)");
+    return {};
+  }
+
   // No redirect if the channel is whitelisted.
   const channelName = streamId.toLowerCase();
   const isWhitelistedChannel = store.state.whitelistedChannels.some(

@@ -5,6 +5,7 @@ export type ReadyState = "loading" | "complete";
 export type StorageArea = "local" | "managed" | "session" | "sync";
 
 export interface State {
+  disableVodRedirect: boolean;
   removeTokenFromRequests: boolean;
   servers: string[];
   streamStatuses: Record<string, StreamStatus>;

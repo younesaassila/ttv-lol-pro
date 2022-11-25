@@ -29,19 +29,37 @@
           <li>
             <input
               type="checkbox"
+              name="disable-vod-redirect-checkbox"
+              id="disable-vod-redirect-checkbox"
+            />
+            <label for="disable-vod-redirect-checkbox">
+              Disable VOD proxying
+            </label>
+            <span class="tag">Recommended</span>
+            <br />
+            <small>
+              TTV LOL's API requires your Twitch token (containing sensitive
+              information) to remove ads from VODs. To protect your privacy, and
+              since most ad blockers (like uBlock Origin) already remove ads
+              from VODs, this option is enabled by default.
+            </small>
+          </li>
+          <li>
+            <input
+              type="checkbox"
               name="remove-token-checkbox"
               id="remove-token-checkbox"
             />
             <label for="remove-token-checkbox">
               Remove token from API requests
             </label>
-            <span class="tag">Recommended for streamers</span>
             <br />
             <small>
               TTV LOL PRO removes <code>device_id</code>, <code>user_id</code>,
-              and <code>user_ip</code> parameters for live streams by default.
-              Since TTV LOL's API requires the token signature for VODs, VODs
-              will not be proxied if you enable this option.
+              and <code>user_ip</code> token properties for live streams by
+              default. Since TTV LOL's API requires your Twitch token for VODs,
+              VODs will not be proxied if you enable this option. Some stream
+              qualities might be unavailable when using this option.
             </small>
           </li>
         </ul>

@@ -6,6 +6,9 @@ import store from "../store";
 const whitelistedChannelsList = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
+const disableVodRedirectCheckbox = $(
+  "#disable-vod-redirect-checkbox"
+) as HTMLInputElement;
 const removeTokenFromRequestsCheckbox = $(
   "#remove-token-checkbox"
 ) as HTMLInputElement;
@@ -17,14 +20,16 @@ if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 
 function main() {
-  let whitelistedChannels = store.state.whitelistedChannels;
-  let removeTokenFromRequests = store.state.removeTokenFromRequests;
-  let servers = store.state.servers;
+  const whitelistedChannels = store.state.whitelistedChannels;
+  const disableVodRedirect = store.state.disableVodRedirect;
+  const removeTokenFromRequests = store.state.removeTokenFromRequests;
+  const servers = store.state.servers;
 
   for (const whitelistedChannel of whitelistedChannels) {
     appendWhitelistedChannel(whitelistedChannel);
   }
   appendAddChannelInput();
+  disableVodRedirectCheckbox.checked = disableVodRedirect;
   removeTokenFromRequestsCheckbox.checked = removeTokenFromRequests;
   if (servers.length && servers[0] != "https://api.ttv.lol") {
     serverSelect.value = "local";
@@ -92,6 +97,11 @@ function appendAddChannelInput() {
   li.appendChild(input);
   whitelistedChannelsList.appendChild(li);
 }
+
+disableVodRedirectCheckbox.addEventListener("change", e => {
+  const { checked } = e.target as HTMLInputElement;
+  store.state.disableVodRedirect = checked;
+});
 
 removeTokenFromRequestsCheckbox.addEventListener("change", e => {
   const { checked } = e.target as HTMLInputElement;

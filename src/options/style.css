@@ -91,6 +91,7 @@ small {
 
 .options-list > li {
   position: relative;
+  margin-bottom: 1rem;
 }
 
 .options-list > li > input[type="checkbox"] {
