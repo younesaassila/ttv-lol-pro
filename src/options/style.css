@@ -15,12 +15,12 @@
 }
 
 body {
-  accent-color: var(--brand-color);
+  margin: 1.5rem;
   background-color: var(--ui-background-color);
   color: var(--text-primary);
-  font-family: var(--font-primary);
-  margin: 1.5rem;
+  accent-color: var(--brand-color);
   font-size: 100%;
+  font-family: var(--font-primary);
 }
 
 ::-moz-selection,
@@ -31,12 +31,12 @@ body {
 
 input[type="text"],
 select {
-  background-color: var(--input-background-color);
-  color: var(--input-text-primary);
-  border: 1px solid var(--input-border-color);
-  border-radius: 6px;
   height: 30px;
   padding: 0 0.65rem;
+  border: 1px solid var(--input-border-color);
+  border-radius: 6px;
+  background-color: var(--input-background-color);
+  color: var(--input-text-primary);
   vertical-align: middle;
 }
 
@@ -65,14 +65,14 @@ section > h2 {
 }
 
 .tag {
+  margin-left: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
   background-color: var(--input-border-color);
   color: var(--input-text-primary);
-  border-radius: 4px;
-  font-size: 0.65rem;
   font-weight: 600;
+  font-size: 0.65rem;
   text-transform: uppercase;
-  padding: 0.25rem 0.5rem;
-  margin-left: 0.25rem;
 }
 
 small {
@@ -81,8 +81,8 @@ small {
 }
 
 #whitelisted-channels-list > li > input {
-  margin-bottom: 0.25rem;
   min-width: 300px;
+  margin-bottom: 0.25rem;
 }
 
 .options-list {

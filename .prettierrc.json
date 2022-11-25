@@ -1,4 +1,5 @@
 {
   "arrowParens": "avoid",
-  "endOfLine": "auto"
+  "endOfLine": "auto",
+  "order": "smacss"
 }
