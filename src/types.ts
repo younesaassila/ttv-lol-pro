@@ -43,16 +43,6 @@ export interface Token {
   vod_id?: number;
 }
 
-export const enum ProxyFlags {
-  IS_PROXY = "__isProxy",
-  RAW = "__raw",
-}
-
-export interface StreamStatusError {
-  timestamp: number;
-  status: number;
-}
-
 export interface StreamStatus {
   redirected: boolean;
   reason: string;
@@ -60,9 +50,7 @@ export interface StreamStatus {
   proxyCountry?: string;
 }
 
-export interface State {
-  removeTokenFromRequests: boolean;
-  servers: string[];
-  streamStatuses: Record<string, StreamStatus>;
-  whitelistedChannels: string[];
+export interface StreamStatusError {
+  timestamp: number;
+  status: number;
 }

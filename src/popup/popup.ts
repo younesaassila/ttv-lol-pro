@@ -1,6 +1,6 @@
-import { TWITCH_URL_REGEX } from "../common/ts/regexes";
-import $ from "../common/ts/$";
 import browser from "webextension-polyfill";
+import $ from "../common/ts/$";
+import { TWITCH_URL_REGEX } from "../common/ts/regexes";
 import store from "../store";
 
 //#region HTML Elements
@@ -14,25 +14,28 @@ const whitelistToggle = $("#whitelist-toggle") as HTMLInputElement;
 const whitelistToggleLabel = $("#whitelist-toggle-label") as HTMLLabelElement;
 //#endregion
 
-store.addEventListener("load", async () => {
+if (store.readyState === "complete") main();
+else store.addEventListener("load", main);
+
+async function main() {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   const activeTab = tabs[0];
   if (!activeTab || !activeTab.url) return;
 
   const match = TWITCH_URL_REGEX.exec(activeTab.url);
   if (!match) return;
-  const [_, streamId] = match;
+  const [, streamId] = match;
   if (!streamId) return;
 
   setStreamStatusElement(streamId);
   setWhitelistToggleElement(streamId);
   store.addEventListener("change", () => setStreamStatusElement(streamId));
-});
+}
 
 function setStreamStatusElement(streamId: string) {
   const streamIdLower = streamId.toLowerCase();
   const status = store.state.streamStatuses[streamIdLower];
-  if (status != null) {
+  if (status) {
     streamStatusElement.style.display = "flex";
     if (status.redirected) {
       redirectedElement.classList.remove("error");
@@ -48,7 +51,7 @@ function setStreamStatusElement(streamId: string) {
       reasonElement.style.display = "none";
     }
     if (status.proxyCountry) {
-      proxyCountryElement.textContent = `Proxy country: ${status.proxyCountry}`;
+      proxyCountryElement.textContent = `Proxy country (Beta): ${status.proxyCountry}`;
     } else {
       proxyCountryElement.style.display = "none";
     }
@@ -60,7 +63,7 @@ function setStreamStatusElement(streamId: string) {
 function setWhitelistToggleElement(streamId: string) {
   const streamIdLower = streamId.toLowerCase();
   const status = store.state.streamStatuses[streamIdLower];
-  if (status != null) {
+  if (status) {
     whitelistToggle.checked =
       store.state.whitelistedChannels.includes(streamId);
     whitelistToggle.addEventListener("change", e => {

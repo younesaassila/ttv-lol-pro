@@ -1,20 +1,29 @@
-import { PlaylistType, Token } from "../../types";
-import { TWITCH_API_URL_REGEX } from "../../common/ts/regexes";
 import { WebRequest } from "webextension-polyfill";
 import isChrome from "../../common/ts/isChrome";
+import { TWITCH_API_URL_REGEX } from "../../common/ts/regexes";
 import store from "../../store";
+import { PlaylistType, Token } from "../../types";
 
 export default function onBeforeRequest(
   details: WebRequest.OnBeforeRequestDetailsType
 ): WebRequest.BlockingResponse | Promise<WebRequest.BlockingResponse> {
   const match = TWITCH_API_URL_REGEX.exec(details.url);
-  if (match == null) return {};
-  const [_, _type, streamId, _params] = match;
-  if (_type == null || streamId == null) return {};
+  if (!match) return {};
+  const [, _type, streamId, _params] = match;
+  if (!_type || !streamId) return {};
 
   const playlistType =
     _type.toLowerCase() === "vod" ? PlaylistType.VOD : PlaylistType.Playlist;
   const searchParams = new URLSearchParams(_params);
+
+  // No redirect if VOD proxying is disabled.
+  if (playlistType === PlaylistType.VOD && store.state.disableVodRedirect) {
+    console.log(
+      `${streamId}: No redirect (VOD proxying is disabled in Options)`
+    );
+    setStreamStatus(streamId, false, "VOD proxying is disabled in Options");
+    return {};
+  }
 
   // No redirect if the channel is whitelisted.
   const channelName = streamId.toLowerCase();
@@ -32,7 +41,7 @@ export default function onBeforeRequest(
     token = JSON.parse(`${searchParams.get("token")}`);
   } catch {}
 
-  if (token != null) {
+  if (token) {
     // No redirect if the user is a subscriber, has Twitch Turbo, or is a partner.
     if (
       token.subscriber === true ||
@@ -50,25 +59,19 @@ export default function onBeforeRequest(
       return {};
     }
 
-    if (store.state.removeTokenFromRequests) {
-      ["token", "sig"].forEach(param => searchParams.delete(param));
-    } else if (playlistType === PlaylistType.Playlist) {
+    if (playlistType === PlaylistType.Playlist) {
       // Remove sensitive information for live streams.
-      delete token.device_id;
-      delete token.user_id;
-      delete token.user_ip;
-      searchParams.delete("sig");
-      searchParams.set("token", JSON.stringify(token));
+      ["token", "sig"].forEach(param => searchParams.delete(param));
     }
-    // Token signature is checked for VODs, so we can't remove it.
+    // Note: TTV LOL's API requires a Twitch token for VODs, so we can't remove it.
   }
 
   const status = store.state.streamStatuses[streamId];
-  if (status != null) {
-    if (
-      status.errors.filter(error => Date.now() - error.timestamp < 20000)
-        .length >= 2
-    ) {
+  if (status) {
+    const recentErrors = status.errors.filter(
+      error => Date.now() - error.timestamp <= 20000 // 20s
+    );
+    if (recentErrors.length >= 2) {
       console.log(`${streamId}: No redirect (Too many errors occurred)`);
       setStreamStatus(streamId, false, "Too many errors occurred");
       return {};
@@ -97,7 +100,7 @@ function redirectChrome(
   playlistType: PlaylistType,
   streamId: string,
   searchParams: URLSearchParams
-) {
+): WebRequest.BlockingResponse {
   const servers = store.state.servers;
 
   for (const server of servers) {

@@ -1,27 +1,27 @@
 html {
+  -webkit-font-smoothing: antialiased;
   background: #151619;
   color: #c9cbcd;
   font-family: "Open Sans", "Segoe UI", sans-serif;
-  -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 body {
-  font-size: 100%;
-  margin-left: auto;
-  margin-right: auto;
   width: 300px;
+  margin-right: auto;
+  margin-left: auto;
+  font-size: 100%;
 }
 
 .container {
-  text-align: center;
   padding-bottom: 10px;
+  text-align: center;
 }
 
 .logo-wrapper {
-  background-color: #202127;
-  border-radius: 8px;
   margin: 30px 30px 15px 30px;
+  border-radius: 8px;
+  background-color: #202127;
 }
 
 .button-group {
@@ -31,10 +31,10 @@ body {
 }
 
 .button {
+  padding: 10px 20px;
   border-radius: 6px;
   color: #c3c4ca;
   font-weight: bold;
-  padding: 10px 20px;
   text-decoration: none;
   transition: all 150ms ease-in-out;
 }
@@ -45,20 +45,20 @@ body {
   margin-left: 15px;
 }
 .discord {
-  overflow: visible;
-  margin-right: 3px;
   display: inline-block;
+  margin-right: 3px;
+  overflow: visible;
 }
 .button-arrow .arrow-icon {
-  overflow: visible;
-  margin-left: 3px;
-  margin-bottom: -2px;
   width: 8px;
+  margin-bottom: -2px;
+  margin-left: 3px;
+  overflow: visible;
 }
 .icon {
   margin-bottom: -3px;
 }
-.buton-text {
+.button-text {
   margin-bottom: 10px;
 }
 .button-arrow .arrow-head {
@@ -66,25 +66,28 @@ body {
   transition: transform 150ms ease-in-out;
 }
 .button-arrow .arrow-body {
-  opacity: 0;
   transform: scaleX(1);
+  opacity: 0;
   transition: transform 150ms ease-in-out, opacity 150ms ease-in-out;
 }
 .button-arrow:hover .arrow-head {
   transform: translateX(3px);
 }
 .button-arrow:hover .arrow-body {
-  opacity: 1;
   transform: scaleX(2);
+  opacity: 1;
 }
 
 #stream-status {
-  background-color: #202127;
-  border-radius: 8px;
   display: none;
-  gap: 7px;
   margin: 0 30px;
   padding: 15px;
+  gap: 7px;
+  border-bottom: 1px solid hsl(210, 4%, 25%);
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+  border-radius: 8px;
+  background-color: #202127;
   text-align: start;
 }
 #stream-status #redirected.success {
@@ -102,19 +105,21 @@ body {
 }
 #stream-status #proxy-country {
   display: inline-block;
-  font-size: 7pt;
   margin-top: 5px;
+  font-size: 7pt;
   opacity: 0.6;
 }
 
 #whitelist-toggle-wrapper {
-  background-color: #202127;
-  border-radius: 8px;
   display: none;
-  margin-top: 5px;
+  margin-top: 0;
+  margin-right: 30px;
   margin-bottom: 0;
   margin-left: 30px;
-  margin-right: 30px;
+  border-radius: 8px;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+  background-color: #202127;
   transition: background-color 150ms ease-in-out;
 }
 #whitelist-toggle-wrapper:hover {
@@ -124,13 +129,13 @@ body {
   display: none;
 }
 #whitelist-toggle:checked + #whitelist-toggle-label {
-  color: #2997ff;
+  color: #baaadb;
 }
 #whitelist-toggle-label {
-  cursor: pointer;
   display: block;
-  font-size: 11pt;
-  font-weight: bold;
   margin: 0;
-  padding: 8px 15px;
+  padding: 10px 15px;
+  font-weight: bold;
+  font-size: 11pt;
+  cursor: pointer;
 }

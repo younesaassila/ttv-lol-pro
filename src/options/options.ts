@@ -1,32 +1,37 @@
+import isPrivateIP from "private-ip";
 import $ from "../common/ts/$";
 import store from "../store";
-import isPrivateIP from "private-ip";
 
+//#region HTML Elements
 const whitelistedChannelsList = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
-const removeTokenFromRequestsCheckbox = $(
-  "#remove-token-checkbox"
+const disableVodRedirectCheckbox = $(
+  "#disable-vod-redirect-checkbox"
 ) as HTMLInputElement;
 const serverSelect = $("#server-select") as HTMLSelectElement;
 const localServerInput = $("#local-server-input") as HTMLInputElement;
+//#endregion
 
-store.addEventListener("load", () => {
-  let whitelistedChannels = store.state.whitelistedChannels;
-  let removeTokenFromRequests = store.state.removeTokenFromRequests;
-  let servers = store.state.servers;
+if (store.readyState === "complete") main();
+else store.addEventListener("load", main);
+
+function main() {
+  const whitelistedChannels = store.state.whitelistedChannels;
+  const disableVodRedirect = store.state.disableVodRedirect;
+  const servers = store.state.servers;
 
   for (const whitelistedChannel of whitelistedChannels) {
     appendWhitelistedChannel(whitelistedChannel);
   }
   appendAddChannelInput();
-  removeTokenFromRequestsCheckbox.checked = removeTokenFromRequests;
+  disableVodRedirectCheckbox.checked = disableVodRedirect;
   if (servers.length && servers[0] != "https://api.ttv.lol") {
     serverSelect.value = "local";
     localServerInput.value = servers[0];
     localServerInput.style.display = "inline-block";
   }
-});
+}
 
 function appendWhitelistedChannel(whitelistedChannel: string) {
   const li = document.createElement("li");
@@ -88,9 +93,20 @@ function appendAddChannelInput() {
   whitelistedChannelsList.appendChild(li);
 }
 
-removeTokenFromRequestsCheckbox.addEventListener("change", e => {
-  const { checked } = e.target as HTMLInputElement;
-  store.state.removeTokenFromRequests = checked;
+disableVodRedirectCheckbox.addEventListener("change", e => {
+  const checkbox = e.target as HTMLInputElement;
+  if (checkbox.checked) {
+    store.state.disableVodRedirect = checkbox.checked;
+  } else {
+    const consent = confirm(
+      "Are you sure?\n\nYour Twitch token (containing sensitive information) will be sent to TTV LOL's API server when watching VODs."
+    );
+    if (consent) {
+      store.state.disableVodRedirect = checkbox.checked;
+    } else {
+      checkbox.checked = true;
+    }
+  }
 });
 
 function setLocalServer(server: string) {
