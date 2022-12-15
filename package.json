@@ -35,6 +35,7 @@
   "license": "GPL-3.0",
   "devDependencies": {
     "@parcel/config-webextension": "^2.8.0",
+    "@types/semver-compare": "^1.0.1",
     "@types/webextension-polyfill": "^0.9.1",
     "parcel": "^2.8.0",
     "postcss": "^8.4.19",
@@ -44,5 +45,8 @@
     "typescript": "^4.9.3",
     "webextension-polyfill": "^0.10.0"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "semver-compare": "^1.0.0"
+  }
 }

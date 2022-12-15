@@ -8,7 +8,9 @@ html {
 
 body {
   width: 300px;
+  margin-top: 0;
   margin-right: auto;
+  margin-bottom: 0;
   margin-left: auto;
   font-size: 100%;
 }
@@ -76,6 +78,27 @@ body {
 .button-arrow:hover .arrow-body {
   transform: scaleX(2);
   opacity: 1;
+}
+
+#update-banner {
+  display: none;
+  margin: 8px 8px 0 8px;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #7d5eba;
+  color: #ffffff;
+  font-size: 10pt;
+  text-align: left;
+}
+#update-banner a,
+#update-banner a:visited {
+  color: #ffffff;
+  transition: opacity 100ms ease-in-out;
+}
+#update-banner a:hover,
+#update-banner a:hover:visited {
+  color: #ffffff;
+  opacity: 0.8;
 }
 
 #stream-status {

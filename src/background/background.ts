@@ -1,7 +1,12 @@
 import browser from "webextension-polyfill";
+import isChrome from "../common/ts/isChrome";
 import onBeforeRequest from "./handlers/onBeforeRequest";
 import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
 import onHeadersReceived from "./handlers/onHeadersReceived";
+import onStartup from "./handlers/onStartup";
+
+// Check for updates on Chrome startup.
+if (isChrome) browser.runtime.onStartup.addListener(onStartup);
 
 // Redirect the HLS master manifest request to TTV LOL's API.
 browser.webRequest.onBeforeRequest.addListener(
