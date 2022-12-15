@@ -20,7 +20,7 @@
 
       <section id="whitelisted-channels-section">
         <h2>Whitelisted channels</h2>
-        <ul id="whitelisted-channels-list"></ul>
+        <ul id="whitelisted-channels-list" class="store-list"></ul>
       </section>
 
       <section id="privacy-section">
@@ -47,28 +47,22 @@
         </ul>
       </section>
 
-      <section id="developer-options-section">
-        <h2>Developer options</h2>
-        <ul class="options-list">
-          <li>
-            <label for="server-select">Server:</label>
-            <select name="server-select" id="server-select">
-              <option value="ttv-lol-api">api.ttv.lol (Default)</option>
-              <option value="local">Local (Custom)</option>
-            </select>
-            <input
-              type="text"
-              name="local-server"
-              id="local-server-input"
-              placeholder="http://"
-            />
-            <br />
-            <small>
-              Fallback to stream with ads on server error is not available for
-              local servers.
-            </small>
-          </li>
-        </ul>
+      <section id="servers-section">
+        <h2>Server list</h2>
+        <small>
+          TTV LOL PRO will use the first server from the list below that
+          successfully responds to a <code>GET /ping</code> request. All servers
+          must be using the TTV LOL API structure (<code>/playlist</code> and
+          <code>/vod</code> routes, with URL encoding). TTV LOL PRO will fail if
+          the chosen server does not follow this structure.
+        </small>
+        <br />
+        <small>
+          Note: Fallback to stream with ads on server error is only available
+          for TTV LOL's API.
+        </small>
+        <br />
+        <ol id="servers-list" class="store-list" start="0"></ol>
       </section>
     </main>
 

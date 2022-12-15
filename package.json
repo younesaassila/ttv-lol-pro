@@ -1,6 +1,6 @@
 {
   "name": "ttv-lol-pro",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "TTV LOL PRO removes livestream ads from Twitch",
   "@parcel/bundler-default": {
     "minBundles": 10000000,
@@ -33,9 +33,6 @@
     "Younes Aassila (https://github.com/younesaassila)"
   ],
   "license": "GPL-3.0",
-  "dependencies": {
-    "private-ip": "^2.3.4"
-  },
   "devDependencies": {
     "@parcel/config-webextension": "^2.8.0",
     "@types/webextension-polyfill": "^0.9.1",

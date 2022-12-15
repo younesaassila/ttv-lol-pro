@@ -1,3 +1,8 @@
+// From https://stackoverflow.com/a/51419293
+export type KeyOfType<T, V> = keyof {
+  [P in keyof T as T[P] extends V ? P : never]: any;
+};
+
 export const enum PlaylistType {
   Playlist = "playlist",
   VOD = "vod",

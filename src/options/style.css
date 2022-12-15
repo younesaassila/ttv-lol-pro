@@ -8,6 +8,7 @@
   --text-secondary: #8d9296;
 
   --input-background-color: #1d1f23;
+  --input-background-color-disabled: hsl(220, 9%, 16%);
   --input-border-color: #353840;
   --input-text-primary: #c3c4ca;
 
@@ -38,6 +39,12 @@ select {
   background-color: var(--input-background-color);
   color: var(--input-text-primary);
   vertical-align: middle;
+}
+
+input[type="text"]:disabled {
+  background-color: var(--input-background-color-disabled);
+  color: var(--text-secondary);
+  cursor: not-allowed;
 }
 
 input[type="text"]::placeholder {
@@ -80,9 +87,14 @@ small {
   font-size: 9pt;
 }
 
-#whitelisted-channels-list > li > input {
-  min-width: 300px;
+.store-list > li > input {
+  min-width: 400px;
   margin-bottom: 0.25rem;
+}
+
+li.hide-marker::marker {
+  display: none;
+  content: "";
 }
 
 .options-list {
@@ -98,12 +110,4 @@ small {
   position: absolute;
   left: -1.6rem;
   margin-top: 0.3rem;
-}
-
-summary {
-  margin-bottom: 0.5rem;
-}
-
-#local-server-input {
-  display: none;
 }
