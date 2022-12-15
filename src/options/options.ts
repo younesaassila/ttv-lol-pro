@@ -13,6 +13,7 @@ type ListOptions = {
   isAddAllowed(text: string): AllowedResult;
   isEditAllowed(text: string): AllowedResult;
   focusPrompt: boolean;
+  hidePromptMarker: boolean;
   insertMode: "append" | "prepend" | "both";
   spellcheck: boolean;
 };
@@ -36,6 +37,7 @@ const DEFAULT_LIST_OPTIONS: ListOptions = Object.freeze({
   isAddAllowed: () => [true] as AllowedResult,
   isEditAllowed: () => [true] as AllowedResult,
   focusPrompt: false, // Is set to true once the user has added an item.
+  hidePromptMarker: false,
   insertMode: "append",
   spellcheck: false,
 });
@@ -90,6 +92,7 @@ function main() {
       !DEFAULT_SERVERS.includes(url),
       "Cannot edit or remove default servers",
     ],
+    hidePromptMarker: true,
     insertMode: "both",
   });
 }
@@ -194,7 +197,7 @@ function _listPrompt(
   options: ListOptions
 ) {
   const listItem = document.createElement("li");
-  listItem.classList.add("hide-marker");
+  if (options.hidePromptMarker) listItem.classList.add("hide-marker");
   const promptInput = document.createElement("input");
   promptInput.type = "text";
 

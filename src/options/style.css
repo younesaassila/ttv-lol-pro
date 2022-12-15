@@ -8,9 +8,10 @@
   --text-secondary: #8d9296;
 
   --input-background-color: #1d1f23;
-  --input-background-color-disabled: hsl(220, 9%, 16%);
+  --input-background-color-disabled: #2e3138;
   --input-border-color: #353840;
   --input-text-primary: #c3c4ca;
+  --input-text-secondary: #7a8085;
 
   --header-height: 2.5rem;
 }
@@ -43,8 +44,7 @@ select {
 
 input[type="text"]:disabled {
   background-color: var(--input-background-color-disabled);
-  color: var(--text-secondary);
-  cursor: not-allowed;
+  color: var(--input-text-secondary);
 }
 
 input[type="text"]::placeholder {
