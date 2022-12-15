@@ -54,8 +54,6 @@ function main() {
     {
       getAlreadyExistsAlertMessage: channelName =>
         `'${channelName}' is already whitelisted`,
-      getItemPlaceholder: channelName =>
-        `Leave empty to remove '${channelName}' from the list`,
       getPromptPlaceholder: () => "Enter a channel name…",
     }
   );
