@@ -67,7 +67,12 @@ header {
   max-height: 100%;
 }
 
-section > h2 {
+.section {
+  margin-top: 1.5rem;
+}
+
+.section > h2 {
+  margin-bottom: 0.25rem;
   font-size: 1.15rem;
 }
 

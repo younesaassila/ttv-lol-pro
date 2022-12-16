@@ -6,6 +6,7 @@ export type StorageArea = "local" | "managed" | "session" | "sync";
 
 export interface State {
   disableVodRedirect: boolean;
+  ignoredChannelSubscriptions: string[];
   isUpdateAvailable: boolean;
   lastUpdateCheck: number;
   servers: string[];

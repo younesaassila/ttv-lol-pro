@@ -24,6 +24,9 @@ type ListOptions = {
 const whitelistedChannelsListElement = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
+const ignoredChannelSubscriptionsListElement = $(
+  "#ignored-channel-subscriptions-list"
+) as HTMLUListElement;
 const disableVodRedirectCheckboxElement = $(
   "#disable-vod-redirect-checkbox"
 ) as HTMLInputElement;
@@ -97,6 +100,15 @@ function main() {
     hidePromptMarker: true,
     insertMode: "both",
   });
+  // Ignored channel subscriptions
+  listInit(
+    ignoredChannelSubscriptionsListElement,
+    "ignoredChannelSubscriptions",
+    store.state.ignoredChannelSubscriptions,
+    {
+      getPromptPlaceholder: () => "Enter a channel name…",
+    }
+  );
 }
 
 /**
