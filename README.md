@@ -71,10 +71,9 @@ This fork:
 
 > ❌ The extension does not update automatically.
 
-1. Download the latest version of this extension in the "Releases" section (CRX file)
+1. Download the latest version of this extension in the "Releases" section (ZIP file)
+1. Unzip the ZIP file you just downloaded
 1. Go to `chrome://extensions`
 1. Turn on `Developer mode`
-1. Drag and drop the CRX file you just downloaded
-   1. If you see the following message:
-      ![Warning message](https://i.imgur.com/bL08ES3.png)
-   1. Close and reopen `chrome://extensions`.
+1. Click on `Load unpacked`
+1. Select the unzipped folder you just created
