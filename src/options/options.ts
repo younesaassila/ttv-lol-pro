@@ -1,153 +1,259 @@
-import isPrivateIP from "private-ip";
 import $ from "../common/ts/$";
 import store from "../store";
+import getDefaultState from "../store/getDefaultState";
+import { KeyOfType } from "../types";
+
+//#region Types
+type AllowedResult = [boolean, string?];
+type InsertMode = "append" | "prepend" | "both";
+type StoreStringArrayKey = KeyOfType<typeof store.state, string[]>;
+type ListOptions = {
+  getAlreadyExistsAlertMessage(text: string): string;
+  getItemPlaceholder(text: string): string;
+  getPromptPlaceholder(insertMode: InsertMode): string;
+  isAddAllowed(text: string): AllowedResult;
+  isEditAllowed(text: string): AllowedResult;
+  focusPrompt: boolean;
+  hidePromptMarker: boolean;
+  insertMode: InsertMode;
+  spellcheck: boolean;
+};
+//#endregion
 
 //#region HTML Elements
-const whitelistedChannelsList = $(
+const whitelistedChannelsListElement = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
-const disableVodRedirectCheckbox = $(
+const ignoredChannelSubscriptionsListElement = $(
+  "#ignored-channel-subscriptions-list"
+) as HTMLUListElement;
+const disableVodRedirectCheckboxElement = $(
   "#disable-vod-redirect-checkbox"
 ) as HTMLInputElement;
-const serverSelect = $("#server-select") as HTMLSelectElement;
-const localServerInput = $("#local-server-input") as HTMLInputElement;
+const serversListElement = $("#servers-list") as HTMLOListElement;
 //#endregion
+
+const DEFAULT_SERVERS = getDefaultState().servers;
+const DEFAULT_LIST_OPTIONS: ListOptions = Object.freeze({
+  getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
+  getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
+  getPromptPlaceholder: () => "Enter text to create a new item…",
+  isAddAllowed: () => [true] as AllowedResult,
+  isEditAllowed: () => [true] as AllowedResult,
+  focusPrompt: false, // Is set to true once the user has added an item.
+  hidePromptMarker: false,
+  insertMode: "append",
+  spellcheck: false,
+});
 
 if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 
 function main() {
-  const whitelistedChannels = store.state.whitelistedChannels;
-  const disableVodRedirect = store.state.disableVodRedirect;
-  const servers = store.state.servers;
-
-  for (const whitelistedChannel of whitelistedChannels) {
-    appendWhitelistedChannel(whitelistedChannel);
-  }
-  appendAddChannelInput();
-  disableVodRedirectCheckbox.checked = disableVodRedirect;
-  if (servers.length && servers[0] != "https://api.ttv.lol") {
-    serverSelect.value = "local";
-    localServerInput.value = servers[0];
-    localServerInput.style.display = "inline-block";
-  }
-}
-
-function appendWhitelistedChannel(whitelistedChannel: string) {
-  const li = document.createElement("li");
-  const input = document.createElement("input");
-  input.type = "text";
-  input.value = whitelistedChannel;
-  input.placeholder = `Leave empty to remove '${whitelistedChannel}' from the list`;
-  input.spellcheck = false;
-  input.addEventListener("focus", () => input.select());
-  input.addEventListener("change", async e => {
-    const input = e.target as HTMLInputElement;
-    const value = input.value.trim();
-    const index = store.state.whitelistedChannels.findIndex(
-      channel => channel.toLowerCase() === whitelistedChannel.toLowerCase()
-    );
-    if (index === -1) return;
-    // Update channel name, or remove it if text field is left empty.
-    if (value !== "") store.state.whitelistedChannels[index] = value;
-    else {
-      store.state.whitelistedChannels.splice(index, 1);
-      li.remove();
+  // Whitelisted channels
+  listInit(
+    whitelistedChannelsListElement,
+    "whitelistedChannels",
+    store.state.whitelistedChannels,
+    {
+      getAlreadyExistsAlertMessage: channelName =>
+        `'${channelName}' is already whitelisted`,
+      getPromptPlaceholder: () => "Enter a channel name…",
     }
-  });
-  li.appendChild(input);
-  whitelistedChannelsList.appendChild(li);
-}
-
-function appendAddChannelInput() {
-  const li = document.createElement("li");
-  const input = document.createElement("input");
-  input.type = "text";
-  input.placeholder = "Enter a channel name…";
-  input.spellcheck = false;
-  input.addEventListener("change", async e => {
-    const input = e.target as HTMLInputElement;
-    const value = input.value.trim();
-    if (value === "") return;
-
-    const channelName = value.toLowerCase();
-    const alreadyWhitelisted = store.state.whitelistedChannels.some(
-      channel => channel.toLowerCase() === channelName
-    );
-    if (!alreadyWhitelisted) {
-      store.state.whitelistedChannels.push(value);
-      li.remove();
-      appendWhitelistedChannel(value);
-      appendAddChannelInput();
-
-      const addChannelInput = $(
-        "#whitelisted-channels-list > li:last-child > input"
-      ) as HTMLInputElement;
-      if (addChannelInput) addChannelInput.focus();
-    } else {
-      alert(`'${value}' is already whitelisted.`);
-      input.value = "";
-    }
-  });
-  li.appendChild(input);
-  whitelistedChannelsList.appendChild(li);
-}
-
-disableVodRedirectCheckbox.addEventListener("change", e => {
-  const checkbox = e.target as HTMLInputElement;
-  if (checkbox.checked) {
-    store.state.disableVodRedirect = checkbox.checked;
-  } else {
-    const consent = confirm(
-      "Are you sure?\n\nYour Twitch token (containing sensitive information) will be sent to TTV LOL's API server when watching VODs."
-    );
-    if (consent) {
+  );
+  // Disable VOD proxying
+  disableVodRedirectCheckboxElement.checked = store.state.disableVodRedirect;
+  disableVodRedirectCheckboxElement.addEventListener("change", e => {
+    const checkbox = e.target as HTMLInputElement;
+    if (checkbox.checked) {
       store.state.disableVodRedirect = checkbox.checked;
     } else {
-      checkbox.checked = true;
+      // Ask for confirmation before enabling VOD proxying.
+      const consent = confirm(
+        "Are you sure?\n\nYour Twitch token (containing sensitive information) will be sent to TTV LOL's API server when watching VODs."
+      );
+      if (consent) {
+        store.state.disableVodRedirect = checkbox.checked;
+      } else {
+        checkbox.checked = true;
+      }
     }
-  }
-});
-
-function setLocalServer(server: string) {
-  let newServers: string[] = [];
-  let url: URL;
-  try {
-    url = new URL(server);
-    const isLocalhost = url.hostname === "localhost";
-    if (isLocalhost || isPrivateIP(url.hostname)) newServers.push(server);
-    else {
-      alert(`'${server}' is not a local address.`);
-      localServerInput.value = "";
+  });
+  // Server list
+  listInit(serversListElement, "servers", store.state.servers, {
+    getPromptPlaceholder: insertMode => {
+      if (insertMode == "prepend") return "Enter a server URL… (Primary)";
+      return "Enter a server URL… (Fallback)";
+    },
+    isAddAllowed(url) {
+      try {
+        new URL(url);
+        return [true];
+      } catch {
+        return [false, `'${url}' is not a valid URL`];
+      }
+    },
+    isEditAllowed: url => [
+      !DEFAULT_SERVERS.includes(url),
+      "Cannot edit or remove default servers",
+    ],
+    hidePromptMarker: true,
+    insertMode: "both",
+  });
+  // Ignored channel subscriptions
+  listInit(
+    ignoredChannelSubscriptionsListElement,
+    "ignoredChannelSubscriptions",
+    store.state.ignoredChannelSubscriptions,
+    {
+      getPromptPlaceholder: () => "Enter a channel name…",
     }
-  } catch {
-    if (!!server) alert(`'${server}' is not a valid URL.`);
-    localServerInput.value = "";
-  }
-  newServers.push("https://api.ttv.lol"); // Fallback
-  store.state.servers = newServers;
+  );
 }
 
-serverSelect.addEventListener("change", e => {
-  // Toggle visibility of local server input.
-  const { value } = e.target as HTMLSelectElement;
-  switch (value) {
-    case "local":
-      // Local server
-      localServerInput.style.display = "inline-block";
-      setLocalServer(localServerInput.value);
-      break;
-    default:
-      // TTV LOL API
-      localServerInput.style.display = "none";
-      setLocalServer("");
-      break;
+/**
+ * Initializes a list element.
+ * @param listElement
+ * @param storeKey
+ * @param stringArray
+ * @param options
+ */
+function listInit(
+  listElement: HTMLOListElement | HTMLUListElement,
+  storeKey: StoreStringArrayKey,
+  stringArray: string[] = [],
+  options: Partial<ListOptions> = {}
+) {
+  const listOptions: ListOptions = { ...DEFAULT_LIST_OPTIONS, ...options };
+  for (const text of stringArray) {
+    _listAppend(listElement, storeKey, text, {
+      ...listOptions,
+      insertMode: "append", // Always append when initializing because the array is already in the correct order.
+    });
   }
-});
+  // Add prompt(s).
+  if (options.insertMode === "both") {
+    _listPrompt(listElement, storeKey, {
+      ...listOptions,
+      insertMode: "append",
+    });
+    _listPrompt(listElement, storeKey, {
+      ...listOptions,
+      insertMode: "prepend",
+    });
+  } else {
+    _listPrompt(listElement, storeKey, listOptions);
+  }
+}
 
-localServerInput.addEventListener("change", async e => {
-  // Update `servers` configuration option.
-  const input = e.target as HTMLInputElement;
-  const value = input.value.trim();
-  setLocalServer(value);
-});
+/**
+ * Appends an item to a list element.
+ * @param listElement
+ * @param storeKey
+ * @param text
+ * @param options
+ */
+function _listAppend(
+  listElement: HTMLOListElement | HTMLUListElement,
+  storeKey: StoreStringArrayKey,
+  text: string,
+  options: ListOptions
+) {
+  const listItem = document.createElement("li");
+  const textInput = document.createElement("input");
+  textInput.type = "text";
+  const [allowed] = options.isEditAllowed(text);
+  if (!allowed) textInput.disabled = true;
+
+  textInput.placeholder = options.getItemPlaceholder(text);
+  textInput.spellcheck = options.spellcheck;
+  textInput.value = text;
+
+  // Highlight text when focused.
+  textInput.addEventListener("focus", textInput.select);
+  // Update store when text is changed.
+  textInput.addEventListener("change", e => {
+    const textInput = e.target as HTMLInputElement;
+    const [allowed, errorMessage] = options.isEditAllowed(text);
+    if (!allowed) {
+      alert(errorMessage || "You cannot edit this item");
+      textInput.value = text;
+      return;
+    }
+    const newText = textInput.value.trim();
+    const index = store.state[storeKey].findIndex(
+      str => str.toLowerCase() === text.toLowerCase()
+    );
+    if (index === -1) return;
+    // Remove item if text field is left empty.
+    if (newText === "") {
+      store.state[storeKey].splice(index, 1);
+      listItem.remove();
+    } else {
+      store.state[storeKey][index] = newText;
+    }
+  });
+  // Append list item to list.
+  listItem.append(textInput);
+  if (options.insertMode === "prepend") listElement.prepend(listItem);
+  else listElement.append(listItem);
+}
+
+/**
+ * Creates a prompt (text input) to add new items to a list.
+ * @param listElement
+ * @param storeKey
+ * @param options
+ */
+function _listPrompt(
+  listElement: HTMLOListElement | HTMLUListElement,
+  storeKey: StoreStringArrayKey,
+  options: ListOptions
+) {
+  const listItem = document.createElement("li");
+  if (options.hidePromptMarker) listItem.classList.add("hide-marker");
+  const promptInput = document.createElement("input");
+  promptInput.type = "text";
+
+  promptInput.placeholder = options.getPromptPlaceholder(options.insertMode);
+  promptInput.spellcheck = options.spellcheck;
+
+  // Update store when text is changed.
+  promptInput.addEventListener("change", e => {
+    const promptInput = e.target as HTMLInputElement;
+    const text = promptInput.value.trim();
+    if (text === "") return;
+    const [allowed, errorMessage] = options.isAddAllowed(text);
+    if (!allowed) {
+      alert(errorMessage || "You cannot add this item");
+      return;
+    }
+    // Check if item already exists.
+    const alreadyExists = store.state[storeKey].some(
+      str => str.toLowerCase() === text.toLowerCase()
+    );
+    if (alreadyExists) {
+      alert(options.getAlreadyExistsAlertMessage(text));
+      promptInput.value = "";
+      return;
+    }
+    // Add item to store.
+    const list = store.state[storeKey]; // Store a reference to the array for the proxy to work.
+    if (options.insertMode === "prepend") list.unshift(text);
+    else list.push(text);
+    store.state[storeKey] = list;
+
+    listItem.remove(); // This will also remove the prompt.
+    _listAppend(listElement, storeKey, text, options);
+    _listPrompt(listElement, storeKey, {
+      ...options,
+      focusPrompt: true,
+    });
+  });
+  // Append prompt to list.
+  listItem.append(promptInput);
+  if (options.insertMode === "prepend") listElement.prepend(listItem);
+  else listElement.append(listItem);
+  // Focus prompt if specified.
+  if (options.focusPrompt) promptInput.focus();
+}

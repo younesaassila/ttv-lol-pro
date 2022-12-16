@@ -4,6 +4,7 @@ import { TWITCH_URL_REGEX } from "../common/ts/regexes";
 import store from "../store";
 
 //#region HTML Elements
+const updateBannerElement = $("#update-banner") as HTMLDivElement;
 const streamStatusElement = $("#stream-status") as HTMLDivElement;
 const redirectedElement = $("#redirected") as HTMLSpanElement;
 const streamIdElement = $("#stream-id") as HTMLSpanElement;
@@ -14,10 +15,23 @@ const whitelistToggle = $("#whitelist-toggle") as HTMLInputElement;
 const whitelistToggleLabel = $("#whitelist-toggle-label") as HTMLLabelElement;
 //#endregion
 
+// Open links in new tabs.
+document.querySelectorAll("a").forEach(a => {
+  a.addEventListener("click", e => {
+    e.preventDefault();
+    browser.tabs.create({ url: a.href });
+  });
+});
+
 if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 
 async function main() {
+  // Show update banner if an update is available.
+  if (store.state.isUpdateAvailable) {
+    updateBannerElement.style.display = "block";
+  }
+
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   const activeTab = tabs[0];
   if (!activeTab || !activeTab.url) return;
