@@ -5,16 +5,17 @@ import { KeyOfType } from "../types";
 
 //#region Types
 type AllowedResult = [boolean, string?];
+type InsertMode = "append" | "prepend" | "both";
 type StoreStringArrayKey = KeyOfType<typeof store.state, string[]>;
 type ListOptions = {
   getAlreadyExistsAlertMessage(text: string): string;
   getItemPlaceholder(text: string): string;
-  getPromptPlaceholder(): string;
+  getPromptPlaceholder(insertMode: InsertMode): string;
   isAddAllowed(text: string): AllowedResult;
   isEditAllowed(text: string): AllowedResult;
   focusPrompt: boolean;
   hidePromptMarker: boolean;
-  insertMode: "append" | "prepend" | "both";
+  insertMode: InsertMode;
   spellcheck: boolean;
 };
 //#endregion
@@ -77,7 +78,10 @@ function main() {
   });
   // Server list
   listInit(serversListElement, "servers", store.state.servers, {
-    getPromptPlaceholder: () => "Enter a server URL…",
+    getPromptPlaceholder: insertMode => {
+      if (insertMode == "prepend") return "Enter a server URL… (Primary)";
+      return "Enter a server URL… (Fallback)";
+    },
     isAddAllowed(url) {
       try {
         new URL(url);
@@ -199,7 +203,7 @@ function _listPrompt(
   const promptInput = document.createElement("input");
   promptInput.type = "text";
 
-  promptInput.placeholder = options.getPromptPlaceholder();
+  promptInput.placeholder = options.getPromptPlaceholder(options.insertMode);
   promptInput.spellcheck = options.spellcheck;
 
   // Update store when text is changed.

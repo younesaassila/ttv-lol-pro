@@ -82,6 +82,23 @@ export default function onBeforeRequest(
   else return redirectFirefox(playlistType, streamId, searchParams);
 }
 
+function getPingUrl(server: string): string {
+  return `${server}${server.endsWith("/") ? "" : "/"}ping`;
+}
+
+function getRedirectUrl(
+  server: string,
+  playlistType: PlaylistType,
+  streamId: string,
+  searchParams: URLSearchParams
+): string {
+  return `${server}${
+    server.endsWith("/") ? "" : "/"
+  }${playlistType}/${encodeURIComponent(
+    `${streamId}.m3u8?${searchParams.toString()}`
+  )}`;
+}
+
 function setStreamStatus(
   streamId: string,
   redirected: boolean,
@@ -104,10 +121,13 @@ function redirectChrome(
   const servers = store.state.servers;
 
   for (const server of servers) {
-    const pingUrl = `${server}/ping`;
-    const redirectUrl = `${server}/${playlistType}/${encodeURIComponent(
-      `${streamId}.m3u8?${searchParams.toString()}`
-    )}`;
+    const pingUrl = getPingUrl(server);
+    const redirectUrl = getRedirectUrl(
+      server,
+      playlistType,
+      streamId,
+      searchParams
+    );
 
     // Synchronous XMLHttpRequest is required for the extension to work in Chrome.
     const request = new XMLHttpRequest();
@@ -148,10 +168,13 @@ function redirectFirefox(
         return resolve({});
       }
 
-      const pingUrl = `${server}/ping`;
-      const redirectUrl = `${server}/${playlistType}/${encodeURIComponent(
-        `${streamId}.m3u8?${searchParams.toString()}`
-      )}`;
+      const pingUrl = getPingUrl(server);
+      const redirectUrl = getRedirectUrl(
+        server,
+        playlistType,
+        streamId,
+        searchParams
+      );
       const fallback = () => {
         console.log(`${streamId}: Ping to ${server} failed`);
         tryRedirect(servers[++i]);
