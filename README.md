@@ -39,6 +39,7 @@ This fork:
 - disables TTV LOL for channels you are subscribed to,
 - lets you whitelist channels you wish ads to be played on,
 - improves TTV LOL's popup by showing stream status and "Whitelist" button,
+- lets you add custom primary/fallback proxies,
 - lets you remove the token parameter from API requests,
 - falls back to the stream with ads if the API server errors out,
 - lets you redirect API requests to a local server.
