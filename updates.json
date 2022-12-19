@@ -33,6 +33,10 @@
         {
           "version": "1.5.0",
           "update_link": "https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.5.0/v1.5.0-firefox.xpi"
+        },
+        {
+          "version": "1.5.1",
+          "update_link": "https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.5.1/v1.5.1-firefox.xpi"
         }
       ]
     }
