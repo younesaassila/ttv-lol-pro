@@ -13,6 +13,10 @@
   --input-text-primary: #c3c4ca;
   --input-text-secondary: #7a8085;
 
+  --button-background-color: #353840;
+  --button-background-color-hover: hsl(224, 9%, 30%);
+  --button-text-primary: #c3c4ca;
+
   --header-height: 2.5rem;
 }
 
@@ -49,6 +53,28 @@ input[type="text"]:disabled {
 
 input[type="text"]::placeholder {
   font-style: italic;
+}
+
+input[type="button"],
+button {
+  padding: 0.5rem 1.25rem;
+  border: 0;
+  border-radius: 6px;
+  background-color: var(--button-background-color);
+  color: var(--button-text-primary);
+  cursor: pointer;
+  transition: background-color 100ms ease-in-out;
+}
+
+input[type="button"]:hover,
+button:hover {
+  background-color: var(--button-background-color-hover);
+}
+
+hr {
+  margin: 2.5rem 0;
+  border: 0;
+  border-top: 1px solid var(--input-border-color);
 }
 
 header {

@@ -1,14 +1,14 @@
-name: CI
+name: "Build App"
 on: [push, pull_request]
+
 jobs:
   build:
-    name: Build app
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
-      - name: Run linter
+      - name: Run Linter
         run: npm run lint
-      - name: Build app
+      - name: Build App
         run: npm run build

@@ -1,4 +1,6 @@
 import $ from "../common/ts/$";
+import readFile from "../common/ts/readFile";
+import saveFile from "../common/ts/saveFile";
 import store from "../store";
 import getDefaultState from "../store/getDefaultState";
 import { KeyOfType } from "../types";
@@ -31,6 +33,9 @@ const disableVodRedirectCheckboxElement = $(
   "#disable-vod-redirect-checkbox"
 ) as HTMLInputElement;
 const serversListElement = $("#servers-list") as HTMLOListElement;
+const exportButtonElement = $("#export-button") as HTMLButtonElement;
+const importButtonElement = $("#import-button") as HTMLButtonElement;
+const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 //#endregion
 
 const DEFAULT_SERVERS = getDefaultState().servers;
@@ -257,3 +262,40 @@ function _listPrompt(
   // Focus prompt if specified.
   if (options.focusPrompt) promptInput.focus();
 }
+
+exportButtonElement.addEventListener("click", () => {
+  saveFile(
+    "ttv-lol-pro_backup.json",
+    JSON.stringify({
+      ...store.state,
+      isUpdateAvailable: undefined,
+      lastUpdateCheck: undefined,
+    }),
+    "application/json;charset=utf-8"
+  );
+});
+
+importButtonElement.addEventListener("click", async () => {
+  try {
+    const data = await readFile("application/json;charset=utf-8");
+    const state = JSON.parse(data);
+    for (const [key, value] of Object.entries(state)) {
+      store.state[key] = value;
+    }
+    window.location.reload(); // Reload page to update UI.
+  } catch (error) {
+    alert(`Error: ${error}}`);
+  }
+});
+
+resetButtonElement.addEventListener("click", () => {
+  const confirmation = confirm(
+    "Are you sure you want to reset all settings to their default values?"
+  );
+  if (!confirmation) return;
+  const defaultState = getDefaultState();
+  for (const [key, value] of Object.entries(defaultState)) {
+    store.state[key] = value;
+  }
+  window.location.reload(); // Reload page to update UI.
+});
