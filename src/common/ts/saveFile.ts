@@ -1,6 +1,6 @@
-export default function downloadFile(
+export default function saveFile(
   filename: string,
-  content: string | number | boolean,
+  content: string,
   type = "text/plain;charset=utf-8"
 ) {
   const a = document.createElement("a");

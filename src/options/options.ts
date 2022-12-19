@@ -1,6 +1,6 @@
 import $ from "../common/ts/$";
-import downloadFile from "../common/ts/downloadFile";
 import readFile from "../common/ts/readFile";
+import saveFile from "../common/ts/saveFile";
 import store from "../store";
 import getDefaultState from "../store/getDefaultState";
 import { KeyOfType } from "../types";
@@ -264,7 +264,7 @@ function _listPrompt(
 }
 
 exportButtonElement.addEventListener("click", () => {
-  downloadFile(
+  saveFile(
     "ttv-lol-pro_settings_backup.json",
     JSON.stringify({
       ...store.state,
