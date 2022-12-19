@@ -265,7 +265,7 @@ function _listPrompt(
 
 exportButtonElement.addEventListener("click", () => {
   saveFile(
-    "ttv-lol-pro_settings_backup.json",
+    "ttv-lol-pro_backup.json",
     JSON.stringify({
       ...store.state,
       isUpdateAvailable: undefined,
