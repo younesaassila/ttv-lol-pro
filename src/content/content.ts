@@ -10,7 +10,7 @@ function main() {
   const [, streamId] = match;
   if (!streamId) return;
 
-  if (store.state.streamStatuses[streamId]) {
+  if (store.state.streamStatuses.hasOwnProperty(streamId)) {
     // Clear errors for stream on page load/reload.
     store.state.streamStatuses[streamId].errors = [];
   }
