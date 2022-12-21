@@ -24,6 +24,11 @@
       "matches": ["*://*.twitch.tv/*"],
       "js": ["content/content.ts"],
       "run_at": "document_start"
+    },
+    {
+      "matches": ["*://*.twitch.tv/*"],
+      "js": ["content/inject.ts"],
+      "run_at": "document_idle"
     }
   ],
   "icons": {
