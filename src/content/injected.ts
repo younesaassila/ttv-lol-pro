@@ -1,102 +1,209 @@
-import type { MediaPlayer } from "amazon-ivs-player";
+/**
+ * This code is based on the work of FrankerFaceZ:
+ *  GitHub: https://github.com/FrankerFaceZ/FrankerFaceZ
+ *  Website: https://www.frankerfacez.com/
+ */
 
 console.log("[TTV LOL PRO] Injected into Twitch");
 
-// From https://stackoverflow.com/a/39165137
-function lol_getReactInstance(element: Element, traverseUp = 0) {
-  const key = Object.keys(element).find(key => {
-    return (
-      key.startsWith("__reactFiber$") || // React 17+
-      key.startsWith("__reactInternalInstance$") // React <17
-    );
-  });
-  if (key == null) return null;
-  const elementFiber = element[key];
-  if (elementFiber == null) return null;
+//#region Types
+type DOMContainerElement = Element & { _reactRootContainer?: any };
+type Instances = {
+  playerInstance: any;
+  playerSourceInstance: any;
+};
+//#endregion
 
-  // React <16
-  if (elementFiber._currentElement) {
-    let componentFiber = elementFiber._currentElement._owner;
-    for (let i = 0; i < traverseUp; i++) {
-      componentFiber = componentFiber._currentElement._owner;
-    }
-    return componentFiber._instance;
-  }
+const REACT = tlp_getReact();
+let accessor: string | null = null;
 
-  // React 16+
-  const lol_getComponentFiber = fiber => {
-    let parentFiber = fiber.return;
-    while (typeof parentFiber.type == "string") {
-      parentFiber = parentFiber.return;
-    }
-    return parentFiber;
-  };
-  let componentFiber = lol_getComponentFiber(elementFiber);
-  for (let i = 0; i < traverseUp; i++) {
-    componentFiber = lol_getComponentFiber(componentFiber);
-  }
-  return componentFiber.stateNode;
+/**
+ * Get the root element's React instance from the page.
+ * @param rootSelector
+ * @returns
+ */
+function tlp_getReact(rootSelector = "body #root") {
+  const rootElement = document.querySelector(
+    rootSelector
+  ) as DOMContainerElement;
+  const reactRootContainer = rootElement?._reactRootContainer;
+  const internalRoot = reactRootContainer?._internalRoot;
+  const react = internalRoot?.current?.child;
+  return react;
 }
 
-function lol_getReactSubInstances(
-  element: Element,
-  traverseUp = 0,
-  depth = 0,
-  maxDepth = 15, // Prevent infinite recursion
-  _subInstances: any[] = []
-) {
-  const instance = lol_getReactInstance(element, traverseUp);
-  if (instance && !_subInstances.includes(instance)) {
-    _subInstances.push(instance);
+/**
+ * Find the accessor (key) of the element's React instance.
+ * @param element
+ * @returns
+ */
+function tlp_findAccessor(element): string | null {
+  for (const key in element) {
+    if (key.startsWith("__reactInternalInstance$")) return key;
   }
-  if (depth >= maxDepth) return _subInstances;
-  for (const child of element.children) {
-    _subInstances = lol_getReactSubInstances(
-      child,
-      traverseUp,
-      depth + 1,
-      maxDepth,
-      _subInstances
-    );
-  }
-  return _subInstances;
+  return null;
 }
 
-function lol_getMediaPlayerInstance() {
-  const resizeDetectorElement = document.querySelector(
-    'div[data-test-selector="video-player__video-container"] > .resize-detector'
+/**
+ * Get the element's React instance.
+ * @param element
+ * @returns
+ */
+function tlp_getReactInstance(element) {
+  if (!accessor) accessor = tlp_findAccessor(element);
+  if (!accessor) return;
+
+  return (
+    element[accessor] ||
+    (element._reactRootContainer &&
+      element._reactRootContainer._internalRoot &&
+      element._reactRootContainer._internalRoot.current) ||
+    (element._reactRootContainer && element._reactRootContainer.current)
   );
-  if (!resizeDetectorElement) return null;
-
-  const instances = lol_getReactSubInstances(resizeDetectorElement);
-  console.log(`[TTV LOL PRO] Found ${instances.length} React instances`);
-  console.log(instances);
-
-  let mediaPlayerInstance: MediaPlayer | null = null;
-  for (const instance of instances) {
-    const value =
-      instance._reactInternalFiber?.return?.memoizedProps?.mediaPlayerInstance;
-    if (value != null) {
-      mediaPlayerInstance = value;
-      break;
-    }
-  }
-  return mediaPlayerInstance;
 }
 
-function lol_main() {
-  const mediaPlayerInstance = lol_getMediaPlayerInstance();
-  if (!mediaPlayerInstance) {
-    console.log("[TTV LOL PRO] No media player instance found");
-    return;
+function tlp_searchAll(
+  node,
+  criterias: Function[],
+  max_depth = 15,
+  depth = 0,
+  data: any = undefined,
+  traverse_roots = true
+) {
+  if (!node) node = REACT;
+  else if (node._reactInternalFiber) node = node._reactInternalFiber;
+  else if (node instanceof Node) node = tlp_getReactInstance(node);
+
+  if (!data)
+    data = {
+      seen: new Set(),
+      classes: criterias.map(() => null),
+      out: criterias.map(() => ({
+        cls: null,
+        instances: new Set(),
+        depth: null,
+      })),
+      max_depth: depth,
+    };
+
+  if (!node || node._ffz_no_scan || depth > max_depth) return data.out;
+
+  if (depth > data.max_depth) data.max_depth = depth;
+
+  const inst = node.stateNode;
+  if (inst) {
+    const cls = inst.constructor,
+      idx = data.classes.indexOf(cls);
+
+    if (idx !== -1) data.out[idx].instances.add(inst);
+    else if (!data.seen.has(cls)) {
+      let i = criterias.length;
+      while (i-- > 0)
+        if (criterias[i](inst)) {
+          data.classes[i] = data.out[i].cls = cls;
+          data.out[i].instances.add(inst);
+          data.out[i].depth = depth;
+          break;
+        }
+
+      data.seen.add(cls);
+    }
   }
 
-  console.log("[TTV LOL PRO] Found media player instance:");
-  console.log(mediaPlayerInstance);
+  let child = node.child;
+  while (child) {
+    tlp_searchAll(child, criterias, max_depth, depth + 1, data, traverse_roots);
+    child = child.sibling;
+  }
+
+  if (traverse_roots && inst && inst.props && inst.props.root) {
+    const root = inst.props.root._reactRootContainer;
+    if (root) {
+      let child =
+        (root._internalRoot && root._internalRoot.current) || root.current;
+      while (child) {
+        tlp_searchAll(
+          child,
+          criterias,
+          max_depth,
+          depth + 1,
+          data,
+          traverse_roots
+        );
+        child = child.sibling;
+      }
+    }
+  }
+
+  return data.out;
+}
+
+/**
+ * Get the player and player source instances.
+ * @returns
+ */
+function tlp_getInstances(): Instances {
+  const playerCriteria = instance =>
+    instance.setPlayerActive &&
+    instance.props?.playerEvents &&
+    instance.props?.mediaPlayerInstance;
+  const playerSourceCriteria = instance =>
+    instance.setSrc && instance.setInitialPlaybackSettings;
+  const criterias = [playerCriteria, playerSourceCriteria];
+
+  const results = tlp_searchAll(REACT, criterias, 1000);
+  const instances = results
+    .map(result => Array.from(result.instances.values()))
+    .flat();
+
+  return {
+    playerInstance: instances.find(playerCriteria),
+    playerSourceInstance: instances.find(playerSourceCriteria),
+  };
+}
+
+function tlp_resetPlayer(instances: Instances) {
+  const { playerInstance, playerSourceInstance } = instances;
+  const mediaPlayer = playerInstance.props.mediaPlayerInstance;
+
+  // Are we dealing with a VOD?
+  const duration = mediaPlayer.getDuration?.() ?? Infinity;
+  let position = -1;
+
+  if (isFinite(duration) && !isNaN(duration) && duration > 0)
+    position = mediaPlayer.getPosition();
+
+  const video = mediaPlayer.core?.mediaSinkManager?.video;
+  if (mediaPlayer.attachHTMLVideoElement) {
+    const newVideo = document.createElement("video");
+    const volume = video?.volume ?? mediaPlayer.getVolume();
+    const muted = mediaPlayer.isMuted();
+
+    newVideo.volume = muted ? 0 : volume;
+    newVideo.playsInline = true;
+
+    video.replaceWith(newVideo);
+    mediaPlayer.attachHTMLVideoElement(newVideo);
+    setTimeout(() => {
+      mediaPlayer.setVolume(volume);
+      mediaPlayer.setMuted(muted);
+    }, 0);
+  }
+
+  playerSourceInstance.setSrc({ isNewMediaPlayerInstance: false });
+
+  if (position > 0) setTimeout(() => mediaPlayer.seekTo(position), 250);
+}
+
+function tlp_main() {
+  const instances = tlp_getInstances();
+  console.log(instances);
+  if (!instances.playerInstance || !instances.playerSourceInstance) return;
+  tlp_resetPlayer(instances);
 }
 
 // TODO: Find a better way to detect when the player is ready
-setTimeout(lol_main, 10_000);
+setTimeout(tlp_main, 10_000);
 
 // TODO: Detect when an ad is playing and reset the player
 // TODO: Test Reset feature once user has navigated to a new stream without reloading the page
