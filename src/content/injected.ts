@@ -192,6 +192,10 @@ function tlp_getInstances(): Instances {
   };
 }
 
+/**
+ * Reset the player.
+ * @param instances
+ */
 function tlp_resetPlayer(instances: Instances) {
   const { playerInstance, playerSourceInstance } = instances;
 
