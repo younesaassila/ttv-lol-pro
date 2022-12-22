@@ -4,6 +4,8 @@
  *  Website: https://www.frankerfacez.com/
  */
 
+import type { MediaPlayer } from "amazon-ivs-player";
+
 console.log("[TTV LOL PRO] Injected into Twitch");
 
 //#region Types
@@ -11,6 +13,24 @@ type DOMContainerElement = Element & { _reactRootContainer?: any };
 type Instances = {
   playerInstance: any;
   playerSourceInstance: any;
+};
+type MediaPlayerInstance =
+  | MediaPlayer & {
+      core: any;
+      requestCaptureAnalytics: any;
+      startCapture: any;
+      stopCapture: any;
+    };
+type SearchOut = {
+  cls: Function | null;
+  instances: Set<any>;
+  depth: number | null;
+};
+type SearchData = {
+  seen: Set<Function>;
+  classes: (Function | null)[];
+  out: SearchOut[];
+  maxDepth: number;
 };
 //#endregion
 
@@ -62,14 +82,24 @@ function tlp_getReactInstance(element) {
   );
 }
 
+/**
+ * Get all React instances matching at least one of the given criterias.
+ * @param node
+ * @param criterias
+ * @param maxDepth
+ * @param depth
+ * @param data
+ * @param traverseRoots
+ * @returns
+ */
 function tlp_searchAll(
   node,
   criterias: Function[],
-  max_depth = 15,
+  maxDepth = 15,
   depth = 0,
-  data: any = undefined,
-  traverse_roots = true
-) {
+  data: SearchData | null = null,
+  traverseRoots = true
+): SearchOut[] {
   if (!node) node = REACT;
   else if (node._reactInternalFiber) node = node._reactInternalFiber;
   else if (node instanceof Node) node = tlp_getReactInstance(node);
@@ -83,40 +113,40 @@ function tlp_searchAll(
         instances: new Set(),
         depth: null,
       })),
-      max_depth: depth,
+      maxDepth: depth,
     };
 
-  if (!node || node._ffz_no_scan || depth > max_depth) return data.out;
+  if (!node || node._ffz_no_scan || depth > maxDepth) return data.out;
 
-  if (depth > data.max_depth) data.max_depth = depth;
+  if (depth > data.maxDepth) data.maxDepth = depth;
 
   const inst = node.stateNode;
   if (inst) {
-    const cls = inst.constructor,
-      idx = data.classes.indexOf(cls);
+    const cls = inst.constructor;
+    const idx = data.classes.indexOf(cls);
 
     if (idx !== -1) data.out[idx].instances.add(inst);
     else if (!data.seen.has(cls)) {
       let i = criterias.length;
-      while (i-- > 0)
+      while (i-- > 0) {
         if (criterias[i](inst)) {
           data.classes[i] = data.out[i].cls = cls;
           data.out[i].instances.add(inst);
           data.out[i].depth = depth;
           break;
         }
-
+      }
       data.seen.add(cls);
     }
   }
 
   let child = node.child;
   while (child) {
-    tlp_searchAll(child, criterias, max_depth, depth + 1, data, traverse_roots);
+    tlp_searchAll(child, criterias, maxDepth, depth + 1, data, traverseRoots);
     child = child.sibling;
   }
 
-  if (traverse_roots && inst && inst.props && inst.props.root) {
+  if (traverseRoots && inst && inst.props && inst.props.root) {
     const root = inst.props.root._reactRootContainer;
     if (root) {
       let child =
@@ -125,10 +155,10 @@ function tlp_searchAll(
         tlp_searchAll(
           child,
           criterias,
-          max_depth,
+          maxDepth,
           depth + 1,
           data,
-          traverse_roots
+          traverseRoots
         );
         child = child.sibling;
       }
@@ -164,35 +194,40 @@ function tlp_getInstances(): Instances {
 
 function tlp_resetPlayer(instances: Instances) {
   const { playerInstance, playerSourceInstance } = instances;
-  const mediaPlayer = playerInstance.props.mediaPlayerInstance;
+
+  const player = playerInstance.props
+    .mediaPlayerInstance as MediaPlayerInstance;
 
   // Are we dealing with a VOD?
-  const duration = mediaPlayer.getDuration?.() ?? Infinity;
+  const duration = player.getDuration?.() ?? Infinity;
   let position = -1;
 
-  if (isFinite(duration) && !isNaN(duration) && duration > 0)
-    position = mediaPlayer.getPosition();
+  if (isFinite(duration) && !isNaN(duration) && duration > 0) {
+    position = player.getPosition();
+  }
 
-  const video = mediaPlayer.core?.mediaSinkManager?.video;
-  if (mediaPlayer.attachHTMLVideoElement) {
+  const video = player.core?.mediaSinkManager?.video as HTMLVideoElement;
+  if (player.attachHTMLVideoElement) {
     const newVideo = document.createElement("video");
-    const volume = video?.volume ?? mediaPlayer.getVolume();
-    const muted = mediaPlayer.isMuted();
+    const volume = video?.volume ?? player.getVolume();
+    const muted = player.isMuted();
 
     newVideo.volume = muted ? 0 : volume;
     newVideo.playsInline = true;
 
     video.replaceWith(newVideo);
-    mediaPlayer.attachHTMLVideoElement(newVideo);
+    player.attachHTMLVideoElement(newVideo);
     setTimeout(() => {
-      mediaPlayer.setVolume(volume);
-      mediaPlayer.setMuted(muted);
+      player.setVolume(volume);
+      player.setMuted(muted);
     }, 0);
   }
 
   playerSourceInstance.setSrc({ isNewMediaPlayerInstance: false });
 
-  if (position > 0) setTimeout(() => mediaPlayer.seekTo(position), 250);
+  if (position > 0) {
+    setTimeout(() => player.seekTo(position), 250);
+  }
 }
 
 function tlp_main() {
