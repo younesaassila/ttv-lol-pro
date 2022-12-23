@@ -238,7 +238,7 @@ function tlp_main() {
   const instances = tlp_getInstances();
   console.log(instances);
   if (!instances.playerInstance || !instances.playerSourceInstance) return;
-  tlp_resetPlayer(instances);
+  // tlp_resetPlayer(instances);
 }
 
 // TODO: Find a better way to detect when the player is ready
