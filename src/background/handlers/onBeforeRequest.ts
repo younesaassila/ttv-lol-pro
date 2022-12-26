@@ -6,7 +6,7 @@ import { PlaylistType, Token } from "../../types";
 
 export default function onBeforeRequest(
   details: WebRequest.OnBeforeRequestDetailsType
-): WebRequest.BlockingResponse | Promise<WebRequest.BlockingResponse> {
+): WebRequest.BlockingResponseOrPromise {
   const match = TWITCH_API_URL_REGEX.exec(details.url);
   if (!match) return {};
   const [, _type, streamId, _params] = match;
