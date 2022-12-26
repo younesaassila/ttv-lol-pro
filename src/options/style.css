@@ -1,5 +1,6 @@
 :root {
-  --font-primary: "Open Sans", "Segoe UI", sans-serif;
+  --font-primary: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
 
   --brand-color: #9147ff;
   --ui-background-color: #151619;
