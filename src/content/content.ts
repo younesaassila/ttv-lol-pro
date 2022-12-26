@@ -43,11 +43,12 @@ function onMessage(message: Message, sender: browser.Runtime.MessageSender) {
     const { tabId, startDateString } = (message as MidrollMessage).response;
     if (currentTabId == null || tabId !== currentTabId) return;
 
-    const now = new Date();
     const startDate = new Date(startDateString);
-    const delay = startDate.getTime() - now.getTime();
+    const now = new Date();
+    const diff = startDate.getTime() - now.getTime();
+    const delay = Math.max(diff, 0); // Prevent negative delay.
+
     log(`Midroll scheduled for ${startDateString} (in ${delay} ms)`);
-    if (delay < 0) return;
 
     setTimeout(() => {
       // Check if FrankerFaceZ's reset player button exists.
