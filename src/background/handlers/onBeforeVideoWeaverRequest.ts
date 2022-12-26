@@ -1,4 +1,5 @@
 import browser, { WebRequest } from "webextension-polyfill";
+import store from "../../store";
 import type { MidrollMessage } from "../../types";
 
 const AD_SIGNIFIER = "stitched"; // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/firefox/content.js#L87
@@ -10,6 +11,7 @@ export default function onBeforeVideoWeaverRequest(
 ): WebRequest.BlockingResponseOrPromise {
   if (!URL_REGEX.test(details.url)) return {};
   if (!browser.webRequest.filterResponseData) return {};
+  if (!store.state.resetPlayerOnMidroll) return {};
 
   const filter = browser.webRequest.filterResponseData(details.requestId);
   const decoder = new TextDecoder("utf-8");
