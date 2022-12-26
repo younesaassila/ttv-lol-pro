@@ -1,5 +1,7 @@
+import injectedScript from "url:./injected.ts";
 import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
+import log from "../common/ts/log";
 import { TWITCH_URL_REGEX } from "../common/ts/regexes";
 import store from "../store";
 import type { CurrentTabIdMessage, Message, MidrollMessage } from "../types";
@@ -7,26 +9,37 @@ import type { CurrentTabIdMessage, Message, MidrollMessage } from "../types";
 log("Content script running.");
 
 let currentTabId: number | undefined = undefined;
-
 // Query current tab ID.
 const message = {
   type: "currentTabId",
 } as CurrentTabIdMessage;
 browser.runtime.sendMessage(message).catch(console.error);
 
-if (store.readyState === "complete") main();
-else store.addEventListener("load", main);
+// Clear errors for stream on page load/reload.
+if (store.readyState === "complete") clearErrors();
+else store.addEventListener("load", clearErrors);
 
-function main() {
+// Inject script into page.
+if (document.readyState === "complete") injectScript();
+else document.addEventListener("DOMContentLoaded", injectScript);
+
+function clearErrors() {
   const match = TWITCH_URL_REGEX.exec(location.href);
   if (!match) return;
   const [, streamId] = match;
   if (!streamId) return;
 
   if (store.state.streamStatuses.hasOwnProperty(streamId)) {
-    // Clear errors for stream on page load/reload.
     store.state.streamStatuses[streamId].errors = [];
   }
+}
+
+function injectScript() {
+  // From https://stackoverflow.com/a/9517879
+  const script = document.createElement("script");
+  script.src = injectedScript;
+  script.onload = () => script.remove();
+  document.head.appendChild(script);
 }
 
 browser.runtime.onMessage.addListener(onMessage);
@@ -61,12 +74,14 @@ function onMessage(message: Message, sender: browser.Runtime.MessageSender) {
         );
         log("Clicked FrankerFaceZ's reset player button.");
       } else {
-        // TODO: Notify injected script to reset player or reload page.
+        // Otherwise, send message to injected script.
+        window.postMessage({ type: "resetPlayer" }, "*");
       }
     }, delay);
   }
 }
 
-function log(...args: any[]) {
-  console.log("[TTV LOL PRO]", ...args);
-}
+setTimeout(() => {
+  log("Sending resetPlayer message (for testing)");
+  window.postMessage({ type: "resetPlayer" }, "*");
+}, 10_000);
