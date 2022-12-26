@@ -40,20 +40,22 @@ type SearchData = {
   let accessor: string | null = null;
   let instances: Instances | null = null;
 
-  window.addEventListener(
-    "message",
-    event => {
-      // Only accept messages from this window to itself (i.e. not from any iframes)
-      if (event.source !== window) return;
-      if (event.data?.type !== "resetPlayer") return;
+  // Listen for messages from the content script.
+  window.addEventListener("message", event => {
+    // Only accept messages from this window to itself (i.e. not from any iframes)
+    if (event.source !== window) return;
+    if (!event.data) return;
 
-      log("Received resetPlayer message");
+    if (event.data.type === "resetPlayer") {
+      log("Received `resetPlayer` message.");
       if (!instances) instances = getInstances();
-      if (!instances.playerInstance || !instances.playerSourceInstance) return;
+      if (!instances.playerInstance || !instances.playerSourceInstance) {
+        log("Player instance not found.");
+        return;
+      }
       resetPlayer(instances);
-    },
-    false
-  );
+    }
+  });
 
   /**
    * Get the root element's React instance from the page.
@@ -210,7 +212,7 @@ type SearchData = {
   function resetPlayer(instances: Instances) {
     const { playerInstance, playerSourceInstance } = instances;
 
-    log("Resetting player");
+    log("Resetting player.");
 
     const player = playerInstance.props
       .mediaPlayerInstance as MediaPlayerInstance;

@@ -76,12 +76,8 @@ function onMessage(message: Message, sender: browser.Runtime.MessageSender) {
       } else {
         // Otherwise, send message to injected script.
         window.postMessage({ type: "resetPlayer" }, "*");
+        log("Sent resetPlayer message to injected script.");
       }
     }, delay);
   }
 }
-
-setTimeout(() => {
-  log("Sending resetPlayer message (for testing)");
-  window.postMessage({ type: "resetPlayer" }, "*");
-}, 10_000);
