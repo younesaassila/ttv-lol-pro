@@ -45,7 +45,7 @@ function onMessage(message: Message, sender: browser.Runtime.MessageSender) {
 
     const now = new Date();
     const startDate = new Date(startDateString);
-    const delay = now.getTime() - startDate.getTime();
+    const delay = startDate.getTime() - now.getTime();
     log(`Midroll scheduled for ${startDateString} (in ${delay} ms)`);
     if (delay < 0) return;
 
