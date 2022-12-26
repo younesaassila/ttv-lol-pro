@@ -4,7 +4,7 @@ import store from "../../store";
 
 export default function onHeadersReceived(
   details: WebRequest.OnHeadersReceivedDetailsType
-): WebRequest.BlockingResponse {
+): WebRequest.BlockingResponseOrPromise {
   const match = TTV_LOL_API_URL_REGEX.exec(details.url);
   if (!match) return {};
   const [, streamId] = match;

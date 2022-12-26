@@ -1,4 +1,5 @@
 import $ from "../common/ts/$";
+import isChrome from "../common/ts/isChrome";
 import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
 import store from "../store";
@@ -26,13 +27,16 @@ type ListOptions = {
 const whitelistedChannelsListElement = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
-const ignoredChannelSubscriptionsListElement = $(
-  "#ignored-channel-subscriptions-list"
-) as HTMLUListElement;
+const resetPlayerOnMidrollCheckboxElement = $(
+  "#reset-player-on-midroll-checkbox"
+);
 const disableVodRedirectCheckboxElement = $(
   "#disable-vod-redirect-checkbox"
 ) as HTMLInputElement;
 const serversListElement = $("#servers-list") as HTMLOListElement;
+const ignoredChannelSubscriptionsListElement = $(
+  "#ignored-channel-subscriptions-list"
+) as HTMLUListElement;
 const exportButtonElement = $("#export-button") as HTMLButtonElement;
 const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
@@ -66,6 +70,14 @@ function main() {
       getPromptPlaceholder: () => "Enter a channel name…",
     }
   );
+  // Reset player on midroll
+  resetPlayerOnMidrollCheckboxElement.checked =
+    store.state.resetPlayerOnMidroll;
+  resetPlayerOnMidrollCheckboxElement.addEventListener("change", e => {
+    const checkbox = e.target as HTMLInputElement;
+    store.state.resetPlayerOnMidroll = checkbox.checked;
+  });
+  if (isChrome) resetPlayerOnMidrollCheckboxElement.disabled = true;
   // Disable VOD proxying
   disableVodRedirectCheckboxElement.checked = store.state.disableVodRedirect;
   disableVodRedirectCheckboxElement.addEventListener("change", e => {

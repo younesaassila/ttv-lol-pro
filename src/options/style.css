@@ -71,6 +71,10 @@ button:hover {
   background-color: var(--button-background-color-hover);
 }
 
+input[type="checkbox"]:disabled + label {
+  opacity: 0.7;
+}
+
 hr {
   margin: 2.5rem 0;
   border: 0;

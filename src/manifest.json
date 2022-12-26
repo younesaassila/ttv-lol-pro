@@ -36,10 +36,11 @@
   },
   "permissions": [
     "storage",
+    "tabs",
     "webRequest",
     "webRequestBlocking",
     "https://*.twitch.tv/*",
-    "https://usher.ttvnw.net/*",
+    "https://*.ttvnw.net/*",
     "https://api.ttv.lol/*"
   ]
 }
