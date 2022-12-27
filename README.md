@@ -39,8 +39,9 @@ This fork:
 - disables TTV LOL for channels you are subscribed to,
 - lets you whitelist channels,
 - improves TTV LOL's popup by showing stream status and "Whitelist" button,
-- lets you add custom primary/fallback proxies,
-- falls back to the stream with ads if the API server errors out.
+- falls back to the stream with ads if the API server errors out,
+- improves your privacy by removing your Twitch token from API requests,
+- lets you add custom primary/fallback proxies.
 
 **Recommendations:**
 
