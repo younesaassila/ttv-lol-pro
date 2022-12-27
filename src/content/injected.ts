@@ -20,7 +20,7 @@ type MediaPlayerInstance =
       startCapture: any;
       stopCapture: any;
     };
-type SearchOut = {
+type SearchOutput = {
   cls: Function | null;
   instances: Set<any>;
   depth: number | null;
@@ -28,7 +28,7 @@ type SearchOut = {
 type SearchData = {
   seen: Set<Function>;
   classes: (Function | null)[];
-  out: SearchOut[];
+  output: SearchOutput[];
   maxDepth: number;
 };
 //#endregion
@@ -113,46 +113,54 @@ type SearchData = {
    * @returns
    */
   function searchAll(
-    node,
+    node: any,
     criterias: Function[],
     maxDepth = 15,
     depth = 0,
     data: SearchData | null = null,
     traverseRoots = true
-  ): SearchOut[] {
+  ): SearchOutput[] {
     if (!node) node = REACT;
     else if (node._reactInternalFiber) node = node._reactInternalFiber;
     else if (node instanceof Node) node = getReactInstance(node);
 
-    if (!data)
+    // If no search data was provided, create a new object to store search progress.
+    if (!data) {
       data = {
         seen: new Set(),
         classes: criterias.map(() => null),
-        out: criterias.map(() => ({
+        output: criterias.map(() => ({
           cls: null,
           instances: new Set(),
           depth: null,
         })),
         maxDepth: depth,
       };
+    }
 
-    if (!node || node._ffz_no_scan || depth > maxDepth) return data.out;
-
+    // If the node is not valid, or if the search has exceeded the maximum depth, return the search output.
+    if (!node || node._ffz_no_scan || depth > maxDepth) return data.output;
+    // Update the maximum depth reached during the search, if necessary.
     if (depth > data.maxDepth) data.maxDepth = depth;
 
-    const inst = node.stateNode;
-    if (inst) {
-      const cls = inst.constructor;
+    const instance = node.stateNode;
+    if (instance) {
+      const cls = instance.constructor;
       const idx = data.classes.indexOf(cls);
 
-      if (idx !== -1) data.out[idx].instances.add(inst);
-      else if (!data.seen.has(cls)) {
+      if (idx !== -1) {
+        // If the constructor function has already been seen, add the current React instance to the matching instances
+        // for the corresponding criteria function.
+        data.output[idx].instances.add(instance);
+      } else if (!data.seen.has(cls)) {
+        // If the constructor function has not yet been seen, check if any of the criteria functions match the current React instance.
         let i = criterias.length;
         while (i-- > 0) {
-          if (criterias[i](inst)) {
-            data.classes[i] = data.out[i].cls = cls;
-            data.out[i].instances.add(inst);
-            data.out[i].depth = depth;
+          if (criterias[i](instance)) {
+            // Match found.
+            data.classes[i] = data.output[i].cls = cls;
+            data.output[i].instances.add(instance);
+            data.output[i].depth = depth;
             break;
           }
         }
@@ -160,14 +168,17 @@ type SearchData = {
       }
     }
 
+    // Search for matching React instances in the children of the current node.
     let child = node.child;
     while (child) {
       searchAll(child, criterias, maxDepth, depth + 1, data, traverseRoots);
       child = child.sibling;
     }
 
-    if (traverseRoots && inst && inst.props && inst.props.root) {
-      const root = inst.props.root._reactRootContainer;
+    // If the search should traverse root nodes, and the current React instance has a root prop,
+    // search for matching instances in the root node.
+    if (traverseRoots && instance && instance.props && instance.props.root) {
+      const root = instance.props.root._reactRootContainer;
       if (root) {
         let child =
           (root._internalRoot && root._internalRoot.current) || root.current;
@@ -178,7 +189,7 @@ type SearchData = {
       }
     }
 
-    return data.out;
+    return data.output;
   }
 
   /**
