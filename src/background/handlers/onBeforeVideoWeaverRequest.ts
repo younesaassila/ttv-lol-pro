@@ -29,7 +29,7 @@ export default function onBeforeVideoWeaverRequest(
 function replacer(
   responseText: string,
   details: WebRequest.OnBeforeRequestDetailsType
-) {
+): string {
   // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/firefox/content.js#L523-L527
   const hasAdTags = (text: string) => text.includes(AD_SIGNIFIER);
   const isMidroll = (text: string) =>
