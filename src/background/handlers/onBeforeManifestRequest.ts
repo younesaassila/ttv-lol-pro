@@ -4,7 +4,7 @@ import { TWITCH_API_URL_REGEX } from "../../common/ts/regexes";
 import store from "../../store";
 import { PlaylistType, Token } from "../../types";
 
-export default function onBeforeRequest(
+export default function onBeforeManifestRequest(
   details: WebRequest.OnBeforeRequestDetailsType
 ): WebRequest.BlockingResponseOrPromise {
   const match = TWITCH_API_URL_REGEX.exec(details.url);

@@ -9,19 +9,12 @@ export type KeyOfType<T, V> = keyof {
 
 //#region Message
 
-type MessageType = "currentTabId" | "midroll";
+type MessageType = "midroll";
 
 export interface Message {
   type: MessageType;
   request?: Record<string | symbol, any>;
   response?: Record<string | symbol, any>;
-}
-
-export interface CurrentTabIdMessage extends Message {
-  type: "currentTabId";
-  response: {
-    tabId: number;
-  };
 }
 
 export interface MidrollMessage extends Message {

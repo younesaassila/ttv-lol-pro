@@ -69,7 +69,6 @@ function filterResponseText(
     const message = {
       type: "midroll",
       response: {
-        tabId: details.tabId,
         startDateString,
       },
     } as MidrollMessage;
