@@ -1,55 +1,45 @@
-import browser, { WebRequest } from "webextension-polyfill";
-import isChrome from "../../common/ts/isChrome";
-import {
-  MANIFEST_PROXY_COUNTRY_REGEX,
-  TTV_LOL_API_URL_REGEX,
-} from "../../common/ts/regexes";
+import { WebRequest } from "webextension-polyfill";
+import filterResponseDataWrapper from "../../common/ts/filterResponseDataWrapper";
+import { TTV_LOL_API_URL_REGEX } from "../../common/ts/regexes";
 import store from "../../store";
+
+const PROXY_COUNTRY_REGEX = /USER-COUNTRY="([A-Z]+)"/i;
 
 export default function onBeforeSendApiHeaders(
   details: WebRequest.OnBeforeSendHeadersDetailsType
-): WebRequest.BlockingResponse {
-  if (!details.requestHeaders) {
-    console.error("`details.requestHeaders` is undefined");
-    return {};
-  }
-  details.requestHeaders.push({
+): WebRequest.BlockingResponseOrPromise {
+  const requestHeaders = details.requestHeaders || [];
+  requestHeaders.push({
     name: "X-Donate-To",
     value: "https://ttv.lol/donate",
   });
 
-  const response: WebRequest.BlockingResponse = {
-    requestHeaders: details.requestHeaders,
-  };
+  const response = {
+    requestHeaders: requestHeaders,
+  } as WebRequest.BlockingResponse;
 
-  if (isChrome) return response;
+  filterResponseDataWrapper(details, text => {
+    const streamId = getStreamIdFromUrl(details.url);
+    const proxyCountry = extractProxyCountryFromManifest(text);
+    if (!streamId || !proxyCountry) return text;
 
-  const match = TTV_LOL_API_URL_REGEX.exec(details.url);
-  if (!match) return response;
-  const [, streamId] = match;
-  if (!streamId) return response;
+    setStreamStatusProxyCountry(streamId, proxyCountry);
 
-  const filter = browser.webRequest.filterResponseData(details.requestId);
-  const decoder = new TextDecoder("utf-8");
-
-  filter.ondata = event => {
-    const data = decoder.decode(event.data, { stream: true });
-    const proxyCountry = extractProxyCountry(data);
-    if (proxyCountry) {
-      setStreamStatusProxyCountry(streamId, proxyCountry);
-    }
-    filter.write(event.data);
-  };
-  filter.onerror = () => {
-    console.log(`Error: ${filter.error} for ${details.requestId}`);
-  };
-  filter.onstop = () => filter.disconnect();
+    return text;
+  });
 
   return response;
 }
 
-function extractProxyCountry(data: string) {
-  const match = MANIFEST_PROXY_COUNTRY_REGEX.exec(data);
+function getStreamIdFromUrl(url: string): string | undefined {
+  const match = TTV_LOL_API_URL_REGEX.exec(url);
+  if (!match) return;
+  const [, streamId] = match;
+  return streamId;
+}
+
+function extractProxyCountryFromManifest(text: string): string | undefined {
+  const match = PROXY_COUNTRY_REGEX.exec(text);
   if (!match) return;
   const [, proxyCountry] = match;
   return proxyCountry;
@@ -57,10 +47,11 @@ function extractProxyCountry(data: string) {
 
 function setStreamStatusProxyCountry(
   streamId: string,
-  proxyCountry: string | undefined = undefined
-) {
-  if (!proxyCountry) return;
+  proxyCountry: string
+): void {
   const status = store.state.streamStatuses[streamId];
+  if (!status) return;
+
   store.state.streamStatuses[streamId] = {
     ...status,
     proxyCountry: proxyCountry,
