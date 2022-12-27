@@ -6,7 +6,7 @@ import {
 } from "../../common/ts/regexes";
 import store from "../../store";
 
-export default function onBeforeSendHeaders(
+export default function onBeforeSendApiHeaders(
   details: WebRequest.OnBeforeSendHeadersDetailsType
 ): WebRequest.BlockingResponse {
   if (!details.requestHeaders) {

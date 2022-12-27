@@ -1,9 +1,9 @@
 import browser from "webextension-polyfill";
 import isChrome from "../common/ts/isChrome";
+import onApiHeadersReceived from "./handlers/onApiHeadersReceived";
 import onBeforeManifestRequest from "./handlers/onBeforeManifestRequest";
-import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
+import onBeforeSendApiHeaders from "./handlers/onBeforeSendApiHeaders";
 import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
-import onHeadersReceived from "./handlers/onHeadersReceived";
 import onStartup from "./handlers/onStartup";
 
 // Check for updates on Chrome startup.
@@ -32,14 +32,14 @@ browser.webRequest.onBeforeRequest.addListener(
 
 // Add the `X-Donate-To` header to API requests.
 browser.webRequest.onBeforeSendHeaders.addListener(
-  onBeforeSendHeaders,
+  onBeforeSendApiHeaders,
   { urls: ["https://api.ttv.lol/playlist/*", "https://api.ttv.lol/vod/*"] },
   ["blocking", "requestHeaders"]
 );
 
 // Monitor API error responses.
 browser.webRequest.onHeadersReceived.addListener(
-  onHeadersReceived,
+  onApiHeadersReceived,
   { urls: ["https://api.ttv.lol/playlist/*", "https://api.ttv.lol/vod/*"] },
   ["blocking"]
 );
