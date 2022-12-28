@@ -4,10 +4,10 @@ import onApiHeadersReceived from "./handlers/onApiHeadersReceived";
 import onBeforeManifestRequest from "./handlers/onBeforeManifestRequest";
 import onBeforeSendApiHeaders from "./handlers/onBeforeSendApiHeaders";
 import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
-import onStartup from "./handlers/onStartup";
+import onStartupUpdateCheck from "./handlers/onStartupUpdateCheck";
 
 // Check for updates on Chrome startup.
-if (isChrome) browser.runtime.onStartup.addListener(onStartup);
+if (isChrome) browser.runtime.onStartup.addListener(onStartupUpdateCheck);
 
 // Redirect the HLS master manifest request to TTV LOL's API.
 browser.webRequest.onBeforeRequest.addListener(
