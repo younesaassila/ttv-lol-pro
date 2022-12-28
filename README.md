@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="src/assets/icon.png" height="100" width="100" alt="Icon" />
+  <img src="src/images/brand/icon.png" height="100" width="100" alt="Icon" />
   <br />
   TTV LOL PRO
   <br />

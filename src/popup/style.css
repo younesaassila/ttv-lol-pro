@@ -2,7 +2,8 @@ html {
   -webkit-font-smoothing: antialiased;
   background: #151619;
   color: #c9cbcd;
-  font-family: "Open Sans", "Segoe UI", sans-serif;
+  font-family: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
   text-rendering: optimizeLegibility;
 }
 
