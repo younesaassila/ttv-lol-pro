@@ -21,7 +21,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.twitch.tv/*"],
+      "matches": ["https://www.twitch.tv/*"],
       "js": ["content/content.ts"],
       "run_at": "document_start"
     }
@@ -39,7 +39,7 @@
     "webRequest",
     "webRequestBlocking",
     "https://*.ttvnw.net/*",
-    "https://*.twitch.tv/*",
-    "https://api.ttv.lol/*"
+    "https://api.ttv.lol/*",
+    "https://www.twitch.tv/*"
   ]
 }
