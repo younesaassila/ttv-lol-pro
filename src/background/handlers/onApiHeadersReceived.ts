@@ -1,37 +1,38 @@
 import { WebRequest } from "webextension-polyfill";
 import { TTV_LOL_API_URL_REGEX } from "../../common/ts/regexes";
 import store from "../../store";
+import type { StreamStatus } from "../../types";
 
 export default function onApiHeadersReceived(
   details: WebRequest.OnHeadersReceivedDetailsType
 ): WebRequest.BlockingResponseOrPromise {
-  const match = TTV_LOL_API_URL_REGEX.exec(details.url);
-  if (!match) return {};
-  const [, streamId] = match;
+  const streamId = getStreamIdFromUrl(details.url);
   if (!streamId) return {};
 
   const isServerError = 500 <= details.statusCode && details.statusCode < 600;
   if (isServerError) {
-    const status = getStreamStatus(streamId);
+    // Add error to stream status.
+    const status = getStreamStatusFromStreamId(streamId);
+    const errors = status.errors || [];
+    errors.push({
+      timestamp: Date.now(),
+      status: details.statusCode,
+    });
+
     store.state.streamStatuses[streamId] = {
       ...status,
-      errors: [
-        ...status.errors,
-        {
-          timestamp: Date.now(),
-          status: details.statusCode,
-        },
-      ],
-      proxyCountry: undefined,
+      errors: errors,
+      proxyCountry: undefined, // Reset proxy country on error.
     };
     console.log(`${streamId}: ${status.errors.length + 1} errors`);
     console.log(`${streamId}: Redirect canceled (Error ${details.statusCode})`);
 
     return {
-      cancel: true,
+      cancel: true, // This forces twitch to retry the request (up to 2 times).
     };
   } else {
-    const status = getStreamStatus(streamId);
+    // Clear errors if server is not returning 5xx.
+    const status = getStreamStatusFromStreamId(streamId);
     store.state.streamStatuses[streamId] = {
       ...status,
       errors: [],
@@ -41,12 +42,20 @@ export default function onApiHeadersReceived(
   }
 }
 
-function getStreamStatus(streamId: string) {
-  return (
-    store.state.streamStatuses[streamId] || {
-      redirected: true,
-      reason: "",
-      errors: [],
-    }
-  );
+function getStreamIdFromUrl(url: string): string | undefined {
+  const match = TTV_LOL_API_URL_REGEX.exec(url);
+  if (!match) return;
+  const [, streamId] = match;
+  return streamId;
+}
+
+function getStreamStatusFromStreamId(streamId: string): StreamStatus {
+  const status = store.state.streamStatuses[streamId];
+  const defaultStatus = {
+    redirected: true,
+    reason: "",
+    errors: [],
+  } as StreamStatus;
+
+  return status || defaultStatus;
 }
