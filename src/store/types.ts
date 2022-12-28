@@ -1,4 +1,4 @@
-import { StreamStatus } from "../types";
+import type { StreamStatus } from "../types";
 
 export type EventType = "load" | "change";
 export type ReadyState = "loading" | "complete";

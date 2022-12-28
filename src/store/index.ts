@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import getDefaultState from "./getDefaultState";
 import getStateHandler from "./handlers/getStateHandler";
-import { EventType, ReadyState, State, StorageArea } from "./types";
+import type { EventType, ReadyState, State, StorageArea } from "./types";
 
 class Store {
   private _areaName: StorageArea;

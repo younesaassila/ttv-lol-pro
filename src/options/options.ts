@@ -4,7 +4,7 @@ import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
 import store from "../store";
 import getDefaultState from "../store/getDefaultState";
-import { KeyOfType } from "../types";
+import type { KeyOfType } from "../types";
 
 //#region Types
 type AllowedResult = [boolean, string?];
