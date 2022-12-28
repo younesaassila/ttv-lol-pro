@@ -28,7 +28,7 @@ export default function onApiHeadersReceived(
     console.log(`${streamId}: Redirect canceled (Error ${details.statusCode})`);
 
     return {
-      cancel: true, // This forces twitch to retry the request (up to 2 times).
+      cancel: true, // This forces Twitch to retry the request (up to 2 times).
     };
   } else {
     // Clear errors if server is not returning 5xx.
