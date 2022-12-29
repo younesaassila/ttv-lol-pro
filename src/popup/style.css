@@ -106,7 +106,7 @@ body {
   margin: 0 30px;
   padding: 18px 14px 14px 14px;
   gap: 7px;
-  border-bottom: 1px solid hsl(210, 4%, 25%);
+  border-bottom: 1px solid #3d4042;
   border-radius: 8px;
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
