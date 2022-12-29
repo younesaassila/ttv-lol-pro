@@ -24,19 +24,26 @@ type ListOptions = {
 //#endregion
 
 //#region HTML Elements
-const whitelistedChannelsListElement = $(
-  "#whitelisted-channels-list"
-) as HTMLUListElement;
+// General
 const resetPlayerOnMidrollCheckboxElement = $(
   "#reset-player-on-midroll-checkbox"
 );
+// Whitelisted channels
+const whitelistedChannelsListElement = $(
+  "#whitelisted-channels-list"
+) as HTMLUListElement;
+$;
+// Proxies
+const serversListElement = $("#servers-list") as HTMLOListElement;
+// Privacy
 const disableVodRedirectCheckboxElement = $(
   "#disable-vod-redirect-checkbox"
 ) as HTMLInputElement;
-const serversListElement = $("#servers-list") as HTMLOListElement;
+// Ignored channel subscriptions
 const ignoredChannelSubscriptionsListElement = $(
   "#ignored-channel-subscriptions-list"
 ) as HTMLUListElement;
+// Import/Export
 const exportButtonElement = $("#export-button") as HTMLButtonElement;
 const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
@@ -71,13 +78,17 @@ function main() {
     }
   );
   // Reset player on midroll
-  resetPlayerOnMidrollCheckboxElement.checked =
-    store.state.resetPlayerOnMidroll;
-  resetPlayerOnMidrollCheckboxElement.addEventListener("change", e => {
-    const checkbox = e.target as HTMLInputElement;
-    store.state.resetPlayerOnMidroll = checkbox.checked;
-  });
-  if (isChrome) resetPlayerOnMidrollCheckboxElement.disabled = true;
+  if (isChrome) {
+    resetPlayerOnMidrollCheckboxElement.disabled = true;
+    resetPlayerOnMidrollCheckboxElement.checked = false;
+  } else {
+    resetPlayerOnMidrollCheckboxElement.checked =
+      store.state.resetPlayerOnMidroll;
+    resetPlayerOnMidrollCheckboxElement.addEventListener("change", e => {
+      const checkbox = e.target as HTMLInputElement;
+      store.state.resetPlayerOnMidroll = checkbox.checked;
+    });
+  }
   // Disable VOD proxying
   disableVodRedirectCheckboxElement.checked = store.state.disableVodRedirect;
   disableVodRedirectCheckboxElement.addEventListener("change", e => {

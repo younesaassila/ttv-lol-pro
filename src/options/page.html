@@ -36,6 +36,7 @@
             <label for="reset-player-on-midroll-checkbox">
               Reset player on midroll
             </label>
+            <span class="tag">Experimental</span>
             <br />
             <small>This option is only available on Firefox.</small>
           </li>
@@ -45,6 +46,36 @@
       <section id="whitelisted-channels-section" class="section">
         <h2>Whitelisted channels</h2>
         <ul id="whitelisted-channels-list" class="store-list"></ul>
+      </section>
+
+      <section id="servers-section" class="section">
+        <h2>Proxies</h2>
+        <small>
+          TTV LOL PRO will ping each server in the list below until one
+          successfully responds to a <code>GET /ping</code> request.
+        </small>
+        <br />
+        <small>
+          Servers listed below must be compatible with TTV LOL's API structure
+          (<code>/ping</code>, <code>/playlist</code>, and
+          <code>/vod</code> routes). Failure to follow this structure will cause
+          TTV LOL PRO to error out.
+        </small>
+        <br />
+        <ol id="servers-list" class="store-list" start="0"></ol>
+        <small>
+          Looking for compatible proxies? Check out the "<a
+            href="https://github.com/younesaassila/ttv-lol-pro/discussions/37"
+            target="_blank"
+            >List of other proxies</a
+          >" discussion on TTV LOL PRO's GitHub repository.
+        </small>
+        <br />
+        <small>
+          Note: Fallback to stream with ads on server error is only available
+          for TTV LOL's API (https://api.ttv.lol).
+        </small>
+        <br />
       </section>
 
       <section id="privacy-section" class="section">
@@ -69,36 +100,6 @@
             </small>
           </li>
         </ul>
-      </section>
-
-      <section id="servers-section" class="section">
-        <h2>Server list</h2>
-        <small>
-          TTV LOL PRO will ping each server in the list below until one
-          successfully responds to a <code>GET /ping</code> request.
-        </small>
-        <br />
-        <small>
-          Servers listed below must be compatible with TTV LOL's API structure
-          (<code>/ping</code>, <code>/playlist</code>, and
-          <code>/vod</code> routes). Failure to follow this structure will cause
-          TTV LOL PRO to error out.
-        </small>
-        <br />
-        <small>
-          Note: Fallback to stream with ads on server error is only available
-          for TTV LOL's API (https://api.ttv.lol).
-        </small>
-        <br />
-        <small>
-          Looking for compatible proxies? Check out the "<a
-            href="https://github.com/younesaassila/ttv-lol-pro/discussions/37"
-            target="_blank"
-            >List of other proxies</a
-          >" discussion on TTV LOL PRO's GitHub repository.
-        </small>
-        <br />
-        <ol id="servers-list" class="store-list" start="0"></ol>
       </section>
 
       <section id="ignored-channel-subscriptions-section" class="section">
