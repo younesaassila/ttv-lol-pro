@@ -18,6 +18,9 @@
   --button-background-color-hover: hsl(224, 9%, 30%);
   --button-text-primary: #c3c4ca;
 
+  --link: #9147ff;
+  --link-hover: #9d5cff;
+
   --header-height: 2.5rem;
 }
 
@@ -34,6 +37,17 @@ body {
 ::selection {
   background-color: var(--brand-color);
   color: #ffffff;
+}
+
+a,
+a:visited {
+  color: var(--link);
+  transition: color 100ms ease-in-out;
+}
+
+a:hover,
+a:visited:hover {
+  color: var(--link-hover);
 }
 
 input[type="text"],
