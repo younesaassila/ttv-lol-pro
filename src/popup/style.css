@@ -104,7 +104,7 @@ body {
 #stream-status {
   display: none;
   margin: 0 30px;
-  padding: 15px;
+  padding: 18px 14px 14px 14px;
   gap: 7px;
   border-bottom: 1px solid hsl(210, 4%, 25%);
   border-radius: 8px;
@@ -128,7 +128,7 @@ body {
 }
 #stream-status #proxy-country {
   display: inline-block;
-  margin-top: 5px;
+  margin-top: 10px;
   font-size: 7pt;
   opacity: 0.6;
 }
