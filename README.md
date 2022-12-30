@@ -50,9 +50,14 @@ This fork:
   - remove banner ads,
   - block ads on VODs.
 
-## Screenshots
+## Screenshot
 
-![Popup](https://i.imgur.com/VucfuL6.png)
+<div align="center">
+  <img
+    src="https://user-images.githubusercontent.com/47226184/210082661-d738649e-cf5c-4666-8078-2318d369a20d.png"
+    alt="Popup on Firefox"
+  />
+</div>
 
 ## Installation
 
