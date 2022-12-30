@@ -54,7 +54,7 @@ This fork:
 
 <div align="center">
   <img
-    src="https://user-images.githubusercontent.com/47226184/210082661-d738649e-cf5c-4666-8078-2318d369a20d.png"
+    src="https://user-images.githubusercontent.com/47226184/210093901-2d0c7f62-5e1f-4ce2-83f3-e35812361e20.png"
     alt="Popup on Firefox"
   />
 </div>
