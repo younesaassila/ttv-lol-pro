@@ -9,9 +9,9 @@ type Update = {
 };
 //#endregion
 
-export default async function onStartup() {
+export default async function onStartupUpdateCheck() {
   if (store.readyState !== "complete") {
-    store.addEventListener("load", () => onStartup());
+    store.addEventListener("load", () => onStartupUpdateCheck());
     return;
   }
 

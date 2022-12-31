@@ -1,4 +1,4 @@
-import { StreamStatus } from "../types";
+import type { StreamStatus } from "../types";
 
 export type EventType = "load" | "change";
 export type ReadyState = "loading" | "complete";
@@ -9,6 +9,7 @@ export interface State {
   ignoredChannelSubscriptions: string[];
   isUpdateAvailable: boolean;
   lastUpdateCheck: number;
+  resetPlayerOnMidroll: boolean;
   servers: string[];
   streamStatuses: Record<string, StreamStatus>;
   whitelistedChannels: string[];

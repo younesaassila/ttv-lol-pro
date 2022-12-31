@@ -15,14 +15,6 @@ const whitelistToggle = $("#whitelist-toggle") as HTMLInputElement;
 const whitelistToggleLabel = $("#whitelist-toggle-label") as HTMLLabelElement;
 //#endregion
 
-// Open links in new tabs.
-document.querySelectorAll("a").forEach(a => {
-  a.addEventListener("click", e => {
-    e.preventDefault();
-    browser.tabs.create({ url: a.href });
-  });
-});
-
 if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 

@@ -1,5 +1,6 @@
 :root {
-  --font-primary: "Open Sans", "Segoe UI", sans-serif;
+  --font-primary: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
 
   --brand-color: #9147ff;
   --ui-background-color: #151619;
@@ -14,8 +15,11 @@
   --input-text-secondary: #7a8085;
 
   --button-background-color: #353840;
-  --button-background-color-hover: hsl(224, 9%, 30%);
+  --button-background-color-hover: #464953;
   --button-text-primary: #c3c4ca;
+
+  --link: #9d5cff;
+  --link-hover: #af7aff;
 
   --header-height: 2.5rem;
 }
@@ -33,6 +37,17 @@ body {
 ::selection {
   background-color: var(--brand-color);
   color: #ffffff;
+}
+
+a,
+a:visited {
+  color: var(--link);
+  transition: color 100ms ease-in-out;
+}
+
+a:hover,
+a:visited:hover {
+  color: var(--link-hover);
 }
 
 input[type="text"],
@@ -57,7 +72,7 @@ input[type="text"]::placeholder {
 
 input[type="button"],
 button {
-  padding: 0.5rem 1.25rem;
+  padding: 0.5rem 1rem;
   border: 0;
   border-radius: 6px;
   background-color: var(--button-background-color);
@@ -69,6 +84,10 @@ button {
 input[type="button"]:hover,
 button:hover {
   background-color: var(--button-background-color-hover);
+}
+
+input[type="checkbox"]:disabled + label {
+  opacity: 0.7;
 }
 
 hr {

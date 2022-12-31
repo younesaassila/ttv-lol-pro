@@ -2,7 +2,8 @@ html {
   -webkit-font-smoothing: antialiased;
   background: #151619;
   color: #c9cbcd;
-  font-family: "Open Sans", "Segoe UI", sans-serif;
+  font-family: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
   text-rendering: optimizeLegibility;
 }
 
@@ -103,9 +104,9 @@ body {
 #stream-status {
   display: none;
   margin: 0 30px;
-  padding: 15px;
+  padding: 18px 14px 14px 14px;
   gap: 7px;
-  border-bottom: 1px solid hsl(210, 4%, 25%);
+  border-bottom: 1px solid #3d4042;
   border-radius: 8px;
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
@@ -127,7 +128,7 @@ body {
 }
 #stream-status #proxy-country {
   display: inline-block;
-  margin-top: 5px;
+  margin-top: 10px;
   font-size: 7pt;
   opacity: 0.6;
 }

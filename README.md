@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="src/assets/icon.png" height="100" width="100" alt="Icon" />
+  <img src="src/images/brand/icon.png" height="100" width="100" alt="Icon" />
   <br />
   TTV LOL PRO
   <br />
@@ -39,8 +39,9 @@ This fork:
 - disables TTV LOL for channels you are subscribed to,
 - lets you whitelist channels,
 - improves TTV LOL's popup by showing stream status and "Whitelist" button,
-- lets you add custom primary/fallback proxies,
-- falls back to the stream with ads if the API server errors out.
+- falls back to the stream with ads if the API server errors out,
+- improves your privacy by removing your Twitch token from API requests,
+- lets you add custom primary/fallback proxies.
 
 **Recommendations:**
 
@@ -49,9 +50,14 @@ This fork:
   - remove banner ads,
   - block ads on VODs.
 
-## Screenshots
+## Screenshot
 
-![Popup](https://i.imgur.com/VucfuL6.png)
+<div align="center">
+  <img
+    src="https://user-images.githubusercontent.com/47226184/210093901-2d0c7f62-5e1f-4ce2-83f3-e35812361e20.png"
+    alt="Popup on Firefox"
+  />
+</div>
 
 ## Installation
 

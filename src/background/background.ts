@@ -1,16 +1,17 @@
 import browser from "webextension-polyfill";
 import isChrome from "../common/ts/isChrome";
-import onBeforeRequest from "./handlers/onBeforeRequest";
-import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
-import onHeadersReceived from "./handlers/onHeadersReceived";
-import onStartup from "./handlers/onStartup";
+import onApiHeadersReceived from "./handlers/onApiHeadersReceived";
+import onBeforeManifestRequest from "./handlers/onBeforeManifestRequest";
+import onBeforeSendApiHeaders from "./handlers/onBeforeSendApiHeaders";
+import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
+import onStartupUpdateCheck from "./handlers/onStartupUpdateCheck";
 
 // Check for updates on Chrome startup.
-if (isChrome) browser.runtime.onStartup.addListener(onStartup);
+if (isChrome) browser.runtime.onStartup.addListener(onStartupUpdateCheck);
 
 // Redirect the HLS master manifest request to TTV LOL's API.
 browser.webRequest.onBeforeRequest.addListener(
-  onBeforeRequest,
+  onBeforeManifestRequest,
   {
     urls: [
       "https://usher.ttvnw.net/api/channel/hls/*",
@@ -20,16 +21,25 @@ browser.webRequest.onBeforeRequest.addListener(
   ["blocking"]
 );
 
+// Detect midrolls by looking for an ad signifier in the video weaver response.
+browser.webRequest.onBeforeRequest.addListener(
+  onBeforeVideoWeaverRequest,
+  {
+    urls: ["https://*.ttvnw.net/*"], // Immediately filtered to video-weaver URLs in handler.
+  },
+  ["blocking"]
+);
+
 // Add the `X-Donate-To` header to API requests.
 browser.webRequest.onBeforeSendHeaders.addListener(
-  onBeforeSendHeaders,
+  onBeforeSendApiHeaders,
   { urls: ["https://api.ttv.lol/playlist/*", "https://api.ttv.lol/vod/*"] },
   ["blocking", "requestHeaders"]
 );
 
 // Monitor API error responses.
 browser.webRequest.onHeadersReceived.addListener(
-  onHeadersReceived,
+  onApiHeadersReceived,
   { urls: ["https://api.ttv.lol/playlist/*", "https://api.ttv.lol/vod/*"] },
   ["blocking"]
 );
