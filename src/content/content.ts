@@ -101,13 +101,17 @@ function onMidroll(message: MidrollMessage) {
       );
       log("Clicked FrankerFaceZ's reset player button.");
     } else {
-      // Otherwise, send message to injected script.
-      if (!injectedScriptInjected) {
-        log("Script not injected. Trying to inject again.");
-        await injectScript();
+      try {
+        // Otherwise, send message to injected script.
+        if (!injectedScriptInjected) {
+          log("Script not injected. Trying to inject again.");
+          await injectScript();
+        }
+        window.postMessage({ type: "resetPlayer" }, "*");
+        log("Sent `resetPlayer` message to injected script.");
+      } catch (error) {
+        log("Failed to send `resetPlayer` message to injected script:", error);
       }
-      window.postMessage({ type: "resetPlayer" }, "*");
-      log("Sent `resetPlayer` message to injected script.");
     }
   }, delay);
 }
