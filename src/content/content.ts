@@ -32,15 +32,16 @@ window.addEventListener("message", event => {
   }
 });
 
-if (store.readyState === "complete") main();
-else store.addEventListener("load", main);
+if (store.readyState === "complete") onStoreReady();
+else store.addEventListener("load", onStoreReady);
 
-function main() {
+function onStoreReady() {
   // Clear errors for stream on page load/reload.
   clearErrors();
   // Inject "Reset player" script into page.
   if (store.state.resetPlayerOnMidroll) {
-    injectScript();
+    if (document.readyState === "complete") injectScript();
+    else document.addEventListener("DOMContentLoaded", injectScript);
   }
 }
 
