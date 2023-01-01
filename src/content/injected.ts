@@ -36,13 +36,15 @@ type SearchData = {
 (function () {
   log("Injected into Twitch.");
 
-  const REACT = getReact();
+  // Notify the content script that the script has been injected.
+  window.postMessage({ type: "injectedScriptInjected" }, "*");
+
+  let react: any = null;
   let accessor: string | null = null;
   let instances: Instances | null = null;
 
   // Listen for messages from the content script.
   window.addEventListener("message", event => {
-    // Only accept messages from this window to itself (i.e. not from any iframes)
     if (event.source !== window) return;
     if (!event.data) return;
 
@@ -120,7 +122,7 @@ type SearchData = {
     data: SearchData | null = null,
     traverseRoots = true
   ): SearchOutput[] {
-    if (!node) node = REACT;
+    if (!node) node = react;
     else if (node._reactInternalFiber) node = node._reactInternalFiber;
     else if (node instanceof Node) node = getReactInstance(node);
 
@@ -205,7 +207,8 @@ type SearchData = {
       instance.setSrc && instance.setInitialPlaybackSettings;
     const criterias = [playerCriteria, playerSourceCriteria];
 
-    const results = searchAll(REACT, criterias, 1000);
+    if (!react) react = getReact();
+    const results = searchAll(react, criterias, 1000);
     const instances = results
       .map(result => Array.from(result.instances.values()))
       .flat();

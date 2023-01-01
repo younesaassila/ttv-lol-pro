@@ -8,13 +8,7 @@ import type { Message, MidrollMessage } from "../types";
 
 log("Content script running.");
 
-// Clear errors for stream on page load/reload.
-if (store.readyState === "complete") clearErrors();
-else store.addEventListener("load", clearErrors);
-
-// Inject "Reset Player" script into page.
-if (document.readyState === "complete") injectScript();
-else document.addEventListener("DOMContentLoaded", injectScript);
+let injectedScriptInjected = false;
 
 // Listen for messages from background script.
 browser.runtime.onMessage.addListener((message: Message, sender) => {
@@ -27,6 +21,29 @@ browser.runtime.onMessage.addListener((message: Message, sender) => {
   }
 });
 
+// Listen for messages from injected script.
+window.addEventListener("message", event => {
+  if (event.source !== window) return;
+  if (!event.data) return;
+
+  if (event.data.type === "injectedScriptInjected") {
+    log("Script injected successfully.");
+    injectedScriptInjected = true;
+  }
+});
+
+if (store.readyState === "complete") main();
+else store.addEventListener("load", main);
+
+function main() {
+  // Clear errors for stream on page load/reload.
+  clearErrors();
+  // Inject "Reset player" script into page.
+  if (store.state.resetPlayerOnMidroll) {
+    injectScript();
+  }
+}
+
 function clearErrors() {
   const match = TWITCH_URL_REGEX.exec(location.href);
   if (!match) return;
@@ -38,15 +55,24 @@ function clearErrors() {
   }
 }
 
-function injectScript() {
-  // Only inject script on stream pages.
-  if (!TWITCH_URL_REGEX.test(location.href)) return;
+async function injectScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let timeout: number | null = null;
+    timeout = setTimeout(() => {
+      if (timeout) clearTimeout(timeout);
+      reject(new Error("Timed out waiting for injected script to load."));
+    }, 3000); // 3 seconds.
 
-  // From https://stackoverflow.com/a/9517879
-  const script = document.createElement("script");
-  script.src = injectedScript;
-  script.onload = () => script.remove();
-  document.head.appendChild(script);
+    // From https://stackoverflow.com/a/9517879
+    const script = document.createElement("script");
+    script.src = injectedScript;
+    script.onload = () => {
+      script.remove();
+      if (timeout) clearTimeout(timeout);
+      resolve();
+    };
+    document.head.append(script);
+  });
 }
 
 /**
@@ -63,7 +89,7 @@ function onMidroll(message: MidrollMessage) {
 
   log(`Midroll scheduled for ${startDateString} (in ${delay} ms)`);
 
-  setTimeout(() => {
+  setTimeout(async () => {
     // Check if FrankerFaceZ's reset player button exists.
     const ffzResetPlayerButton = $(
       'button[data-a-target="ffz-player-reset-button"]'
@@ -75,6 +101,10 @@ function onMidroll(message: MidrollMessage) {
       log("Clicked FrankerFaceZ's reset player button.");
     } else {
       // Otherwise, send message to injected script.
+      if (!injectedScriptInjected) {
+        log("Script not injected. Trying to inject again.");
+        await injectScript();
+      }
       window.postMessage({ type: "resetPlayer" }, "*");
       log("Sent `resetPlayer` message to injected script.");
     }
