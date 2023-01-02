@@ -1,4 +1,4 @@
-import injectedScript from "url:./injected.ts";
+import pageScript from "url:../page/page.ts";
 import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
 import log from "../common/ts/log";
@@ -8,9 +8,9 @@ import type { Message, MidrollMessage } from "../types";
 
 log("Content script running.");
 
-let injectedScriptInjected = false;
+let pageScriptInjected = false;
 
-// Listen for messages from background script.
+// Listen for messages from the background script.
 browser.runtime.onMessage.addListener((message: Message, sender) => {
   if (sender.id !== browser.runtime.id) return;
 
@@ -21,14 +21,15 @@ browser.runtime.onMessage.addListener((message: Message, sender) => {
   }
 });
 
-// Listen for messages from injected script.
+// Listen for messages from the page script.
 window.addEventListener("message", event => {
-  if (event.source !== window) return;
-  if (!event.data) return;
+  if (event.source !== window || !event.data) return;
 
-  if (event.data.type === "injectedScriptInjected") {
-    log("Script injected successfully.");
-    injectedScriptInjected = true;
+  switch (event.data.type) {
+    case "pageScriptInjected":
+      log("Page script injected successfully.");
+      pageScriptInjected = true;
+      break;
   }
 });
 
@@ -38,10 +39,10 @@ else store.addEventListener("load", onStoreReady);
 function onStoreReady() {
   // Clear errors for stream on page load/reload.
   clearErrors();
-  // Inject "Reset player" script into page.
+  // Inject page script into page.
   if (store.state.resetPlayerOnMidroll) {
-    if (document.readyState === "complete") injectScript();
-    else document.addEventListener("DOMContentLoaded", injectScript);
+    if (document.readyState === "complete") injectPageScript();
+    else document.addEventListener("DOMContentLoaded", injectPageScript);
   }
 }
 
@@ -56,17 +57,17 @@ function clearErrors() {
   }
 }
 
-async function injectScript(): Promise<void> {
+async function injectPageScript(): Promise<void> {
   return new Promise((resolve, reject) => {
     let timeout: number | null = null;
     timeout = setTimeout(() => {
       if (timeout) clearTimeout(timeout);
-      reject(new Error("Timed out waiting for injected script to load."));
+      reject(new Error("Timed out waiting for page script to load."));
     }, 3000); // 3 seconds.
 
     // From https://stackoverflow.com/a/9517879
     const script = document.createElement("script");
-    script.src = injectedScript;
+    script.src = pageScript;
     script.onload = () => {
       script.remove();
       if (timeout) clearTimeout(timeout);
@@ -102,15 +103,15 @@ function onMidroll(message: MidrollMessage) {
       log("Clicked FrankerFaceZ's reset player button.");
     } else {
       try {
-        // Otherwise, send message to injected script.
-        if (!injectedScriptInjected) {
-          log("Script not injected. Trying to inject again.");
-          await injectScript();
+        // Otherwise, send message to page script.
+        if (!pageScriptInjected) {
+          log("Page script not injected. Trying to inject again.");
+          await injectPageScript();
         }
         window.postMessage({ type: "resetPlayer" }, "*");
-        log("Sent `resetPlayer` message to injected script.");
+        log("Sent `resetPlayer` message to page script.");
       } catch (error) {
-        log("Failed to send `resetPlayer` message to injected script:", error);
+        log("Failed to send `resetPlayer` message to page script:", error);
       }
     }
   }, delay);
