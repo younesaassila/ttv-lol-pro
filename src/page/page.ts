@@ -223,7 +223,7 @@ namespace TTV_LOL_PRO {
       const newBlobStr = `
         ${onVideoWeaverResponse.toString()}
         ${hookWorkerFetch.toString()}
-        hookWorkerFetch();
+        ${hookWorkerFetch.name}();
         importScripts('${jsURL}');
       `;
       super(URL.createObjectURL(new Blob([newBlobStr])));
