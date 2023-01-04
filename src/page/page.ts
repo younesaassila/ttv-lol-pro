@@ -9,10 +9,13 @@ import type {
 } from "./types";
 
 namespace TTV_LOL_PRO {
+  const REAL_WORKER = window.Worker;
+
   let rootElement: Element | null = null;
   let rootFiberNode: FiberNode | null = null;
   let playerInstance: Instance | null = null;
   let playerSourceInstance: Instance | null = null;
+  let twitchMainWorker: Worker | null = null;
 
   // From https://github.com/bendtherules/react-fiber-traverse/blob/fdfd267d9583163d0d53b061f20d4b505985dc81/src/utils.ts#L65-L74
   function doesElementContainRootFiberNode(
@@ -128,20 +131,116 @@ namespace TTV_LOL_PRO {
 
     resetPlayer(playerInstance, playerSourceInstance);
   }
+
+  function onVideoWeaverResponse(responseText: string) {
+    const AD_SIGNIFIER = "stitched"; // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/firefox/content.js#L87
+    const START_DATE_REGEX =
+      /START-DATE="(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+(?:[+-][0-2]\d:[0-5]\d|Z))"/i; // From https://stackoverflow.com/a/3143231
+
+    // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/firefox/content.js#L523-L527
+    const hasAdTags = (text: string) => text.includes(AD_SIGNIFIER);
+    const isMidroll = (text: string) =>
+      text.includes('"MIDROLL"') || text.includes('"midroll"');
+
+    const responseTextLines = responseText.split("\n");
+    const midrollLine = responseTextLines.find(
+      line => hasAdTags(line) && isMidroll(line)
+    );
+    if (!midrollLine) return;
+
+    const startDateMatch = midrollLine.match(START_DATE_REGEX);
+    if (!startDateMatch) return;
+    const [, startDateString] = startDateMatch;
+    if (!startDateString) return;
+
+    // @ts-ignore
+    const lastStartDateString = self.lastStartDateString;
+    const isSameMidroll = startDateString === lastStartDateString;
+    if (!isSameMidroll) {
+      const startDate = new Date(startDateString);
+      const now = new Date();
+      const diff = startDate.getTime() - now.getTime();
+      const delay = Math.max(diff, 0); // Prevent negative delay.
+
+      console.log(
+        `[TTV LOL PRO] Midroll scheduled for ${startDateString} (in ${delay} ms)`
+      );
+
+      self.setTimeout(() => {
+        self.postMessage({ type: "resetPlayer" });
+      }, delay);
+
+      // @ts-ignore
+      self.lastStartDateString = startDateString;
+    }
+  }
+
+  // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L296-L301
+  function getWasmWorkerUrl(twitchBlobUrl: string | URL) {
+    const request = new XMLHttpRequest();
+    request.open("GET", twitchBlobUrl, false);
+    request.send();
+    return request.responseText.split("'")[1];
+  }
+
+  function hookWorkerFetch() {
+    const REAL_FETCH = self.fetch;
+    const VIDEO_WEAVER_URL_REGEX =
+      /^https?:\/\/video-weaver\.(?:[a-z0-9-]+\.)*ttvnw\.net\//i;
+
+    self.fetch = async function (url, options) {
+      if (typeof url === "string") {
+        if (VIDEO_WEAVER_URL_REGEX.test(url)) {
+          return new Promise(function (resolve, reject) {
+            REAL_FETCH(url, options)
+              .then(async response => {
+                const responseText = await response.text();
+                onVideoWeaverResponse(responseText);
+                resolve(new Response(responseText));
+              })
+              .catch(err => {
+                reject(err);
+              });
+          });
+        }
+      }
+      return REAL_FETCH.apply(this, arguments);
+    };
+  }
+
+  // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L95-L135
+  export class Worker extends REAL_WORKER {
+    constructor(twitchBlobUrl: string | URL) {
+      if (twitchMainWorker) {
+        super(twitchBlobUrl);
+        return;
+      }
+      const jsURL = getWasmWorkerUrl(twitchBlobUrl);
+      if (typeof jsURL !== "string") {
+        super(twitchBlobUrl);
+        return;
+      }
+      const newBlobStr = `
+        ${onVideoWeaverResponse.toString()}
+        ${hookWorkerFetch.toString()}
+        hookWorkerFetch();
+        importScripts('${jsURL}');
+      `;
+      super(URL.createObjectURL(new Blob([newBlobStr])));
+      twitchMainWorker = this;
+      this.addEventListener("message", event => {
+        if (!event.data) return;
+
+        switch (event.data.type) {
+          case "resetPlayer":
+            onResetPlayerMessage();
+            break;
+        }
+      });
+    }
+  }
 }
 
 log("Page script running.");
 
-// Notify the content script that the page script has been injected.
-window.postMessage({ type: "pageScriptInjected" }, "*");
-
-// Listen for messages from the content script.
-window.addEventListener("message", event => {
-  if (event.source !== window || !event.data) return;
-
-  switch (event.data.type) {
-    case "resetPlayer":
-      TTV_LOL_PRO.onResetPlayerMessage();
-      break;
-  }
-});
+window.Worker = TTV_LOL_PRO.Worker;

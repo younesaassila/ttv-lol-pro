@@ -1,5 +1,4 @@
 import $ from "../common/ts/$";
-import isChrome from "../common/ts/isChrome";
 import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
 import store from "../store";
@@ -27,7 +26,7 @@ type ListOptions = {
 // General
 const resetPlayerOnMidrollCheckboxElement = $(
   "#reset-player-on-midroll-checkbox"
-);
+) as HTMLInputElement;
 // Whitelisted channels
 const whitelistedChannelsListElement = $(
   "#whitelisted-channels-list"
@@ -78,17 +77,12 @@ function main() {
     }
   );
   // Reset player on midroll
-  if (isChrome) {
-    resetPlayerOnMidrollCheckboxElement.disabled = true;
-    resetPlayerOnMidrollCheckboxElement.checked = false;
-  } else {
-    resetPlayerOnMidrollCheckboxElement.checked =
-      store.state.resetPlayerOnMidroll;
-    resetPlayerOnMidrollCheckboxElement.addEventListener("change", e => {
-      const checkbox = e.target as HTMLInputElement;
-      store.state.resetPlayerOnMidroll = checkbox.checked;
-    });
-  }
+  resetPlayerOnMidrollCheckboxElement.checked =
+    store.state.resetPlayerOnMidroll;
+  resetPlayerOnMidrollCheckboxElement.addEventListener("change", e => {
+    const checkbox = e.target as HTMLInputElement;
+    store.state.resetPlayerOnMidroll = checkbox.checked;
+  });
   // Disable VOD proxying
   disableVodRedirectCheckboxElement.checked = store.state.disableVodRedirect;
   disableVodRedirectCheckboxElement.addEventListener("change", e => {
