@@ -13,8 +13,8 @@ function onStoreReady() {
   clearErrors();
   // Inject page script into page.
   if (store.state.resetPlayerOnMidroll) {
-    if (document.readyState === "complete") injectPageScript();
-    else document.addEventListener("DOMContentLoaded", injectPageScript);
+    // Don't wait for the DOM to be loaded. We need to inject the script as soon as possible to replace the Worker constructor.
+    injectPageScript();
   }
 }
 
@@ -34,5 +34,6 @@ function injectPageScript() {
   const script = document.createElement("script");
   script.src = pageScript;
   script.onload = () => script.remove();
-  document.head.append(script);
+  // Note: Despite what the TS types say, `document.head` can be null.
+  (document.head || document.documentElement).append(script);
 }

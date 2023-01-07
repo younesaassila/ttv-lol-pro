@@ -195,8 +195,9 @@ namespace TTV_LOL_PRO {
             REAL_FETCH(url, options)
               .then(async response => {
                 const responseText = await response.text();
+                const newResponse = new Response(responseText);
                 onVideoWeaverResponse(responseText);
-                resolve(new Response(responseText));
+                resolve(newResponse);
               })
               .catch(err => {
                 reject(err);
@@ -211,7 +212,11 @@ namespace TTV_LOL_PRO {
   // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L95-L135
   export class Worker extends REAL_WORKER {
     constructor(twitchBlobUrl: string | URL) {
-      if (twitchMainWorker) {
+      const urlString = twitchBlobUrl.toString();
+      const isBlobUrl =
+        urlString.startsWith("blob:") || urlString.startsWith("https:");
+      log(`(Worker) twitchBlobUrl: ${urlString}`);
+      if (twitchMainWorker != null || !isBlobUrl) {
         super(twitchBlobUrl);
         return;
       }
@@ -227,6 +232,7 @@ namespace TTV_LOL_PRO {
         importScripts('${jsURL}');
       `;
       super(URL.createObjectURL(new Blob([newBlobStr])));
+      log("(Worker) Successfully hooked `fetch`.");
       twitchMainWorker = this;
       this.addEventListener("message", event => {
         if (!event.data) return;
