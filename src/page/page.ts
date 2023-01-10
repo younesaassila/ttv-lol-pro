@@ -16,6 +16,8 @@ namespace TTV_LOL_PRO {
   let playerInstance: Instance | null = null;
   let playerSourceInstance: Instance | null = null;
   let twitchMainWorker: Worker | null = null;
+  let resetPlayerTimeout: number | null = null;
+  let resetPlayerTimeoutTimestamp: number | null = null;
 
   // From https://github.com/bendtherules/react-fiber-traverse/blob/fdfd267d9583163d0d53b061f20d4b505985dc81/src/utils.ts#L65-L74
   function doesElementContainRootFiberNode(
@@ -76,6 +78,12 @@ namespace TTV_LOL_PRO {
   ) {
     log("Resetting player…");
 
+    if (resetPlayerTimeout != null) {
+      clearTimeout(resetPlayerTimeout);
+      resetPlayerTimeout = null;
+      resetPlayerTimeoutTimestamp = null;
+    }
+
     const player = playerInstance.props.mediaPlayerInstance as MediaPlayer & {
       core: any;
     };
@@ -111,7 +119,7 @@ namespace TTV_LOL_PRO {
     }
   }
 
-  export function onResetPlayerMessage() {
+  export function onResetPlayerTimeout() {
     // From https://github.com/FrankerFaceZ/FrankerFaceZ/blob/14400e16bcf8413af92942e1754ea794d5f9e6ce/src/sites/player/player.jsx#L17-L25
     const playerConstraint: Constraint = (instance: Instance) =>
       instance.setPlayerActive &&
@@ -157,19 +165,7 @@ namespace TTV_LOL_PRO {
     const lastStartDateString = self.lastStartDateString;
     const isSameMidroll = startDateString === lastStartDateString;
     if (!isSameMidroll) {
-      const startDate = new Date(startDateString);
-      const now = new Date();
-      const diff = startDate.getTime() - now.getTime();
-      const delay = Math.max(diff, 0); // Prevent negative delay.
-
-      console.log(
-        `[TTV LOL PRO] Midroll scheduled for ${startDateString} (in ${delay} ms)`
-      );
-
-      self.setTimeout(() => {
-        self.postMessage({ type: "resetPlayer" });
-      }, delay);
-
+      self.postMessage({ type: "midroll", data: startDateString });
       // @ts-ignore
       self.lastStartDateString = startDateString;
     }
@@ -237,10 +233,32 @@ namespace TTV_LOL_PRO {
       this.addEventListener("message", event => {
         if (!event.data) return;
 
-        switch (event.data.type) {
-          case "resetPlayer":
-            onResetPlayerMessage();
-            break;
+        if (
+          event.data.type === "midroll" &&
+          typeof event.data.data === "string"
+        ) {
+          const startDateString = event.data.data;
+          const startDate = new Date(startDateString);
+          const now = new Date();
+          const diff = startDate.getTime() - now.getTime();
+          const delay = Math.max(diff, 0); // Prevent negative delay.
+          if (
+            resetPlayerTimeout != null &&
+            resetPlayerTimeoutTimestamp != null
+          ) {
+            if (startDate.getTime() >= resetPlayerTimeoutTimestamp) {
+              log("A player reset is already scheduled.");
+              return;
+            }
+            clearTimeout(resetPlayerTimeout);
+            resetPlayerTimeout = null;
+            resetPlayerTimeoutTimestamp = null;
+          }
+          console.log(
+            `[TTV LOL PRO] Midroll scheduled for ${startDateString} (in ${delay} ms)`
+          );
+          resetPlayerTimeout = setTimeout(onResetPlayerTimeout, delay);
+          resetPlayerTimeoutTimestamp = startDate.getTime();
         }
       });
     }
