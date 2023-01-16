@@ -99,7 +99,7 @@ namespace TTV_LOL_PRO {
       const video = player.core?.mediaSinkManager?.video as HTMLVideoElement;
       const newVideo = document.createElement("video");
 
-      const volume = video?.volume ?? player.getVolume();
+      const volume = player.getVolume();
       const muted = player.isMuted();
       newVideo.volume = muted ? 0 : volume;
       newVideo.playsInline = true;
@@ -268,3 +268,9 @@ namespace TTV_LOL_PRO {
 log("Page script running.");
 
 window.Worker = TTV_LOL_PRO.Worker;
+
+window.addEventListener("message", event => {
+  if (event.data.type === "resetPlayer") {
+    TTV_LOL_PRO.onResetPlayerTimeout();
+  }
+});
