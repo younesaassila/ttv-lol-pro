@@ -239,9 +239,10 @@ namespace TTV_LOL_PRO {
         ) {
           const startDateString = event.data.data;
           const startDate = new Date(startDateString);
-          const now = new Date();
-          const diff = startDate.getTime() - now.getTime();
-          const delay = Math.max(diff, 0); // Prevent negative delay.
+          // const now = new Date();
+          // const diff = startDate.getTime() - now.getTime();
+          // const delay = Math.max(diff, 0); // Prevent negative delay.
+          const delay = 0;
           if (
             resetPlayerTimeout != null &&
             resetPlayerTimeoutTimestamp != null
