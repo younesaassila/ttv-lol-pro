@@ -284,9 +284,11 @@ exportButtonElement.addEventListener("click", () => {
   saveFile(
     "ttv-lol-pro_backup.json",
     JSON.stringify({
-      ...store.state,
-      isUpdateAvailable: undefined,
-      lastUpdateCheck: undefined,
+      disableVodRedirect: store.state.disableVodRedirect,
+      ignoredChannelSubscriptions: store.state.ignoredChannelSubscriptions,
+      resetPlayerOnMidroll: store.state.resetPlayerOnMidroll,
+      servers: store.state.servers,
+      whitelistedChannels: store.state.whitelistedChannels,
     }),
     "application/json;charset=utf-8"
   );
