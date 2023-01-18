@@ -3,7 +3,6 @@ import isChrome from "../common/ts/isChrome";
 import onApiHeadersReceived from "./handlers/onApiHeadersReceived";
 import onBeforeManifestRequest from "./handlers/onBeforeManifestRequest";
 import onBeforeSendApiHeaders from "./handlers/onBeforeSendApiHeaders";
-import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
 import onStartupUpdateCheck from "./handlers/onStartupUpdateCheck";
 
 // Check for updates on Chrome startup.
@@ -17,15 +16,6 @@ browser.webRequest.onBeforeRequest.addListener(
       "https://usher.ttvnw.net/api/channel/hls/*",
       "https://usher.ttvnw.net/vod/*",
     ],
-  },
-  ["blocking"]
-);
-
-// Detect midrolls by looking for an ad signifier in the video weaver response.
-browser.webRequest.onBeforeRequest.addListener(
-  onBeforeVideoWeaverRequest,
-  {
-    urls: ["https://*.ttvnw.net/*"], // Immediately filtered to video-weaver URLs in handler.
   },
   ["blocking"]
 );
