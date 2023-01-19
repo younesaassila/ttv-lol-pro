@@ -1,33 +1,7 @@
-//#region Helpers
-
 // From https://stackoverflow.com/a/51419293
 export type KeyOfType<T, V> = keyof {
   [P in keyof T as T[P] extends V ? P : never]: any;
 };
-
-//#endregion
-
-//#region Message
-
-type MessageType = "midroll";
-
-export interface Message {
-  type: MessageType;
-  request?: Record<string | symbol, any>;
-  response?: Record<string | symbol, any>;
-}
-
-export interface MidrollMessage extends Message {
-  type: "midroll";
-  response: {
-    tabId: number;
-    startDateString: string;
-  };
-}
-
-//#endregion
-
-//#region Stream Status
 
 export interface StreamStatus {
   redirected: boolean;
@@ -40,10 +14,6 @@ export interface StreamStatusError {
   timestamp: number;
   status: number;
 }
-
-//#endregion
-
-//#region API
 
 export const enum PlaylistType {
   Playlist = "playlist",
@@ -89,5 +59,3 @@ export interface Token {
   version: number;
   vod_id?: number;
 }
-
-//#endregion
