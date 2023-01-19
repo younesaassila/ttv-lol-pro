@@ -87,10 +87,10 @@ This fork:
         - `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallAllowlist` for Chrome
         - `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallAllowlist` for Edge
         - `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallAllowlist` for Brave
-     1. Create a new `REG_SZ` (string) value named `1` (or any number) and set its value to `gfolbeacfbanmnohmnppjgenmmajffop` (the extension ID)
+     1. Create a new string value (`REG_SZ`) named `1` (or any number) and set its value to `gfolbeacfbanmnohmnppjgenmmajffop` (the extension ID)
      1. Fully close and restart your browser (make sure to check Task Manager to make sure it's fully closed)
-   - For Mac users: Look up how to allow local installations of extensions on Mac, or use the "Without Automatic Updates" method
-   - For Linux users: Chromium-based browsers on Linux allow local installations of extensions
+   - For Mac users: Use the "Without Automatic Updates" method until a better solution than plist file is found
+   - For Linux users: Chromium-based browsers on Linux allow local installations of extensions by default (no need to do anything)
 
 #### ❌ Without Automatic Updates
 
