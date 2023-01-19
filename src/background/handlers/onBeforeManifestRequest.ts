@@ -42,16 +42,13 @@ export default function onBeforeManifestRequest(
   } catch {}
 
   if (token) {
-    // No redirect if the user is a subscriber, has Twitch Turbo, or is a partner.
-    const isPremiumUser =
-      token.subscriber === true ||
-      token.turbo === true ||
-      token.partner === true;
+    // No redirect if the user is a subscriber or has Twitch Turbo.
+    const isExemptFromAds = token.subscriber === true || token.turbo === true;
     const isIgnoredChannelSubscription =
       store.state.ignoredChannelSubscriptions.some(
         channel => channel.toLowerCase() === channelName
       );
-    if (isPremiumUser && !isIgnoredChannelSubscription) {
+    if (isExemptFromAds && !isIgnoredChannelSubscription) {
       console.log(
         `${streamId}: No redirect (User is a subscriber, has Twitch Turbo, or is a partner)`
       );
