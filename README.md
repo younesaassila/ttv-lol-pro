@@ -65,7 +65,7 @@ This fork:
 
 ### Firefox (Recommended)
 
-> ✅ The add-on updates automatically.
+#### ✅ With Automatic Updates
 
 1. Download the latest version of this extension in the "Releases" section (XPI file)
 1. Go to `about:addons`
@@ -74,7 +74,25 @@ This fork:
 
 ### Chrome
 
-> ❌ The extension does not update automatically.
+#### ✅ With Automatic Updates (Requires registry editing on Windows)
+
+1. Download the latest version of this extension in the "Releases" section (CRX file) using the "Save link as…" button
+1. Go to `chrome://extensions`
+1. Turn on `Developer mode` (top right corner)
+1. Drag and drop the CRX file you just downloaded into the extensions page (if an error occurs, restart your browser and try again)
+1. Add this extension to your browser's allowlist (if you don't do this, the extension will be disabled at the next browser restart)
+   - For Windows users:
+     1. Open the registry editor (`regedit.exe`)
+     1. Create the following key (if it doesn't exist):
+        - `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallAllowlist` for Chrome
+        - `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallAllowlist` for Edge
+        - `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallAllowlist` for Brave
+     1. Create a new `REG_SZ` (string) value named `1` (or any number) and set its value to `gfolbeacfbanmnohmnppjgenmmajffop` (the extension ID)
+     1. Restart your browser
+   - For Mac users: Look up how to allow local installations of extensions on Mac, or use the "Without Automatic Updates" method
+   - For Linux users: Chromium-based browsers on Linux allow local installations of extensions
+
+#### ❌ Without Automatic Updates
 
 1. Download the latest version of this extension in the "Releases" section (ZIP file)
 1. Unzip the ZIP file you just downloaded
