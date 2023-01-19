@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
-    <app appid='lfpjcmklnfllfaogceagdmaamgdnmecd'>
+    <app appid='nfegnfcnafppbclbgbolafajhpcdaban'>
         <updatecheck codebase='https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.0.1/v1.7.0-chrome.crx' version='1.7.0' />
     </app>
 </gupdate>
