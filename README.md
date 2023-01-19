@@ -76,7 +76,7 @@ This fork:
 
 #### ✅ With Automatic Updates (Requires registry editing on Windows)
 
-1. Download the latest version of this extension in the "Releases" section (CRX file) using the `Save link as…` button
+1. Download the latest version of this extension in the "Releases" section (CRX file) using the `Save link as…` right-click option
 1. Go to `chrome://extensions`
 1. Turn on `Developer mode` (top right corner)
 1. Drag and drop the CRX file you just downloaded into the extensions page (if an error occurs, restart your browser and try again)
