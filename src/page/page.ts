@@ -133,7 +133,7 @@ namespace TTV_LOL_PRO {
   }
 
   // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L296-L301
-  function getWasmWorkerUrl(twitchBlobUrl: string | URL) {
+  function getWasmWorkerUrl(twitchBlobUrl: string | URL): string | undefined {
     const request = new XMLHttpRequest();
     request.open("GET", twitchBlobUrl, false);
     request.send();
@@ -202,14 +202,17 @@ namespace TTV_LOL_PRO {
   export class Worker extends REAL_WORKER {
     constructor(twitchBlobUrl: string | URL) {
       const urlString = twitchBlobUrl.toString();
-      const isValidBlobUrl = /^(blob|https?):/i.test(urlString);
-      log(`Worker URL: ${urlString}`);
+      const isValidBlobUrl = urlString.toLowerCase().startsWith("blob:");
+      log(`Twitch blob URL: ${urlString}`);
       if (twitchMainWorker != null || !isValidBlobUrl) {
         super(twitchBlobUrl);
         return;
       }
       const jsURL = getWasmWorkerUrl(twitchBlobUrl);
-      if (typeof jsURL !== "string") {
+      const isValidJsUrl =
+        typeof jsURL === "string" && jsURL.toLowerCase().startsWith("https:");
+      log(`WASM worker URL: ${jsURL}`);
+      if (!isValidJsUrl) {
         super(twitchBlobUrl);
         return;
       }
@@ -220,7 +223,7 @@ namespace TTV_LOL_PRO {
       ` as BlobPart;
       super(URL.createObjectURL(new Blob([blobPart])));
       twitchMainWorker = this;
-      log("Listening for video-weaver requests…");
+      log("Successfully hooked into Twitch's main worker.");
       // Listen for messages from the worker.
       this.addEventListener("message", event => {
         switch (event.data?.type) {
