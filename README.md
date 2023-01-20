@@ -67,34 +67,28 @@ This fork:
 
 #### ✅ With Automatic Updates
 
-1. Download the latest version of this extension in the "Releases" section (XPI file)
+1. Download the [latest version](https://github.com/younesaassila/ttv-lol-pro/releases/latest) of this extension from the [Releases page](https://github.com/younesaassila/ttv-lol-pro/releases) (XPI file)
 1. Go to `about:addons`
 1. Click on the gear icon then select "Install Add-on From File…"
 1. Select the XPI file you just downloaded
 
 ### Chrome
 
-#### ✅ With Automatic Updates (Requires registry editing on Windows)
+#### ✅ With Automatic Updates (Windows & Linux)
 
-1. Download the latest version of this extension in the "Releases" section (CRX file) using the `Save link as…` right-click option
+1. Download the [latest version](https://github.com/younesaassila/ttv-lol-pro/releases/latest) of this extension as a CRX file (Save link as…) from the [Releases page](https://github.com/younesaassila/ttv-lol-pro/releases)
 1. Go to `chrome://extensions`
-1. Turn on `Developer mode` (top right corner)
-1. Drag and drop the CRX file you just downloaded into the extensions page (if an error occurs, restart your browser and try again)
-1. Add this extension to your browser's allowlist (if you don't do this, the extension will be disabled at the next browser restart)
-   - For Windows users:
-     1. Open the registry editor (`regedit.exe`)
-     1. Create the following key (if it doesn't exist):
-        - `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallAllowlist` for Chrome
-        - `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallAllowlist` for Edge
-        - `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallAllowlist` for Brave
-     1. Create a new string value (`REG_SZ`) named `1` (or any number) and set its value to `gfolbeacfbanmnohmnppjgenmmajffop` (the extension ID)
-     1. Fully close and restart your browser (make sure to check Task Manager to make sure it's fully closed)
-   - For Mac users: Use the "Without Automatic Updates" method until a better solution than plist file is found
-   - For Linux users: Chromium-based browsers on Linux allow local installations of extensions by default (no need to do anything)
+1. Turn on "Developer mode" (top right-hand corner)
+1. Drag and drop the CRX file anywhere on the extensions page (you should see something like [this](https://user-images.githubusercontent.com/47226184/213722956-73fcc824-8065-441f-a893-ed96c33c2139.png) on Windows)
+1. **For Windows users only:** Add this extension to your browser's allowlist via the Registry Editor _(if you don't do this, Chrome will disable the extension the next time it launches)_
+   1. Download the `allowlist.zip` file from the [latest release](https://github.com/younesaassila/ttv-lol-pro/releases/latest)
+   1. Unzip the ZIP file you just downloaded
+   1. Run the REG file for your browser (Chrome, Edge, or Brave)
+   1. Fully close and restart your browser
 
-#### ❌ Without Automatic Updates
+#### ❌ Without Automatic Updates (All operating systems)
 
-1. Download the latest version of this extension in the "Releases" section (ZIP file)
+1. Download the [latest version](https://github.com/younesaassila/ttv-lol-pro/releases/latest) of this extension from the [Releases page](https://github.com/younesaassila/ttv-lol-pro/releases) (ZIP file)
 1. Unzip the ZIP file you just downloaded
 1. Go to `chrome://extensions`
 1. Turn on `Developer mode`
