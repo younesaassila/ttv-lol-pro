@@ -8,12 +8,12 @@ import type {
   Instance,
 } from "./types";
 
-type FilterResponseDataDependency = {
+type WorkerFunction = {
   name: string;
   functionBody: string;
 };
-type FilterResponseDataDependencies = {
-  onVideoWeaverResponse: FilterResponseDataDependency;
+type WorkerFunctions = {
+  onVideoWeaverResponse: WorkerFunction;
 };
 
 namespace TTV_LOL_PRO {
@@ -172,8 +172,8 @@ namespace TTV_LOL_PRO {
     }
   }
 
-  function filterResponseData(dependencies: FilterResponseDataDependencies) {
-    const { onVideoWeaverResponse } = dependencies;
+  function filterResponseData(functions: WorkerFunctions) {
+    const { onVideoWeaverResponse } = functions;
 
     const REAL_FETCH = self.fetch;
     const VIDEO_WEAVER_URL_REGEX =
@@ -202,10 +202,8 @@ namespace TTV_LOL_PRO {
     console.log("[TTV LOL PRO] Hooked into fetch.");
   }
 
-  function injectDependencies(dependencies: FilterResponseDataDependencies) {
-    return Object.values(dependencies).map(
-      dependency => dependency.functionBody
-    );
+  function importFunctions(functions: WorkerFunctions) {
+    return Object.values(functions).map(fn => fn.functionBody);
   }
 
   // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L95-L135
@@ -218,18 +216,18 @@ namespace TTV_LOL_PRO {
         return;
       }
 
-      // Note: Function names are changed when minified.
-      const dependencies = {
+      // Minification requires us to pass the function names to the worker.
+      const functions = {
         onVideoWeaverResponse: {
           name: onVideoWeaverResponse.name,
           functionBody: onVideoWeaverResponse.toString(),
         },
-      } as FilterResponseDataDependencies;
+      } as WorkerFunctions;
 
       const ttvlolBlobPart = `
-        ${injectDependencies(dependencies)}
+        ${importFunctions(functions)}
         ${filterResponseData.toString()}
-        ${filterResponseData.name}(${JSON.stringify(dependencies)});
+        ${filterResponseData.name}(${JSON.stringify(functions)});
         importScripts('${twitchBlobUrl}');
       ` as BlobPart;
       const ttvlolBlobUrl = URL.createObjectURL(new Blob([ttvlolBlobPart]));
