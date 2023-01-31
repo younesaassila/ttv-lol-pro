@@ -25,6 +25,10 @@
         {
           "version": "1.7.1",
           "update_link": "https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.7.1/v1.7.1-firefox.xpi"
+        },
+        {
+          "version": "1.7.2",
+          "update_link": "https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.7.2/v1.7.2-firefox.xpi"
         }
       ]
     }
