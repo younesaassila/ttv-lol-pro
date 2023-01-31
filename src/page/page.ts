@@ -8,6 +8,14 @@ import type {
   Instance,
 } from "./types";
 
+type FilterResponseDataDependency = {
+  name: string;
+  functionBody: string;
+};
+type FilterResponseDataDependencies = {
+  onVideoWeaverResponse: FilterResponseDataDependency;
+};
+
 namespace TTV_LOL_PRO {
   const REAL_WORKER = window.Worker;
   let twitchMainWorker: Worker | null = null;
@@ -132,42 +140,44 @@ namespace TTV_LOL_PRO {
     resetPlayer(playerInstance, playerSourceInstance);
   }
 
-  function filterResponseData() {
+  function onVideoWeaverResponse(responseText: string) {
+    const AD_SIGNIFIER = "stitched"; // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/firefox/content.js#L87
+    const START_DATE_REGEX =
+      /START-DATE="(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+(?:[+-][0-2]\d:[0-5]\d|Z))"/i; // From https://stackoverflow.com/a/3143231
+
+    // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/firefox/content.js#L523-L527
+    const hasAdTags = (text: string) => text.includes(AD_SIGNIFIER);
+    const isMidroll = (text: string) =>
+      text.includes('"MIDROLL"') || text.includes('"midroll"');
+
+    const responseTextLines = responseText.split("\n");
+    const midrollLine = responseTextLines.find(
+      line => hasAdTags(line) && isMidroll(line)
+    );
+    if (!midrollLine) return;
+
+    const startDateMatch = midrollLine.match(START_DATE_REGEX);
+    if (!startDateMatch) return;
+    const [, startDateString] = startDateMatch;
+    if (!startDateString) return;
+
+    // @ts-ignore
+    const lastStartDateString = self.lastStartDateString;
+    // Prevent multiple midroll messages from being sent for the same midroll.
+    const isSameMidroll = startDateString === lastStartDateString;
+    if (!isSameMidroll) {
+      self.postMessage({ type: "midroll" });
+      // @ts-ignore
+      self.lastStartDateString = startDateString;
+    }
+  }
+
+  function filterResponseData(dependencies: FilterResponseDataDependencies) {
+    const { onVideoWeaverResponse } = dependencies;
+
     const REAL_FETCH = self.fetch;
     const VIDEO_WEAVER_URL_REGEX =
       /^https?:\/\/video-weaver\.(?:[a-z0-9-]+\.)*ttvnw\.net\//i;
-
-    const onVideoWeaverResponse = (responseText: string) => {
-      const AD_SIGNIFIER = "stitched"; // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/firefox/content.js#L87
-      const START_DATE_REGEX =
-        /START-DATE="(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+(?:[+-][0-2]\d:[0-5]\d|Z))"/i; // From https://stackoverflow.com/a/3143231
-
-      // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/firefox/content.js#L523-L527
-      const hasAdTags = (text: string) => text.includes(AD_SIGNIFIER);
-      const isMidroll = (text: string) =>
-        text.includes('"MIDROLL"') || text.includes('"midroll"');
-
-      const responseTextLines = responseText.split("\n");
-      const midrollLine = responseTextLines.find(
-        line => hasAdTags(line) && isMidroll(line)
-      );
-      if (!midrollLine) return;
-
-      const startDateMatch = midrollLine.match(START_DATE_REGEX);
-      if (!startDateMatch) return;
-      const [, startDateString] = startDateMatch;
-      if (!startDateString) return;
-
-      // @ts-ignore
-      const lastStartDateString = self.lastStartDateString;
-      // Prevent multiple midroll messages from being sent for the same midroll.
-      const isSameMidroll = startDateString === lastStartDateString;
-      if (!isSameMidroll) {
-        self.postMessage({ type: "midroll" });
-        // @ts-ignore
-        self.lastStartDateString = startDateString;
-      }
-    };
 
     self.fetch = async function (url, options) {
       if (typeof url === "string") {
@@ -177,7 +187,7 @@ namespace TTV_LOL_PRO {
               .then(async response => {
                 const responseText = await response.text();
                 const newResponse = new Response(responseText);
-                onVideoWeaverResponse(responseText);
+                self[onVideoWeaverResponse.name]?.(responseText);
                 resolve(newResponse);
               })
               .catch(error => {
@@ -192,6 +202,12 @@ namespace TTV_LOL_PRO {
     console.log("[TTV LOL PRO] Hooked into fetch.");
   }
 
+  function injectDependencies(dependencies: FilterResponseDataDependencies) {
+    return Object.values(dependencies).map(
+      dependency => dependency.functionBody
+    );
+  }
+
   // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L95-L135
   export class Worker extends REAL_WORKER {
     constructor(Url: string | URL) {
@@ -202,9 +218,18 @@ namespace TTV_LOL_PRO {
         return;
       }
 
+      // Note: Function names are changed when minified.
+      const dependencies = {
+        onVideoWeaverResponse: {
+          name: onVideoWeaverResponse.name,
+          functionBody: onVideoWeaverResponse.toString(),
+        },
+      } as FilterResponseDataDependencies;
+
       const ttvlolBlobPart = `
+        ${injectDependencies(dependencies)}
         ${filterResponseData.toString()}
-        ${filterResponseData.name}();
+        ${filterResponseData.name}(${JSON.stringify(dependencies)});
         importScripts('${twitchBlobUrl}');
       ` as BlobPart;
       const ttvlolBlobUrl = URL.createObjectURL(new Blob([ttvlolBlobPart]));
