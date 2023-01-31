@@ -72,7 +72,7 @@ This fork:
 1. Click on the gear icon then select "Install Add-on From File…"
 1. Select the XPI file you just downloaded
 
-### Chrome
+### Chromium (Chrome, Edge, or Brave)
 
 #### ✅ With Automatic Updates (Windows & Linux)
 
