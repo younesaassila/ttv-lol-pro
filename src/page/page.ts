@@ -132,14 +132,6 @@ namespace TTV_LOL_PRO {
     resetPlayer(playerInstance, playerSourceInstance);
   }
 
-  // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L296-L301
-  function getWasmWorkerUrl(twitchBlobUrl: string | URL): string | undefined {
-    const request = new XMLHttpRequest();
-    request.open("GET", twitchBlobUrl, false);
-    request.send();
-    return request.responseText.split("'")[1];
-  }
-
   function filterResponseData() {
     const REAL_FETCH = self.fetch;
     const VIDEO_WEAVER_URL_REGEX =
@@ -196,35 +188,35 @@ namespace TTV_LOL_PRO {
       }
       return REAL_FETCH.apply(this, arguments);
     };
+
+    console.log("[TTV LOL PRO] Hooked into fetch.");
   }
 
   // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L95-L135
   export class Worker extends REAL_WORKER {
-    constructor(twitchBlobUrl: string | URL) {
-      const urlString = twitchBlobUrl.toString();
-      const isValidBlobUrl = urlString.toLowerCase().startsWith("blob:");
-      log(`Twitch blob URL: ${urlString}`);
-      if (twitchMainWorker != null || !isValidBlobUrl) {
-        super(twitchBlobUrl);
+    constructor(Url: string | URL) {
+      const twitchBlobUrl = Url.toString();
+      const isBlobUrl = (url: string) => url.toLowerCase().startsWith("blob:");
+      if (twitchMainWorker != null || !isBlobUrl(twitchBlobUrl)) {
+        super(Url);
         return;
       }
-      const jsURL = getWasmWorkerUrl(twitchBlobUrl);
-      const isValidJsUrl =
-        typeof jsURL === "string" && jsURL.toLowerCase().startsWith("https:");
-      log(`WASM worker URL: ${jsURL}`);
-      if (!isValidJsUrl) {
-        super(twitchBlobUrl);
-        return;
-      }
-      const blobPart = `
-        '${jsURL}'; // Prevents VAFT from throwing an error.
+
+      const ttvlolBlobPart = `
         ${filterResponseData.toString()}
         ${filterResponseData.name}();
-        importScripts('${jsURL}');
+        importScripts('${twitchBlobUrl}');
       ` as BlobPart;
-      super(URL.createObjectURL(new Blob([blobPart])));
+      const ttvlolBlobUrl = URL.createObjectURL(new Blob([ttvlolBlobPart]));
+      // Prevents VideoAdBlockForTwitch from throwing an error.
+      const workerBlobPart = `
+        importScripts('${ttvlolBlobUrl}');
+      ` as BlobPart;
+      const workerBlobUrl = URL.createObjectURL(new Blob([workerBlobPart]));
+
+      super(workerBlobUrl);
       twitchMainWorker = this;
-      log("Successfully hooked into Twitch's main worker.");
+
       // Listen for messages from the worker.
       this.addEventListener("message", event => {
         switch (event.data?.type) {
