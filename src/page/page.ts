@@ -217,6 +217,7 @@ namespace TTV_LOL_PRO {
         return;
       }
       const blobPart = `
+        '${jsURL}'; // Prevents VAFT from throwing an error.
         ${filterResponseData.toString()}
         ${filterResponseData.name}();
         importScripts('${jsURL}');
