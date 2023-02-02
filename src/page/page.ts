@@ -140,6 +140,10 @@ namespace TTV_LOL_PRO {
     resetPlayer(playerInstance, playerSourceInstance);
   }
 
+  function importFunctions(functions: WorkerFunctions) {
+    return Object.values(functions).map(fn => fn.functionBody);
+  }
+
   function onVideoWeaverResponse(responseText: string) {
     const AD_SIGNIFIER = "stitched"; // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/firefox/content.js#L87
     const START_DATE_REGEX =
@@ -179,31 +183,28 @@ namespace TTV_LOL_PRO {
     const VIDEO_WEAVER_URL_REGEX =
       /^https?:\/\/video-weaver\.(?:[a-z0-9-]+\.)*ttvnw\.net\//i;
 
-    self.fetch = async function (url, options) {
-      if (typeof url === "string") {
-        if (VIDEO_WEAVER_URL_REGEX.test(url)) {
-          return new Promise(function (resolve, reject) {
-            REAL_FETCH(url, options)
-              .then(async response => {
-                const responseText = await response.text();
-                const newResponse = new Response(responseText);
-                self[onVideoWeaverResponse.name]?.(responseText);
-                resolve(newResponse);
-              })
-              .catch(error => {
-                reject(error);
-              });
-          });
-        }
+    self.fetch = async function (Url, options) {
+      const urlString = Url instanceof Request ? Url.url : Url.toString();
+
+      if (VIDEO_WEAVER_URL_REGEX.test(urlString)) {
+        return new Promise((resolve, reject) => {
+          REAL_FETCH(Url, options)
+            .then(async response => {
+              const responseText = await response.text();
+              const newResponse = new Response(responseText);
+              self[onVideoWeaverResponse.name]?.(responseText);
+              resolve(newResponse);
+            })
+            .catch(error => {
+              reject(error);
+            });
+        });
       }
+
       return REAL_FETCH.apply(this, arguments);
     };
 
     console.log("[TTV LOL PRO] Hooked into fetch.");
-  }
-
-  function importFunctions(functions: WorkerFunctions) {
-    return Object.values(functions).map(fn => fn.functionBody);
   }
 
   // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L95-L135
