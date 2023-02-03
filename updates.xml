@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
     <app appid='gfolbeacfbanmnohmnppjgenmmajffop'>
-        <updatecheck codebase='https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.7.2/v1.7.2-chromium-save-link-as.crx' version='1.7.2' />
+        <updatecheck codebase='https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.8.0/v1.8.0-chromium-save-link-as.crx' version='1.8.0' />
     </app>
 </gupdate>
