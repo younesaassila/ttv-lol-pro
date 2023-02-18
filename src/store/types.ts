@@ -2,7 +2,7 @@ import type { StreamStatus } from "../types";
 
 export type EventType = "load" | "change";
 export type ReadyState = "loading" | "complete";
-export type StorageArea = "local" | "managed" | "session" | "sync";
+export type StorageAreaName = "local" | "managed" | "sync";
 
 export interface State {
   disableVodRedirect: boolean;
