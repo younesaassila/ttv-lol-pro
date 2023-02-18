@@ -1,42 +1,55 @@
 import browser from "webextension-polyfill";
 import getDefaultState from "./getDefaultState";
 import getStateHandler from "./handlers/getStateHandler";
-import type { EventType, ReadyState, State, StorageArea } from "./types";
+import type { EventType, ReadyState, State, StorageAreaName } from "./types";
 
+/**
+ * A synchronous wrapper around the `browser.storage` API.
+ */
 class Store {
-  private _areaName: StorageArea;
-  private _state = getDefaultState();
+  private readonly _areaName: StorageAreaName;
+  private _state: State = getDefaultState();
   private _listenersByEvent: Record<string, Function[]> = {};
 
   readyState: ReadyState = "loading";
   state: State; // Proxy
 
-  constructor(areaName: StorageArea) {
+  constructor(areaName: StorageAreaName) {
     this._areaName = areaName;
-    const stateHandler = getStateHandler(this._areaName, this._state);
-    const stateProxy = new Proxy(this._state, stateHandler);
-    this.state = stateProxy;
-    browser.storage.onChanged.addListener((changes, area) => {
-      if (area !== this._areaName) return;
-      for (const [key, { newValue }] of Object.entries(changes)) {
-        this._state[key] = newValue;
-      }
-      this.dispatchEvent("change");
-    });
     this._init().then(() => {
       this.readyState = "complete";
       this.dispatchEvent("load");
+    });
+    browser.storage.onChanged.addListener((changes, area) => {
+      if (area !== this._areaName) return;
+      for (const [key, { newValue }] of Object.entries(changes)) {
+        if (newValue === undefined) continue; // Ignore deletions.
+        this._state[key] = newValue;
+      }
+      this.dispatchEvent("change");
     });
   }
 
   private async _init() {
     // Retrieve the entire storage contents.
-    // See https://stackoverflow.com/questions/18150774/get-all-keys-from-chrome-storage
+    // From https://stackoverflow.com/questions/18150774/get-all-keys-from-chrome-storage
     const storage = await browser.storage[this._areaName].get(null);
-    // Update state.
+
+    this._state = getDefaultState();
     for (const [key, value] of Object.entries(storage)) {
       this._state[key] = value;
     }
+    const stateHandler = getStateHandler(this._areaName, this._state);
+    const stateProxy = new Proxy(this._state, stateHandler);
+    this.state = stateProxy;
+  }
+
+  async clear() {
+    const defaultState = getDefaultState();
+    for (const [key, value] of Object.entries(defaultState)) {
+      this.state[key] = value;
+    }
+    await browser.storage[this._areaName].clear();
   }
 
   addEventListener(type: EventType, listener: Function) {

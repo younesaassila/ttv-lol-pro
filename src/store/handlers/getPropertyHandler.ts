@@ -1,12 +1,12 @@
 import browser from "webextension-polyfill";
-import { ProxyFlags, State, StorageArea } from "../types";
+import { ProxyFlags, StorageAreaName } from "../types";
 import { toRaw } from "../utils";
 
-export default function getPropertyHandler(
-  areaName: StorageArea,
-  state: State,
+export default function getPropertyHandler<T extends object>(
+  areaName: StorageAreaName,
+  state: T,
   property: string | symbol
-) {
+): ProxyHandler<Record<string | symbol, any>> {
   const propertyHandler: ProxyHandler<Record<string | symbol, any>> = {
     defineProperty: (propertyObj, subproperty, subpropertyDescriptor) => {
       const rawSubpropertyDescriptor = toRaw(subpropertyDescriptor);
