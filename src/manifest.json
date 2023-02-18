@@ -21,7 +21,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.twitch.tv/*"],
+      "matches": ["https://www.twitch.tv/*", "https://m.twitch.tv/*"],
       "js": ["content/content.ts"],
       "run_at": "document_start"
     }
@@ -40,7 +40,8 @@
     "webRequestBlocking",
     "https://*.ttvnw.net/*",
     "https://api.ttv.lol/*",
-    "https://www.twitch.tv/*"
+    "https://www.twitch.tv/*",
+    "https://m.twitch.tv/*"
   ],
   "update_url": "https://younesaassila.github.io/ttv-lol-pro/updates.xml"
 }
