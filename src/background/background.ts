@@ -2,6 +2,10 @@ import browser from "webextension-polyfill";
 import onApiHeadersReceived from "./handlers/onApiHeadersReceived";
 import onBeforeManifestRequest from "./handlers/onBeforeManifestRequest";
 import onBeforeSendApiHeaders from "./handlers/onBeforeSendApiHeaders";
+import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
+
+// Cleanup the session-related data in the store on startup.
+browser.runtime.onStartup.addListener(onStartupStoreCleanup);
 
 // Redirect the HLS master manifest request to TTV LOL's API.
 browser.webRequest.onBeforeRequest.addListener(

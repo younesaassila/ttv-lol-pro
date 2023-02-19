@@ -1,10 +1,13 @@
 import browser from "webextension-polyfill";
-import { ProxyFlags, State, StorageArea } from "../types";
+import { ProxyFlags, StorageAreaName } from "../types";
 import { toRaw } from "../utils";
 import getPropertyHandler from "./getPropertyHandler";
 
-export default function getStateHandler(areaName: StorageArea, state: State) {
-  const stateHandler: ProxyHandler<State> = {
+export default function getStateHandler<T extends object>(
+  areaName: StorageAreaName,
+  state: T
+): ProxyHandler<T> {
+  const stateHandler: ProxyHandler<T> = {
     defineProperty: (target, key, descriptor) => {
       const rawDescriptor = toRaw(descriptor);
       target[key] = rawDescriptor;

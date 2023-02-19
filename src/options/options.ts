@@ -312,9 +312,6 @@ resetButtonElement.addEventListener("click", () => {
     "Are you sure you want to reset all settings to their default values?"
   );
   if (!confirmation) return;
-  const defaultState = getDefaultState();
-  for (const [key, value] of Object.entries(defaultState)) {
-    store.state[key] = value;
-  }
+  store.clear();
   window.location.reload(); // Reload page to update UI.
 });

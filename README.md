@@ -76,6 +76,8 @@ This fork:
 
 #### ✅ With Automatic Updates (Windows & Linux)
 
+> ⚠️ This method will display a "Your browser is managed by your organisation" warning in your browser. This is normal and can be ignored, but if you are not comfortable with this, please use the manual (without automatic updates) method below.
+
 1. Download the [latest version](https://github.com/younesaassila/ttv-lol-pro/releases/latest) of this extension as a CRX file (Save link as…) from the [Releases page](https://github.com/younesaassila/ttv-lol-pro/releases)
 1. Go to `chrome://extensions`
 1. Turn on "Developer mode" (top right-hand corner)
