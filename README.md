@@ -47,8 +47,13 @@ This fork:
 
 - [uBlock Origin](https://ublockorigin.com/)
 
-  - remove banner ads,
-  - block ads on VODs.
+  - removes banner ads,
+  - removes ads on VODs.
+
+- [vaft/video-swap-new](https://github.com/pixeltris/TwitchAdSolutions#scripts)
+
+  - removes pre-roll ads,
+  - reduces frequency of TTV LOL PRO player resets.
 
 ## Screenshot
 
@@ -76,7 +81,7 @@ This fork:
 
 #### ✅ With Automatic Updates (Windows & Linux)
 
-> ⚠️ This method will display a "Your browser is managed by your organisation" warning in your browser. This is normal and can be ignored, but if you are not comfortable with this, please use the manual (without automatic updates) method below.
+> ⚠️ **For Windows users:** This method will display a "Your browser is managed by your organisation" warning in your browser. This is normal and can be ignored, but if you are not comfortable with this, please use the unpacked (without automatic updates) method below.
 
 1. Download the [latest version](https://github.com/younesaassila/ttv-lol-pro/releases/latest) of this extension as a CRX file (Save link as…) from the [Releases page](https://github.com/younesaassila/ttv-lol-pro/releases)
 1. Go to `chrome://extensions`
