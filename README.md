@@ -52,8 +52,7 @@ This fork:
 
 - [vaft/video-swap-new](https://github.com/pixeltris/TwitchAdSolutions#scripts)
 
-  - removes pre-roll ads,
-  - reduces frequency of TTV LOL PRO player resets.
+  - increases ad removal success rate.
 
 ## Screenshot
 
