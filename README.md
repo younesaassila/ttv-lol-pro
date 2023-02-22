@@ -67,20 +67,27 @@ This fork:
 
 `⚠️ Please disable/uninstall the official TTV LOL extension to avoid conflicts.`
 
-### Firefox (Recommended)
-
-#### ✅ With Automatic Updates
+### 🦊 Firefox (Recommended)
 
 1. Download the [latest version](https://github.com/younesaassila/ttv-lol-pro/releases/latest) of this extension from the [Releases page](https://github.com/younesaassila/ttv-lol-pro/releases) (XPI file)
 1. Go to `about:addons`
 1. Click on the gear icon then select "Install Add-on From File…"
 1. Select the XPI file you just downloaded
 
-### Chromium (Chrome, Edge, or Brave)
+### 🌐 Chromium (Chrome, Edge, or Brave)
 
-#### ✅ With Automatic Updates (Windows & Linux)
+#### Without Automatic Updates (All operating systems)
 
-> ⚠️ **For Windows users:** This method will display a "Your browser is managed by your organisation" warning in your browser. This is normal and can be ignored, but if you are not comfortable with this, please use the unpacked (without automatic updates) method below.
+1. Download the [latest version](https://github.com/younesaassila/ttv-lol-pro/releases/latest) of this extension from the [Releases page](https://github.com/younesaassila/ttv-lol-pro/releases) (ZIP file)
+1. Unzip the ZIP file you just downloaded
+1. Go to `chrome://extensions`
+1. Turn on `Developer mode`
+1. Click on `Load unpacked`
+1. Select the unzipped folder you just created
+
+#### With Automatic Updates (Windows & Linux)
+
+> ⚠️ **For Windows users only:** Please note that Chromium browsers only support auto-updates for `.crx` extensions. Unfortunately, these browsers do not allow the installation of third-party `.crx` extensions by default. To allow the installation of third-party `.crx` extensions, the "ExtensionInstallAllowlist" policy must be enabled via the Windows Registry. Using this policy will make your browser display a warning message stating "Your browser is managed by your organization." This is because it thinks that the policy was set by your organization -- that is not the case, so you can safely ignore this message.
 
 1. Download the [latest version](https://github.com/younesaassila/ttv-lol-pro/releases/latest) of this extension as a CRX file (Save link as…) from the [Releases page](https://github.com/younesaassila/ttv-lol-pro/releases)
 1. Go to `chrome://extensions`
@@ -91,13 +98,4 @@ This fork:
    1. Unzip the ZIP file you just downloaded
    1. Run the REG file for your browser (Chrome, Edge, or Brave)
    1. Fully close and restart your browser
-   1. You can see the changes applied at chrome://policy or edge://policy 
-
-#### ❌ Without Automatic Updates (All operating systems)
-
-1. Download the [latest version](https://github.com/younesaassila/ttv-lol-pro/releases/latest) of this extension from the [Releases page](https://github.com/younesaassila/ttv-lol-pro/releases) (ZIP file)
-1. Unzip the ZIP file you just downloaded
-1. Go to `chrome://extensions`
-1. Turn on `Developer mode`
-1. Click on `Load unpacked`
-1. Select the unzipped folder you just created
+   1. _You can see the policy changes applied at `chrome://policy`_
