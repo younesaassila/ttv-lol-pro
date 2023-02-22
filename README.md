@@ -86,11 +86,12 @@ This fork:
 1. Go to `chrome://extensions`
 1. Turn on "Developer mode" (top right-hand corner)
 1. Drag and drop the CRX file anywhere on the extensions page (you should see something like [this](https://user-images.githubusercontent.com/47226184/213722956-73fcc824-8065-441f-a893-ed96c33c2139.png) on Windows)
-1. **For Windows users only:** Add this extension to your browser's allowlist via the Registry Editor _(if you don't do this, Chrome will disable the extension the next time it launches)_
+1. **For Windows users only:** Add this extension to your browser's allowlist via the Registry Editor _(if you don't do this, Chrome will disable the extension the next time it launches and prevent Automatic Updates)_
    1. Download the `allowlist.zip` file from the [latest release](https://github.com/younesaassila/ttv-lol-pro/releases/latest)
    1. Unzip the ZIP file you just downloaded
    1. Run the REG file for your browser (Chrome, Edge, or Brave)
    1. Fully close and restart your browser
+   1. You can see the changes applied at chrome://policy or edge://policy 
 
 #### ❌ Without Automatic Updates (All operating systems)
 
