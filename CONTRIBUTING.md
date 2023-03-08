@@ -4,7 +4,7 @@ TTV LOL PRO is a web extension coded in TypeScript and using the `webextension-p
 
 ## Install dependencies
 
-To install the project, you need to have `node` and `npm` installed on your machine. Then, you can run the following commands:
+To install the project, you need to have `node` and `npm` installed on your machine. Then, you can run the following command:
 
 ```sh
 npm install
