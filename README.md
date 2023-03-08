@@ -52,7 +52,8 @@ This fork:
 
 - [vaft/video-swap-new](https://github.com/pixeltris/TwitchAdSolutions#scripts)
 
-  - increases ad removal success rate.
+  - increases ad removal success rate,
+  - reduces frequency of TTV LOL PRO player resets (momentary black screens).
 
 ## Screenshot
 
