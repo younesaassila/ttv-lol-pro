@@ -3,9 +3,13 @@ import onApiHeadersReceived from "./handlers/onApiHeadersReceived";
 import onBeforeManifestRequest from "./handlers/onBeforeManifestRequest";
 import onBeforeSendApiHeaders from "./handlers/onBeforeSendApiHeaders";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
+import onStartupUpdateCheck from "./handlers/onStartupUpdateCheck";
 
 // Cleanup the session-related data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);
+
+// Check for updates on startup.
+browser.runtime.onStartup.addListener(onStartupUpdateCheck);
 
 // Redirect the HLS master manifest request to TTV LOL's API.
 browser.webRequest.onBeforeRequest.addListener(

@@ -27,6 +27,9 @@ type ListOptions = {
 const resetPlayerOnMidrollCheckboxElement = $(
   "#reset-player-on-midroll-checkbox"
 ) as HTMLInputElement;
+const checkForUpdatesCheckboxElement = $(
+  "#check-for-updates-checkbox"
+) as HTMLInputElement;
 // Whitelisted channels
 const whitelistedChannelsListElement = $(
   "#whitelisted-channels-list"
@@ -82,6 +85,12 @@ function main() {
   resetPlayerOnMidrollCheckboxElement.addEventListener("change", e => {
     const checkbox = e.target as HTMLInputElement;
     store.state.resetPlayerOnMidroll = checkbox.checked;
+  });
+  // Check for updates
+  checkForUpdatesCheckboxElement.checked = store.state.checkForUpdates;
+  checkForUpdatesCheckboxElement.addEventListener("change", e => {
+    const checkbox = e.target as HTMLInputElement;
+    store.state.checkForUpdates = checkbox.checked;
   });
   // Disable VOD proxying
   disableVodRedirectCheckboxElement.checked = store.state.disableVodRedirect;
@@ -284,6 +293,7 @@ exportButtonElement.addEventListener("click", () => {
   saveFile(
     "ttv-lol-pro_backup.json",
     JSON.stringify({
+      checkForUpdates: store.state.checkForUpdates,
       disableVodRedirect: store.state.disableVodRedirect,
       ignoredChannelSubscriptions: store.state.ignoredChannelSubscriptions,
       resetPlayerOnMidroll: store.state.resetPlayerOnMidroll,
