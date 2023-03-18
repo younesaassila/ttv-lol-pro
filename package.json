@@ -41,7 +41,7 @@
     "@types/react": "^18.0.28",
     "@types/semver-compare": "^1.0.1",
     "@types/webextension-polyfill": "^0.10.0",
-    "amazon-ivs-player": "^1.16.0",
+    "amazon-ivs-player": "^1.17.0",
     "parcel": "^2.8.3",
     "postcss": "^8.4.21",
     "prettier": "^2.8.4",
