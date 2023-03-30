@@ -57,7 +57,7 @@ function setStreamStatusElement(streamId: string) {
       reasonElement.style.display = "none";
     }
     if (status.proxyCountry) {
-      proxyCountryElement.textContent = `Proxy country (Beta): ${status.proxyCountry}`;
+      proxyCountryElement.textContent = `Proxy country: ${status.proxyCountry}`;
     } else {
       proxyCountryElement.style.display = "none";
     }
