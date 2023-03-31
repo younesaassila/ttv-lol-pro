@@ -6,6 +6,8 @@
 
 html {
   -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
   background: #151619;
   color: #c9cbcd;
   font-family: var(--font-family);
@@ -13,7 +15,7 @@ html {
 }
 
 body {
-  width: 315px;
+  width: 310px;
   margin: 0;
   padding: 0;
 }
@@ -23,7 +25,7 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: start;
-  padding: 25px;
+  padding: 20px;
   gap: 15px;
 }
 
@@ -33,22 +35,52 @@ main > * {
   border-radius: var(--border-radius);
 }
 
+/* Update banner */
+
+#update-banner {
+  display: none;
+  margin: 3px 3px 0 3px;
+  padding: 15px;
+  border: 1px solid #7d5eba;
+  border-radius: 5px;
+  background-color: #7d5eba4d;
+  color: #ffffff;
+  font-size: 9pt;
+}
+
+#update-banner .update-banner-link,
+#update-banner .update-banner-link:visited {
+  color: currentColor;
+  transition: opacity 100ms ease-in-out;
+}
+
+#update-banner .update-banner-link:hover,
+#update-banner .update-banner-link:hover:visited {
+  color: currentColor;
+  opacity: 0.8;
+}
+
 /* Logo */
 
 .logo-wrapper {
   background-color: #202127;
   text-align: center;
 }
+
 .logo-wrapper img {
   width: 60%;
 }
 
 #stream-status {
   display: none;
+  flex-direction: column;
   margin-bottom: 0;
+  background-color: #202127;
+}
+#stream-status .stream-status-container {
+  display: flex;
   padding: 18px 14px 14px 14px;
   gap: 7px;
-  background-color: #202127;
   text-align: start;
 }
 #stream-status #redirected.success {
@@ -72,9 +104,11 @@ main > * {
 }
 #whitelist-toggle-wrapper {
   display: none;
+  height: 40px;
   margin-top: 0;
   border-top: 1px solid #3d4042;
   background-color: #202127;
+  text-align: center;
   transition: background-color 100ms ease-in-out;
 }
 #whitelist-toggle-wrapper:hover {
@@ -137,7 +171,7 @@ main > * {
 
 .list .list-item .list-item-title {
   display: block;
-  margin: 0;
+  margin: 0 0 2px 0;
   font-weight: bold;
   font-size: 11pt;
 }
@@ -145,24 +179,5 @@ main > * {
   display: block;
   margin: 0;
   font-size: 8pt;
-  opacity: 0.8;
-}
-
-#update-banner {
-  display: none;
-  padding: 15px;
-  background-color: rgba(125, 94, 186, 0.5);
-  color: #ffffff;
-  font-size: 10pt;
-  text-align: left;
-}
-#update-banner a,
-#update-banner a:visited {
-  color: #ffffff;
-  transition: opacity 100ms ease-in-out;
-}
-#update-banner a:hover,
-#update-banner a:hover:visited {
-  color: #ffffff;
   opacity: 0.8;
 }

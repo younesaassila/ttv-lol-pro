@@ -15,6 +15,18 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
+    <!-- Update banner -->
+    <div id="update-banner">
+      A new version is available. Download it from the
+      <a
+        href="https://github.com/younesaassila/ttv-lol-pro/releases"
+        target="_blank"
+        class="update-banner-link"
+      >
+        GitHub releases page
+      </a>
+    </div>
+
     <main>
       <!-- Logo -->
       <div class="logo-wrapper">
@@ -23,15 +35,17 @@
 
       <!-- Stream status -->
       <div id="stream-status">
-        <div>
-          <span id="redirected">●</span>
-        </div>
-        <div>
-          <span id="stream-id"></span>
-          <br />
-          <small id="reason"></small>
-          <br />
-          <small id="proxy-country"></small>
+        <div class="stream-status-container">
+          <div>
+            <span id="redirected">●</span>
+          </div>
+          <div>
+            <span id="stream-id"></span>
+            <br />
+            <small id="reason"></small>
+            <br />
+            <small id="proxy-country"></small>
+          </div>
         </div>
         <!-- TODO: Fix styles of whitelist toggle. -->
         <div id="whitelist-toggle-wrapper">
@@ -91,7 +105,7 @@
             <div class="list-item-text">
               <h3 class="list-item-title">Donate</h3>
               <p class="list-item-description">
-                Support the TTV LOL API proxy.
+                Support the TTV LOL API (not affiliated).
               </p>
             </div>
           </a>
@@ -127,18 +141,6 @@
         </li>
       </ol>
     </main>
-
-    <!-- TODO: Fix styles of update banner. -->
-    <!-- Update banner -->
-    <div id="update-banner">
-      A new version is available. Download it from the GitHub repo's
-      <a
-        href="https://github.com/younesaassila/ttv-lol-pro/releases"
-        target="_blank"
-      >
-        Releases page
-      </a>
-    </div>
 
     <script type="module" src="./popup.ts"></script>
   </body>
