@@ -10,7 +10,7 @@ const redirectedElement = $("#redirected") as HTMLSpanElement;
 const streamIdElement = $("#stream-id") as HTMLSpanElement;
 const reasonElement = $("#reason") as HTMLElement;
 const proxyCountryElement = $("#proxy-country") as HTMLElement;
-const whitelistToggleWrapper = $("#whitelist-toggle-wrapper") as HTMLDivElement;
+const whitelistToggleWrapper = $("#whitelist-status") as HTMLDivElement;
 const whitelistToggle = $("#whitelist-toggle") as HTMLInputElement;
 const whitelistToggleLabel = $("#whitelist-toggle-label") as HTMLLabelElement;
 //#endregion
@@ -34,7 +34,6 @@ async function main() {
   if (!streamId) return;
 
   setStreamStatusElement(streamId);
-  setWhitelistToggleElement(streamId);
   store.addEventListener("change", () => setStreamStatusElement(streamId));
 }
 
@@ -64,6 +63,7 @@ function setStreamStatusElement(streamId: string) {
   } else {
     streamStatusElement.style.display = "none";
   }
+  setWhitelistToggleElement(streamId);
 }
 
 function setWhitelistToggleElement(streamId: string) {

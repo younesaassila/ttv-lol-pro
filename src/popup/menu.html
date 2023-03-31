@@ -5,18 +5,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Popup - TTV LOL PRO</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
     <link rel="stylesheet" href="../common/css/boilerplate.css" />
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <!-- Update banner -->
     <div id="update-banner">
+      <!-- TODO: Should it be 'version' or 'update'? -->
       A new version is available. Download it from the
       <a
         href="https://github.com/younesaassila/ttv-lol-pro/releases"
@@ -35,7 +30,7 @@
 
       <!-- Stream status -->
       <div id="stream-status">
-        <div class="stream-status-container">
+        <div id="proxy-status">
           <div>
             <span id="redirected">●</span>
           </div>
@@ -48,7 +43,7 @@
           </div>
         </div>
         <!-- TODO: Fix styles of whitelist toggle. -->
-        <div id="whitelist-toggle-wrapper">
+        <div id="whitelist-status">
           <input
             type="checkbox"
             name="whitelist-toggle"
