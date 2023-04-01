@@ -10,7 +10,7 @@ const redirectedElement = $("#redirected") as HTMLSpanElement;
 const streamIdElement = $("#stream-id") as HTMLSpanElement;
 const reasonElement = $("#reason") as HTMLElement;
 const proxyCountryElement = $("#proxy-country") as HTMLElement;
-const whitelistToggleWrapper = $("#whitelist-status") as HTMLDivElement;
+const whitelistStatusElement = $("#whitelist-status") as HTMLDivElement;
 const whitelistToggle = $("#whitelist-toggle") as HTMLInputElement;
 const whitelistToggleLabel = $("#whitelist-toggle-label") as HTMLLabelElement;
 //#endregion
@@ -84,9 +84,9 @@ function setWhitelistToggleElement(streamId: string) {
       browser.tabs.reload();
     });
     updateWhitelistToggleLabel(whitelistToggle.checked);
-    whitelistToggleWrapper.style.display = "block";
+    whitelistStatusElement.style.display = "flex";
   } else {
-    whitelistToggleWrapper.style.display = "none";
+    whitelistStatusElement.style.display = "none";
   }
 }
 

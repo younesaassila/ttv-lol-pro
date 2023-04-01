@@ -43,7 +43,7 @@ main > * {
 /* Update banner */
 
 #update-banner {
-  /* display: none; */
+  display: none;
   margin: 3px 3px 0 3px;
   padding: 15px;
   border: 1px solid #7d5eba;
@@ -79,7 +79,7 @@ main > * {
 /* Stream status */
 
 #stream-status {
-  /* display: none; */
+  display: none;
   flex-direction: column;
   margin-bottom: 0;
   background-color: #202127;
@@ -110,7 +110,10 @@ main > * {
   opacity: 0.6;
 }
 #whitelist-status {
-  /* display: none; */
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   height: 40px;
   margin-top: 0;
   border-top: 1px solid #3d4042;
@@ -129,6 +132,8 @@ main > * {
 }
 #whitelist-toggle-label {
   display: block;
+  width: 100%;
+  height: 100%;
   margin: 0;
   padding: 10px 15px;
   font-weight: bold;
