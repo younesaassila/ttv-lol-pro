@@ -170,7 +170,7 @@ namespace TTV_LOL_PRO {
     // Prevent multiple midroll messages from being sent for the same midroll.
     const isSameMidroll = startDateString === lastStartDateString;
     if (!isSameMidroll) {
-      self.postMessage({ type: "midroll", data: { startDateString } });
+      self.postMessage({ type: "midroll" });
       // @ts-ignore
       self.lastStartDateString = startDateString;
     }
@@ -241,20 +241,17 @@ namespace TTV_LOL_PRO {
       super(workerBlobUrl);
       twitchMainWorker = this;
 
-      let lastMidrollsTimestamps = [] as number[];
+      let lastResetsTimestamps = [] as number[];
 
       // Listen for messages from the worker.
       this.addEventListener("message", event => {
         switch (event.data?.type) {
           case "midroll":
-            const recentMidrolls = lastMidrollsTimestamps.filter(
+            const recentResets = lastResetsTimestamps.filter(
               timestamp => Date.now() - timestamp < 15000 // 15 seconds
             );
-            if (recentMidrolls.length >= 3) return; // Limit to 3 player resets per 15 seconds.
-            lastMidrollsTimestamps = [
-              ...recentMidrolls,
-              new Date(event.data?.data?.startDateString).getTime(),
-            ];
+            if (recentResets.length >= 3) return; // Limit to 3 player resets per 15 seconds.
+            lastResetsTimestamps = [...recentResets, Date.now()];
             onMidroll();
             break;
         }
