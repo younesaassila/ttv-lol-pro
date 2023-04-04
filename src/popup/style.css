@@ -82,7 +82,7 @@ main > * {
 /* Stream status */
 
 #stream-status {
-  /* display: none; */
+  display: none;
   flex-direction: column;
   margin-bottom: 0;
   background-color: #202127;
