@@ -63,12 +63,14 @@ function setProxyStatus(streamIdLower: string, status: StreamStatus) {
   // Reason
   if (status.reason) {
     reasonElement.textContent = status.reason;
+    reasonElement.style.display = "";
   } else {
     reasonElement.style.display = "none";
   }
   // Proxy country
   if (status.proxyCountry) {
     proxyCountryElement.textContent = `Proxy country: ${status.proxyCountry}`;
+    proxyCountryElement.style.display = "";
   } else {
     proxyCountryElement.style.display = "none";
   }
