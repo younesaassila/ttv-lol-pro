@@ -1,12 +1,15 @@
+/* TODO: Use CSS variables from Options CSS (so have them in a common file) */
+
 @font-face {
   src: url("../fonts/Inter-VariableFont_slnt\,wght.ttf");
   font-family: "Inter";
 }
 
 :root {
-  --font-family: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
+  --font-base: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
     sans-serif;
   --border-radius: 8px;
+  --whitelisted-color: #baaadb;
 }
 
 html {
@@ -22,7 +25,7 @@ body {
   width: 310px;
   margin: 0;
   padding: 0;
-  font-family: var(--font-family);
+  font-family: var(--font-base);
 }
 
 main {
@@ -79,7 +82,7 @@ main > * {
 /* Stream status */
 
 #stream-status {
-  display: none;
+  /* display: none; */
   flex-direction: column;
   margin-bottom: 0;
   background-color: #202127;
@@ -109,13 +112,9 @@ main > * {
   font-size: 7pt;
   opacity: 0.6;
 }
+/* Whitelist status */
 #whitelist-status {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   height: 40px;
-  margin-top: 0;
   border-top: 1px solid #3d4042;
   background-color: #202127;
   text-align: center;
@@ -124,21 +123,51 @@ main > * {
 #whitelist-status:hover {
   background-color: #292b32;
 }
+/* Whitelist toggle */
 #whitelist-toggle {
   display: none;
 }
-#whitelist-toggle:checked + #whitelist-toggle-label {
-  color: #baaadb;
+/* Whitelist toggle icon */
+#whitelist-status #whitelist-toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 3px;
 }
-#whitelist-toggle-label {
-  display: block;
+#whitelist-status[data-whitelisted="false"] #whitelist-toggle-icon .bi-plus {
+  display: initial;
+}
+#whitelist-status[data-whitelisted="false"]
+  #whitelist-toggle-icon
+  .bi-check-lg {
+  display: none;
+}
+#whitelist-status[data-whitelisted="true"] #whitelist-toggle-icon .bi-plus {
+  display: none;
+}
+#whitelist-status[data-whitelisted="true"] #whitelist-toggle-icon .bi-check-lg {
+  display: initial;
+  color: var(--whitelisted-color);
+}
+/* Whitelist toggle label */
+#whitelist-status #whitelist-toggle-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  margin: 0;
-  padding: 10px 15px;
   font-weight: bold;
   font-size: 11pt;
   cursor: pointer;
+}
+#whitelist-status[data-whitelisted="false"] #whitelist-toggle-label::after {
+  content: "Whitelist";
+}
+#whitelist-status[data-whitelisted="true"] #whitelist-toggle-label::after {
+  content: "Whitelisted";
+  color: var(--whitelisted-color);
 }
 
 /* Links */
