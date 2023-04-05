@@ -37,7 +37,7 @@ class Store {
 
     this._state = getDefaultState();
     // Check for updates on startup for unpacked installs.
-    if (browser.management.getSelf != null) {
+    if (browser.management?.getSelf != null) {
       const info = await browser.management.getSelf();
       if (info.installType === "development") {
         this._state.checkForUpdates = true;

@@ -207,6 +207,14 @@ namespace TTV_LOL_PRO {
     console.log("[TTV LOL PRO] Hooked into fetch.");
   }
 
+  // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L296-L301
+  function getWasmWorkerUrl(twitchBlobUrl: string) {
+    var req = new XMLHttpRequest();
+    req.open("GET", twitchBlobUrl, false);
+    req.send();
+    return req.responseText.split("'")[1];
+  }
+
   // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L95-L135
   export class Worker extends REAL_WORKER {
     constructor(Url: string | URL) {
@@ -234,7 +242,12 @@ namespace TTV_LOL_PRO {
       const ttvlolBlobUrl = URL.createObjectURL(new Blob([ttvlolBlobPart]));
       // Prevents VideoAdBlockForTwitch from throwing an error.
       const workerBlobPart = `
-        importScripts('${ttvlolBlobUrl}');
+        try {
+          importScripts('${ttvlolBlobUrl}');
+        } catch (error) {
+          console.error('[TTV LOL PRO] Error importing worker:', error);
+          importScripts('${getWasmWorkerUrl(twitchBlobUrl)}');
+        }
       ` as BlobPart;
       const workerBlobUrl = URL.createObjectURL(new Blob([workerBlobPart]));
 
