@@ -18,19 +18,12 @@
   --whitelisted-color: #baaadb;
 }
 
-html {
-  -webkit-font-smoothing: antialiased;
-  margin: 0;
-  padding: 0;
-  background-color: var(--background);
-  color: #c9cbcd;
-  text-rendering: optimizeLegibility;
-}
-
 body {
   width: var(--popup-width);
   margin: 0;
   padding: 0;
+  background-color: var(--background);
+  color: #c9cbcd;
   font-family: var(--font-family);
 }
 
