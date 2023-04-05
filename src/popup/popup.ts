@@ -7,9 +7,9 @@ import type { StreamStatus } from "../types";
 //#region HTML Elements
 const updateBannerElement = $("#update-banner") as HTMLDivElement;
 const streamStatusElement = $("#stream-status") as HTMLDivElement;
-const redirectedElement = $("#redirected") as HTMLSpanElement;
-const streamIdElement = $("#stream-id") as HTMLSpanElement;
-const reasonElement = $("#reason") as HTMLElement;
+const redirectedElement = $("#redirected") as HTMLDivElement;
+const streamIdElement = $("#stream-id") as HTMLHeadingElement;
+const reasonElement = $("#reason") as HTMLParagraphElement;
 const proxyCountryElement = $("#proxy-country") as HTMLElement;
 const whitelistStatusElement = $("#whitelist-status") as HTMLDivElement;
 const whitelistToggleElement = $("#whitelist-toggle") as HTMLInputElement;

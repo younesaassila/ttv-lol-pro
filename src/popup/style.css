@@ -1,14 +1,20 @@
-/* TODO: Use CSS variables from Options CSS (so have them in a common file) */
-
 @font-face {
   src: url("../fonts/Inter-VariableFont_slnt\,wght.ttf");
   font-family: "Inter";
 }
 
 :root {
-  --font-base: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
+  --popup-width: 310px;
+  --font-family: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
     sans-serif;
+
+  --background: #151619;
+  --background-secondary: #202127;
+  --background-tertiary: #292b32;
+
   --border-radius: 8px;
+  --success-color: #43b581;
+  --error-color: #f04747;
   --whitelisted-color: #baaadb;
 }
 
@@ -16,16 +22,16 @@ html {
   -webkit-font-smoothing: antialiased;
   margin: 0;
   padding: 0;
-  background: #151619;
+  background-color: var(--background);
   color: #c9cbcd;
   text-rendering: optimizeLegibility;
 }
 
 body {
-  width: 310px;
+  width: var(--popup-width);
   margin: 0;
   padding: 0;
-  font-family: var(--font-base);
+  font-family: var(--font-family);
 }
 
 main {
@@ -39,6 +45,7 @@ main {
 
 main > * {
   width: 100%;
+  margin: 0;
   overflow: hidden;
   border-radius: var(--border-radius);
 }
@@ -71,11 +78,11 @@ main > * {
 /* Logo */
 
 .logo-wrapper {
-  background-color: #202127;
+  background-color: var(--background-secondary);
   text-align: center;
 }
 
-.logo-wrapper img {
+.logo-wrapper > img {
   width: 60%;
 }
 
@@ -84,31 +91,50 @@ main > * {
 #stream-status {
   display: none;
   flex-direction: column;
-  margin-bottom: 0;
-  background-color: #202127;
+  background-color: var(--background-secondary);
 }
+/* Proxy status */
 #stream-status #proxy-status {
+  display: grid;
+  grid-template-rows: min-content min-content min-content;
+  grid-template-columns: min-content auto;
+  grid-template-areas:
+    "top-left top-right"
+    "middle-left middle-right"
+    "bottom-left bottom-right";
+  padding: 15px;
+}
+/* Proxy status icon */
+#stream-status #redirected {
   display: flex;
-  padding: 18px 14px 14px 14px;
-  gap: 7px;
-  text-align: start;
+  grid-area: top-left;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
 }
 #stream-status #redirected.success {
-  color: #43b581;
+  color: var(--success-color);
 }
 #stream-status #redirected.error {
-  color: #f04747;
+  color: var(--error-color);
 }
+/* Proxy status stream ID */
 #stream-status #stream-id {
-  font-weight: bold;
+  grid-area: top-right;
+  margin: 0;
+  font-size: 11pt;
 }
+/* Proxy status reason */
 #stream-status #reason {
+  grid-area: middle-right;
+  margin: 2px 0 0 0;
   font-size: 9pt;
   opacity: 0.8;
 }
+/* Proxy status country */
 #stream-status #proxy-country {
-  display: inline-block;
-  margin-top: 10px;
+  grid-area: bottom-right;
+  margin: 10px 0 0 0;
   font-size: 7pt;
   opacity: 0.6;
 }
@@ -116,12 +142,12 @@ main > * {
 #whitelist-status {
   height: 40px;
   border-top: 1px solid #3d4042;
-  background-color: #202127;
+  background-color: var(--background-secondary);
   text-align: center;
   transition: background-color 100ms ease-in-out;
 }
 #whitelist-status:hover {
-  background-color: #292b32;
+  background-color: var(--background-tertiary);
 }
 /* Whitelist toggle */
 #whitelist-toggle {
@@ -193,8 +219,8 @@ main > * {
   align-items: center;
   justify-content: start;
   padding: 10px 15px;
-  background-color: #202127;
-  color: #c9cbcd;
+  background-color: var(--background-secondary);
+  color: inherit;
   text-align: left;
   text-decoration: none;
   transition: background-color 100ms ease-in-out;
@@ -202,27 +228,25 @@ main > * {
 
 .list .list-item:hover,
 .list .list-item:visited:hover {
-  background-color: #292b32;
+  background-color: var(--background-tertiary);
 }
 
 .list .list-item .list-item-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   margin-right: 10px;
 }
 
 .list .list-item .list-item-title {
-  display: block;
   margin: 0 0 2px 0;
   font-weight: bold;
   font-size: 11pt;
 }
 
 .list .list-item .list-item-description {
-  display: block;
   margin: 0;
   font-size: 8pt;
   opacity: 0.8;

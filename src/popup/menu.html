@@ -30,16 +30,22 @@
       <!-- Stream status -->
       <div id="stream-status">
         <div id="proxy-status">
-          <div>
-            <span id="redirected">●</span>
+          <div id="redirected">
+            <!-- https://icons.getbootstrap.com/icons/circle-fill/ -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="7"
+              height="7"
+              fill="currentColor"
+              class="bi bi-circle-fill"
+              viewBox="0 0 16 16"
+            >
+              <circle cx="8" cy="8" r="8" />
+            </svg>
           </div>
-          <div>
-            <span id="stream-id"></span>
-            <br />
-            <small id="reason"></small>
-            <br />
-            <small id="proxy-country"></small>
-          </div>
+          <h3 id="stream-id">sardoche</h3>
+          <p id="reason">Proxied via api.ttv.lol</p>
+          <small id="proxy-country">Proxy country: FR</small>
         </div>
         <div id="whitelist-status" data-whitelisted="false">
           <input
