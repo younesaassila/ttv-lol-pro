@@ -3,18 +3,6 @@
     "{76ef94a4-e3d0-4c6f-961a-d38a429a332b}": {
       "updates": [
         {
-          "version": "1.4.0",
-          "update_link": "https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.4.0/v1.4.0-firefox.xpi"
-        },
-        {
-          "version": "1.5.0",
-          "update_link": "https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.5.0/v1.5.0-firefox.xpi"
-        },
-        {
-          "version": "1.5.1",
-          "update_link": "https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.5.1/v1.5.1-firefox.xpi"
-        },
-        {
           "version": "1.6.0",
           "update_link": "https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.6.0/v1.6.0-firefox.xpi"
         },
@@ -37,6 +25,10 @@
         {
           "version": "1.8.1",
           "update_link": "https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.8.1/v1.8.1-firefox.xpi"
+        },
+        {
+          "version": "1.9.0",
+          "update_link": "https://github.com/younesaassila/ttv-lol-pro/releases/download/v1.9.0/v1.9.0-firefox.xpi"
         }
       ]
     }
