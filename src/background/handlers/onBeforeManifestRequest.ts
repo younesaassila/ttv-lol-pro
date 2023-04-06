@@ -50,12 +50,12 @@ export default function onBeforeManifestRequest(
       );
     if (isExemptFromAds && !isIgnoredChannelSubscription) {
       console.log(
-        `${streamId}: No redirect (User is a subscriber, has Twitch Turbo, or is a partner)`
+        `${streamId}: No redirect (User is a subscriber or has Twitch Turbo)`
       );
       setStreamStatus(
         streamId,
         false,
-        "User is a subscriber, has Twitch Turbo, or is a partner"
+        "User is a subscriber or has Twitch Turbo"
       );
       return {};
     }
@@ -114,6 +114,13 @@ function setStreamStatus(
   };
 }
 
+function getServerStem(server: string): string {
+  const match = /^https?:\/\/(.*?)\/?$/i.exec(server);
+  if (!match) return server;
+  const [, stem] = match;
+  return stem;
+}
+
 function redirectChrome(
   playlistType: PlaylistType,
   streamId: string,
@@ -137,7 +144,7 @@ function redirectChrome(
 
     if (request.status === 200) {
       console.log(`${streamId}: Redirecting to ${server}…`);
-      setStreamStatus(streamId, true, `Redirected to ${server}`);
+      setStreamStatus(streamId, true, `Proxied via ${getServerStem(server)}`);
       return { redirectUrl };
     } else {
       console.log(`${streamId}: Ping to ${server} failed`);
@@ -185,7 +192,11 @@ function redirectFirefox(
         .then(response => {
           if (response.status === 200) {
             console.log(`${streamId}: Redirecting to ${server}…`);
-            setStreamStatus(streamId, true, `Redirected to ${server}`);
+            setStreamStatus(
+              streamId,
+              true,
+              `Proxied via ${getServerStem(server)}`
+            );
             resolve({ redirectUrl });
           } else fallback();
         })

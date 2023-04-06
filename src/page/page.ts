@@ -140,10 +140,6 @@ namespace TTV_LOL_PRO {
     resetPlayer(playerInstance, playerSourceInstance);
   }
 
-  function importFunctions(functions: WorkerFunctions) {
-    return Object.values(functions).map(fn => fn.functionBody);
-  }
-
   function onVideoWeaverResponse(responseText: string) {
     const AD_SIGNIFIER = "stitched"; // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/firefox/content.js#L87
     const START_DATE_REGEX =
@@ -207,6 +203,18 @@ namespace TTV_LOL_PRO {
     console.log("[TTV LOL PRO] Hooked into fetch.");
   }
 
+  function importFunctions(functions: WorkerFunctions) {
+    return Object.values(functions).map(fn => fn.functionBody);
+  }
+
+  // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L296-L301
+  function getWasmWorkerUrl(twitchBlobUrl: string) {
+    var req = new XMLHttpRequest();
+    req.open("GET", twitchBlobUrl, false);
+    req.send();
+    return req.responseText.split("'")[1];
+  }
+
   // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L95-L135
   export class Worker extends REAL_WORKER {
     constructor(Url: string | URL) {
@@ -234,17 +242,29 @@ namespace TTV_LOL_PRO {
       const ttvlolBlobUrl = URL.createObjectURL(new Blob([ttvlolBlobPart]));
       // Prevents VideoAdBlockForTwitch from throwing an error.
       const workerBlobPart = `
-        importScripts('${ttvlolBlobUrl}');
+        try {
+          importScripts('${ttvlolBlobUrl}');
+        } catch (error) {
+          console.error('[TTV LOL PRO] Error importing worker:', error);
+          importScripts('${getWasmWorkerUrl(twitchBlobUrl)}');
+        }
       ` as BlobPart;
       const workerBlobUrl = URL.createObjectURL(new Blob([workerBlobPart]));
 
       super(workerBlobUrl);
       twitchMainWorker = this;
 
+      let lastResetsTimestamps = [] as number[];
+
       // Listen for messages from the worker.
       this.addEventListener("message", event => {
         switch (event.data?.type) {
           case "midroll":
+            const recentResets = lastResetsTimestamps.filter(
+              timestamp => Date.now() - timestamp < 15000 // 15 seconds
+            );
+            if (recentResets.length >= 3) return; // Limit to 3 player resets per 15 seconds.
+            lastResetsTimestamps = [...recentResets, Date.now()];
             onMidroll();
             break;
         }

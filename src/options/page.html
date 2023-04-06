@@ -6,12 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Options - TTV LOL PRO</title>
     <link rel="icon" href="../images/brand/favicon.ico" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
     <link rel="stylesheet" href="../common/css/boilerplate.css" />
     <link rel="stylesheet" href="./style.css" />
   </head>
@@ -35,10 +29,29 @@
               id="reset-player-on-midroll-checkbox"
             />
             <label for="reset-player-on-midroll-checkbox">
-              Reset player on midroll
+              Reset the player when a midroll ad is detected
             </label>
             <br />
-            <small>Reset the player when a midroll ad is detected.</small>
+            <small>
+              Player resets may show a momentary black screen. This feature is
+              only available on Twitch's desktop website.
+            </small>
+          </li>
+          <li>
+            <input
+              type="checkbox"
+              name="check-for-updates-checkbox"
+              id="check-for-updates-checkbox"
+            />
+            <label for="check-for-updates-checkbox">
+              Show a banner in the extension's popup when a new version is
+              available
+            </label>
+            <br />
+            <small>
+              This option is handy for users who have used the ZIP file
+              installation method.
+            </small>
           </li>
         </ul>
       </section>

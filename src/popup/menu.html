@@ -5,127 +5,174 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Popup - TTV LOL PRO</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="stylesheet" href="../common/css/boilerplate.css" />
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div class="container">
-      <div id="update-banner">
-        A new update is available. Download it from the
-        <a
-          href="https://github.com/younesaassila/ttv-lol-pro/releases"
-          target="_blank"
-        >
-          GitHub repo's Releases page
-        </a>
-      </div>
+    <!-- Update banner -->
+    <div id="update-banner">
+      A new update is available. Download it from the
+      <a
+        href="https://github.com/younesaassila/ttv-lol-pro/releases"
+        target="_blank"
+        class="update-banner-link"
+      >
+        GitHub releases page
+      </a>
+    </div>
+
+    <main>
+      <!-- Logo -->
       <div class="logo-wrapper">
-        <img width="60%" src="../images/brand/logo.png" />
+        <img src="../images/brand/logo.png" alt="TTV LOL" />
       </div>
+
+      <!-- Stream status -->
       <div id="stream-status">
-        <div>
-          <span id="redirected">●</span>
-        </div>
-        <div>
-          <span id="stream-id"></span>
-          <br />
-          <small id="reason"></small>
-          <br />
+        <div id="proxy-status">
+          <div id="redirected">
+            <!-- https://icons.getbootstrap.com/icons/circle-fill/ -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="7"
+              height="7"
+              fill="currentColor"
+              class="bi bi-circle-fill"
+              viewBox="0 0 16 16"
+            >
+              <circle cx="8" cy="8" r="8" />
+            </svg>
+          </div>
+          <h3 id="stream-id"></h3>
+          <p id="reason"></p>
           <small id="proxy-country"></small>
         </div>
+        <div id="whitelist-status" data-whitelisted="false">
+          <input
+            type="checkbox"
+            name="whitelist-toggle"
+            id="whitelist-toggle"
+          />
+          <label for="whitelist-toggle" id="whitelist-toggle-label">
+            <span id="whitelist-toggle-icon">
+              <!-- If data-whitelisted="false" -->
+              <!-- https://icons.getbootstrap.com/icons/plus/ -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                class="bi bi-plus"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"
+                />
+              </svg>
+              <!-- Else if data-whitelisted="true" -->
+              <!-- https://icons.getbootstrap.com/icons/check-lg/ -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-check-lg"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"
+                />
+              </svg>
+            </span>
+            <!-- Label content in ::after -->
+          </label>
+        </div>
       </div>
-      <div id="whitelist-toggle-wrapper">
-        <input type="checkbox" name="whitelist-toggle" id="whitelist-toggle" />
-        <label for="whitelist-toggle" id="whitelist-toggle-label"></label>
-      </div>
-      <div class="button-group">
-        <a
-          href="https://ttv.lol/donate"
-          target="_blank"
-          class="button button-arrow"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="icon"
-            width="16"
-            height="16"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          Donate
-          <svg
-            viewBox="0 0 6 9"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            class="arrow-icon"
-          >
-            <g class="arrow-head">
-              <path
-                d="M1 1C4.5 4 5 4.38484 5 4.5C5 4.61516 4.5 5 1 8"
-                stroke="currentColor"
-                stroke-width="2"
-              />
-            </g>
-            <g class="arrow-body">
-              <path d="M3.5 4.5H0" stroke="currentColor" stroke-width="2" />
-            </g>
-          </svg>
-        </a>
 
-        <a
-          href="https://discord.gg/NAv7AFAyTF"
-          target="_blank"
-          class="button button-arrow"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="icon"
-            style="margin-right: 3px"
-            width="16"
-            height="16"
-            fill="currentColor"
-            class="bi bi-discord"
-            viewBox="0 0 16 16"
+      <!-- Links -->
+      <ol class="list">
+        <li>
+          <a href="../options/page.html" target="_blank" class="list-item">
+            <div class="list-item-icon">
+              <!-- https://icons.getbootstrap.com/icons/gear-fill/ -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-gear-fill"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"
+                />
+              </svg>
+            </div>
+            <div class="list-item-text">
+              <h3 class="list-item-title">Options</h3>
+              <p class="list-item-description">
+                Configure proxies, whitelist, and more.
+              </p>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a href="https://ttv.lol/donate" target="_blank" class="list-item">
+            <div class="list-item-icon">
+              <!-- https://icons.getbootstrap.com/icons/suit-heart-fill/ -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-suit-heart-fill"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M4 1c2.21 0 4 1.755 4 3.92C8 2.755 9.79 1 12 1s4 1.755 4 3.92c0 3.263-3.234 4.414-7.608 9.608a.513.513 0 0 1-.784 0C3.234 9.334 0 8.183 0 4.92 0 2.755 1.79 1 4 1z"
+                />
+              </svg>
+            </div>
+            <div class="list-item-text">
+              <h3 class="list-item-title">Donate</h3>
+              <p class="list-item-description">
+                Support the TTV LOL API (not affiliated).
+              </p>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://discord.gg/NAv7AFAyTF"
+            target="_blank"
+            class="list-item"
           >
-            <path
-              d="M6.552 6.712c-.456 0-.816.4-.816.888s.368.888.816.888c.456 0 .816-.4.816-.888.008-.488-.36-.888-.816-.888zm2.92 0c-.456 0-.816.4-.816.888s.368.888.816.888c.456 0 .816-.4.816-.888s-.36-.888-.816-.888z"
-            />
-            <path
-              d="M13.36 0H2.64C1.736 0 1 .736 1 1.648v10.816c0 .912.736 1.648 1.64 1.648h9.072l-.424-1.48 1.024.952.968.896L15 16V1.648C15 .736 14.264 0 13.36 0zm-3.088 10.448s-.288-.344-.528-.648c1.048-.296 1.448-.952 1.448-.952-.328.216-.64.368-.92.472-.4.168-.784.28-1.16.344a5.604 5.604 0 0 1-2.072-.008 6.716 6.716 0 0 1-1.176-.344 4.688 4.688 0 0 1-.584-.272c-.024-.016-.048-.024-.072-.04-.016-.008-.024-.016-.032-.024-.144-.08-.224-.136-.224-.136s.384.64 1.4.944c-.24.304-.536.664-.536.664-1.768-.056-2.44-1.216-2.44-1.216 0-2.576 1.152-4.664 1.152-4.664 1.152-.864 2.248-.84 2.248-.84l.08.096c-1.44.416-2.104 1.048-2.104 1.048s.176-.096.472-.232c.856-.376 1.536-.48 1.816-.504.048-.008.088-.016.136-.016a6.521 6.521 0 0 1 4.024.752s-.632-.6-1.992-1.016l.112-.128s1.096-.024 2.248.84c0 0 1.152 2.088 1.152 4.664 0 0-.68 1.16-2.448 1.216z"
-            />
-          </svg>
-          Discord
-          <svg
-            viewBox="0 0 6 9"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            class="arrow-icon"
-          >
-            <g class="arrow-head">
-              <path
-                d="M1 1C4.5 4 5 4.38484 5 4.5C5 4.61516 4.5 5 1 8"
-                stroke="currentColor"
-                stroke-width="2"
-              />
-            </g>
-            <g class="arrow-body">
-              <path d="M3.5 4.5H0" stroke="currentColor" stroke-width="2" />
-            </g>
-          </svg>
-        </a>
-      </div>
-    </div>
+            <div class="list-item-icon">
+              <!-- https://icons.getbootstrap.com/icons/discord/ -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-discord"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M13.545 2.907a13.227 13.227 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.19 12.19 0 0 0-3.658 0 8.258 8.258 0 0 0-.412-.833.051.051 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.041.041 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032c.001.014.01.028.021.037a13.276 13.276 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019c.308-.42.582-.863.818-1.329a.05.05 0 0 0-.01-.059.051.051 0 0 0-.018-.011 8.875 8.875 0 0 1-1.248-.595.05.05 0 0 1-.02-.066.051.051 0 0 1 .015-.019c.084-.063.168-.129.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.052.052 0 0 1 .053.007c.08.066.164.132.248.195a.051.051 0 0 1-.004.085 8.254 8.254 0 0 1-1.249.594.05.05 0 0 0-.03.03.052.052 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.235 13.235 0 0 0 4.001-2.02.049.049 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.034.034 0 0 0-.02-.019Zm-8.198 7.307c-.789 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612Zm5.316 0c-.788 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612Z"
+                />
+              </svg>
+            </div>
+            <div class="list-item-text">
+              <h3 class="list-item-title">Discord</h3>
+              <p class="list-item-description">
+                TTV LOL Discord server (not affiliated).
+              </p>
+            </div>
+          </a>
+        </li>
+      </ol>
+    </main>
+
     <script type="module" src="./popup.ts"></script>
   </body>
 </html>

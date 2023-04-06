@@ -5,6 +5,7 @@ export type ReadyState = "loading" | "complete";
 export type StorageAreaName = "local" | "managed" | "sync";
 
 export interface State {
+  checkForUpdates: boolean;
   disableVodRedirect: boolean;
   ignoredChannelSubscriptions: string[];
   isUpdateAvailable: boolean;

@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "TTV LOL PRO",
   "description": "TTV LOL PRO removes livestream ads from Twitch.",
-  "version": "1.8.1",
+  "version": "1.9.0",
   "background": {
     "persistent": true,
     "scripts": ["background/background.ts"]
@@ -41,7 +41,9 @@
     "https://*.ttvnw.net/*",
     "https://api.ttv.lol/*",
     "https://www.twitch.tv/*",
-    "https://m.twitch.tv/*"
+    "https://m.twitch.tv/*",
+    "https://player.twitch.tv/*",
+    "https://embed.twitch.tv/*"
   ],
   "update_url": "https://younesaassila.github.io/ttv-lol-pro/updates.xml"
 }

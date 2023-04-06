@@ -1,3 +1,8 @@
+@font-face {
+  src: url("../fonts/Inter-VariableFont_slnt\,wght.ttf");
+  font-family: "Inter";
+}
+
 :root {
   --font-primary: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
     sans-serif;
