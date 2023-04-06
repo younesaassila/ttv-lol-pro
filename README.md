@@ -59,8 +59,9 @@ This fork:
 
 <div align="center">
   <img
-    src="https://user-images.githubusercontent.com/47226184/210093901-2d0c7f62-5e1f-4ce2-83f3-e35812361e20.png"
+    src="https://user-images.githubusercontent.com/47226184/230387477-fa47fc75-69d5-42d2-b3ea-fb4e8f513035.png"
     alt="Popup on Firefox"
+    height="450"
   />
 </div>
 
