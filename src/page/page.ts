@@ -140,10 +140,6 @@ namespace TTV_LOL_PRO {
     resetPlayer(playerInstance, playerSourceInstance);
   }
 
-  function importFunctions(functions: WorkerFunctions) {
-    return Object.values(functions).map(fn => fn.functionBody);
-  }
-
   function onVideoWeaverResponse(responseText: string) {
     const AD_SIGNIFIER = "stitched"; // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/firefox/content.js#L87
     const START_DATE_REGEX =
@@ -205,6 +201,10 @@ namespace TTV_LOL_PRO {
     };
 
     console.log("[TTV LOL PRO] Hooked into fetch.");
+  }
+
+  function importFunctions(functions: WorkerFunctions) {
+    return Object.values(functions).map(fn => fn.functionBody);
   }
 
   // From https://github.com/cleanlock/VideoAdBlockForTwitch/blob/145921a822e830da62d39e36e8aafb8ef22c7be6/chrome/remove_video_ads.js#L296-L301

@@ -13,6 +13,7 @@
   --background-tertiary: #292b32;
 
   --border-radius: 8px;
+  --text-color: #c9cbcd;
   --success-color: #43b581;
   --error-color: #f04747;
   --whitelisted-color: #baaadb;
@@ -23,7 +24,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: var(--background);
-  color: #c9cbcd;
+  color: var(--text-color);
   font-family: var(--font-family);
 }
 
@@ -213,8 +214,7 @@ main > * {
   justify-content: start;
   padding: 10px 15px;
   background-color: var(--background-secondary);
-  color: inherit;
-  text-align: left;
+  color: var(--text-color);
   text-decoration: none;
   transition: background-color 100ms ease-in-out;
 }
