@@ -1,3 +1,4 @@
+import updateProxySettings from "../background/updateProxySettings";
 import $ from "../common/ts/$";
 import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
@@ -15,6 +16,7 @@ type ListOptions = {
   getPromptPlaceholder(insertMode: InsertMode): string;
   isAddAllowed(text: string): AllowedResult;
   isEditAllowed(text: string): AllowedResult;
+  onEdit?(text: string): void;
   focusPrompt: boolean;
   hidePromptMarker: boolean;
   insertMode: InsertMode;
@@ -113,21 +115,28 @@ function main() {
   // Server list
   listInit(serversListElement, "servers", store.state.servers, {
     getPromptPlaceholder: insertMode => {
-      if (insertMode == "prepend") return "Enter a server URL… (Primary)";
-      return "Enter a server URL… (Fallback)";
+      if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
+      return "Enter a proxy URL… (Fallback)";
     },
-    isAddAllowed(url) {
+    isAddAllowed(host) {
       try {
-        new URL(url);
+        // Check if proxy URL is valid.
+        new URL(`http://${host}`);
+        if (host.includes("/")) {
+          return [false, "Proxy URLs cannot contain a path"];
+        }
         return [true];
       } catch {
-        return [false, `'${url}' is not a valid URL`];
+        return [false, `'${host}' is not a valid proxy URL`];
       }
     },
-    isEditAllowed: url => [
-      !DEFAULT_SERVERS.includes(url),
-      "Cannot edit or remove default servers",
+    isEditAllowed: host => [
+      !DEFAULT_SERVERS.includes(host),
+      "Cannot edit or remove default proxy URLs",
     ],
+    onEdit() {
+      updateProxySettings();
+    },
     hidePromptMarker: true,
     insertMode: "both",
   });
@@ -223,6 +232,7 @@ function _listAppend(
     } else {
       store.state[storeKey][index] = newText;
     }
+    if (options.onEdit) options.onEdit(newText);
   });
   // Append list item to list.
   listItem.append(textInput);
@@ -273,6 +283,7 @@ function _listPrompt(
     if (options.insertMode === "prepend") list.unshift(text);
     else list.push(text);
     store.state[storeKey] = list;
+    if (options.onEdit) options.onEdit(text);
 
     listItem.remove(); // This will also remove the prompt.
     _listAppend(listElement, storeKey, text, options);
