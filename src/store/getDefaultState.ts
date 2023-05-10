@@ -8,7 +8,7 @@ export default function getDefaultState() {
     isUpdateAvailable: false,
     lastUpdateCheck: 0,
     resetPlayerOnMidroll: false,
-    servers: ["https://api.ttv.lol"],
+    servers: [],
     streamStatuses: {},
     whitelistedChannels: [],
   } as State;
