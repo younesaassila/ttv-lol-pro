@@ -56,7 +56,7 @@
         </ul>
       </section>
 
-      <section id="whitelisted-channels-section" class="section">
+      <section id="whitelisted-channels-section" class="section" hidden>
         <h2>Whitelisted channels</h2>
         <ul id="whitelisted-channels-list" class="store-list"></ul>
       </section>
@@ -64,16 +64,10 @@
       <section id="servers-section" class="section">
         <h2>Proxies</h2>
         <small>
-          TTV LOL PRO will ping each server in the list below until one
-          successfully responds to a <code>GET /ping</code> request.
+          Proxies listed below must be HTTP proxies in the format hostname:port.
         </small>
         <br />
-        <small>
-          Servers listed below must be compatible with TTV LOL's API structure
-          (<code>/ping</code>, <code>/playlist</code>, and
-          <code>/vod</code> routes). Failure to follow this structure will cause
-          TTV LOL PRO to error out.
-        </small>
+        <small> OG TTV LOL PRO proxies are not compatible! </small>
         <br />
         <ol id="servers-list" class="store-list" start="0"></ol>
         <small>
@@ -83,15 +77,9 @@
             >List of other proxies</a
           >" discussion on TTV LOL PRO's GitHub repository.
         </small>
-        <br />
-        <small>
-          Note: Fallback to stream with ads on server error is only available
-          for TTV LOL's API (https://api.ttv.lol).
-        </small>
-        <br />
       </section>
 
-      <section id="privacy-section" class="section">
+      <section id="privacy-section" class="section" hidden>
         <h2>Privacy</h2>
         <ul class="options-list">
           <li>
@@ -114,7 +102,11 @@
         </ul>
       </section>
 
-      <section id="ignored-channel-subscriptions-section" class="section">
+      <section
+        id="ignored-channel-subscriptions-section"
+        class="section"
+        hidden
+      >
         <h2>Ignored channel subscriptions</h2>
         <small>
           TTV LOL PRO will not check if you are subscribed to the following
