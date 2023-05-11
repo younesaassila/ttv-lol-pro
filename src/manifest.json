@@ -38,6 +38,7 @@
     "proxy",
     "storage",
     "webRequest",
+    "webRequestBlocking",
     "https://*.ttvnw.net/*",
     "https://www.twitch.tv/*",
     "https://m.twitch.tv/*",
