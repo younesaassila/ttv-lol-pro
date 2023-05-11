@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
-import { TWITCH_URL_REGEX } from "../common/ts/regexes";
+import { twitchWatchPageUrlRegex } from "../common/ts/regexes";
 import store from "../store";
 import type { StreamStatus } from "../types";
 
@@ -28,7 +28,7 @@ async function main() {
   const activeTab = tabs[0];
   if (!activeTab || !activeTab.url) return;
 
-  const match = TWITCH_URL_REGEX.exec(activeTab.url);
+  const match = twitchWatchPageUrlRegex.exec(activeTab.url);
   if (!match) return;
   const [, streamId] = match;
   if (!streamId) return;

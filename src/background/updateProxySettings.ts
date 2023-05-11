@@ -23,7 +23,9 @@ export default function updateProxySettings() {
     };
     chrome.proxy.settings.set({ value: config, scope: "regular" }, function () {
       console.log(
-        `Proxying video-weaver requests through one of: [${store.state.servers.toString()}]`
+        `⚙️ Proxying video-weaver requests through one of: ${
+          store.state.servers.toString() || "<empty>"
+        }`
       );
     });
   }

@@ -1,15 +1,13 @@
 import browser from "webextension-polyfill";
 import isChrome from "../common/ts/isChrome";
-import log from "../common/ts/log";
-import onBeforeHlsRequest from "./handlers/onBeforeHlsRequest";
-import onBeforeVodRequest from "./handlers/onBeforeVodRequest";
+import onBeforeRequest from "./handlers/onBeforeRequest";
 import onHeadersReceived from "./handlers/onHeadersReceived";
 import onProxyRequest from "./handlers/onProxyRequest";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
 import onStartupUpdateCheck from "./handlers/onStartupUpdateCheck";
 import updateProxySettings from "./updateProxySettings";
 
-log("🚀 Background script running.");
+console.info("🚀 Background script running.");
 
 // Cleanup the session-related data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);
@@ -23,15 +21,14 @@ if (!isChrome) {
     urls: ["https://*.ttvnw.net/*"], // Filtered to video-weaver requests in the handler.
   });
 
-  // TODO: Map channel names to HLS playlists.
-  browser.webRequest.onBeforeRequest.addListener(onBeforeHlsRequest, {
-    urls: ["https://usher.ttvnw.net/api/channel/hls/*"],
-  });
-
-  // TODO: Excluded from proxying.
-  browser.webRequest.onBeforeRequest.addListener(onBeforeVodRequest, {
-    urls: ["https://usher.ttvnw.net/vod/*"],
-  });
+  // Map channel names to video-weaver URLs.
+  browser.webRequest.onBeforeRequest.addListener(
+    onBeforeRequest,
+    {
+      urls: ["https://usher.ttvnw.net/api/channel/hls/*"],
+    },
+    ["blocking"]
+  );
 
   // Monitor video-weaver responses.
   browser.webRequest.onHeadersReceived.addListener(onHeadersReceived, {

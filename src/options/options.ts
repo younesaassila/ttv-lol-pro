@@ -36,10 +36,6 @@ const whitelistedChannelsListElement = $(
 $;
 // Proxies
 const serversListElement = $("#servers-list") as HTMLOListElement;
-// Privacy
-const disableVodRedirectCheckboxElement = $(
-  "#disable-vod-redirect-checkbox"
-) as HTMLInputElement;
 // Ignored channel subscriptions
 const ignoredChannelSubscriptionsListElement = $(
   "#ignored-channel-subscriptions-list"
@@ -83,24 +79,6 @@ function main() {
   checkForUpdatesCheckboxElement.addEventListener("change", e => {
     const checkbox = e.target as HTMLInputElement;
     store.state.checkForUpdates = checkbox.checked;
-  });
-  // Disable VOD proxying
-  disableVodRedirectCheckboxElement.checked = store.state.disableVodRedirect;
-  disableVodRedirectCheckboxElement.addEventListener("change", e => {
-    const checkbox = e.target as HTMLInputElement;
-    if (checkbox.checked) {
-      store.state.disableVodRedirect = checkbox.checked;
-    } else {
-      // Ask for confirmation before enabling VOD proxying.
-      const consent = confirm(
-        "Are you sure?\n\nYour Twitch token (containing sensitive information) will be sent to TTV LOL's API server when watching VODs."
-      );
-      if (consent) {
-        store.state.disableVodRedirect = checkbox.checked;
-      } else {
-        checkbox.checked = true;
-      }
-    }
   });
   // Server list
   listInit(serversListElement, "servers", store.state.servers, {
@@ -295,9 +273,7 @@ exportButtonElement.addEventListener("click", () => {
     "ttv-lol-pro_backup.json",
     JSON.stringify({
       checkForUpdates: store.state.checkForUpdates,
-      disableVodRedirect: store.state.disableVodRedirect,
       ignoredChannelSubscriptions: store.state.ignoredChannelSubscriptions,
-      resetPlayerOnMidroll: store.state.resetPlayerOnMidroll,
       servers: store.state.servers,
       whitelistedChannels: store.state.whitelistedChannels,
     }),

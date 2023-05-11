@@ -1,5 +1,6 @@
-export const TWITCH_URL_REGEX =
-  /^https?:\/\/(?:(?:www|m)\.)?twitch\.tv\/(?:videos\/)?([A-Z0-9][A-Z0-9_]*)/i;
-export const TWITCH_API_URL_REGEX = /\/(hls|vod)\/(.+)\.m3u8(?:\?(.*))?$/i;
-export const TTV_LOL_API_URL_REGEX = /\/(?:playlist|vod)\/(.+)\.m3u8/i;
+export const twitchApiChannelNameRegex = /\/hls\/(.+)\.m3u8/i;
+export const twitchWatchPageUrlRegex =
+  /^https?:\/\/(?:(?:www|m)\.)?twitch\.tv\/(?:videos\/)?(\w+)/i;
 export const videoWeaverHostRegex = /^video-weaver\.\w+\.hls\.ttvnw\.net$/i;
+export const videoWeaverUrlRegex =
+  /^https?:\/\/video-weaver\.\w+\.hls\.ttvnw\.net\/v1\/playlist\/.+\.m3u8$/gim;

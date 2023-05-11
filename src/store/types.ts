@@ -6,12 +6,12 @@ export type StorageAreaName = "local" | "managed" | "sync";
 
 export interface State {
   checkForUpdates: boolean;
-  disableVodRedirect: boolean;
   ignoredChannelSubscriptions: string[];
   isUpdateAvailable: boolean;
   lastUpdateCheck: number;
   servers: string[];
   streamStatuses: Record<string, StreamStatus>;
+  videoWeaverUrlsByChannel: Record<string, string[]>;
   whitelistedChannels: string[];
 }
 
