@@ -21,7 +21,7 @@
     "dev": "parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
     "lint": "prettier --check ./src",
     "lint:fix": "prettier --write ./src",
-    "build": "parcel build src/manifest.json --target webext-prod --no-content-hash"
+    "build": "parcel build src/manifest.json --target webext-prod --no-source-maps"
   },
   "keywords": [
     "twitch",
