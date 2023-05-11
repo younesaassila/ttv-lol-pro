@@ -13,4 +13,5 @@ export default function onStartupStoreCleanup(): void {
     return store.addEventListener("load", onStartupStoreCleanup);
 
   store.state.streamStatuses = {};
+  store.state.videoWeaverUrlsByChannel = {};
 }
