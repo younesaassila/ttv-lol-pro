@@ -26,9 +26,6 @@ type ListOptions = {
 
 //#region HTML Elements
 // General
-const resetPlayerOnMidrollCheckboxElement = $(
-  "#reset-player-on-midroll-checkbox"
-) as HTMLInputElement;
 const checkForUpdatesCheckboxElement = $(
   "#check-for-updates-checkbox"
 ) as HTMLInputElement;
@@ -81,13 +78,6 @@ function main() {
       getPromptPlaceholder: () => "Enter a channel name…",
     }
   );
-  // Reset player on midroll
-  resetPlayerOnMidrollCheckboxElement.checked =
-    store.state.resetPlayerOnMidroll;
-  resetPlayerOnMidrollCheckboxElement.addEventListener("change", e => {
-    const checkbox = e.target as HTMLInputElement;
-    store.state.resetPlayerOnMidroll = checkbox.checked;
-  });
   // Check for updates
   checkForUpdatesCheckboxElement.checked = store.state.checkForUpdates;
   checkForUpdatesCheckboxElement.addEventListener("change", e => {

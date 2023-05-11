@@ -10,7 +10,6 @@ export interface State {
   ignoredChannelSubscriptions: string[];
   isUpdateAvailable: boolean;
   lastUpdateCheck: number;
-  resetPlayerOnMidroll: boolean;
   servers: string[];
   streamStatuses: Record<string, StreamStatus>;
   whitelistedChannels: string[];
