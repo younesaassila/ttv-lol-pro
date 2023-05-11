@@ -7,7 +7,6 @@ export default function getDefaultState() {
     ignoredChannelSubscriptions: [], // Some channels might show ads even if you're subscribed to them.
     isUpdateAvailable: false,
     lastUpdateCheck: 0,
-    resetPlayerOnMidroll: false,
     servers: [],
     streamStatuses: {},
     whitelistedChannels: [],

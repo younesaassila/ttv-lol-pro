@@ -59,3 +59,16 @@ export interface Token {
   version: number;
   vod_id?: number;
 }
+
+// From https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/proxy/ProxyInfo
+export type ProxyInfo = {
+  type: "direct" | "http" | "https" | "socks" | "socks4";
+  host?: string;
+  port?: number;
+  username?: string;
+  password?: string;
+  proxyDNS?: boolean;
+  failoverTimeout?: number;
+  proxyAuthorizationHeader?: string;
+  connectionIsolationKey?: string;
+};
