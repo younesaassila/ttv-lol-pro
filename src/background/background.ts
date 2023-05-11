@@ -16,11 +16,6 @@ browser.runtime.onStartup.addListener(onStartupStoreCleanup);
 browser.runtime.onStartup.addListener(onStartupUpdateCheck);
 
 if (!isChrome) {
-  // Proxy video-weaver requests.
-  browser.proxy.onRequest.addListener(onProxyRequest, {
-    urls: ["https://*.ttvnw.net/*"], // Filtered to video-weaver requests in the handler.
-  });
-
   // Map channel names to video-weaver URLs.
   browser.webRequest.onBeforeRequest.addListener(
     onBeforeRequest,
@@ -29,6 +24,11 @@ if (!isChrome) {
     },
     ["blocking"]
   );
+
+  // Proxy video-weaver requests.
+  browser.proxy.onRequest.addListener(onProxyRequest, {
+    urls: ["https://*.ttvnw.net/*"], // Filtered to video-weaver requests in the handler.
+  });
 
   // Monitor video-weaver responses.
   browser.webRequest.onHeadersReceived.addListener(onHeadersReceived, {
