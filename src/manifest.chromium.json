@@ -36,6 +36,5 @@
     "https://m.twitch.tv/*",
     "https://player.twitch.tv/*",
     "https://embed.twitch.tv/*"
-  ],
-  "update_url": "https://younesaassila.github.io/ttv-lol-pro/updates.xml"
+  ]
 }

@@ -36,13 +36,6 @@ class Store {
     const storage = await browser.storage[this._areaName].get(null);
 
     this._state = getDefaultState();
-    // Check for updates on startup for unpacked installs.
-    if (browser.management?.getSelf != null) {
-      const info = await browser.management.getSelf();
-      if (info.installType === "development") {
-        this._state.checkForUpdates = true;
-      }
-    }
     for (const [key, value] of Object.entries(storage)) {
       this._state[key] = value;
     }
