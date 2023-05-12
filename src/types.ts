@@ -6,13 +6,6 @@ export type KeyOfType<T, V> = keyof {
 export interface StreamStatus {
   proxied: boolean;
   reason: string;
-  errors: StreamStatusError[];
-  proxyCountry?: string;
-}
-
-export interface StreamStatusError {
-  timestamp: number;
-  status: number;
 }
 
 // From https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/proxy/ProxyInfo
