@@ -2,7 +2,8 @@ import { WebRequest } from "webextension-polyfill";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import { videoWeaverHostRegex } from "../../common/ts/regexes";
-import { ProxyInfo } from "../../types";
+import store from "../../store";
+import { ProxyInfo, StreamStatus } from "../../types";
 
 export default function onHeadersReceived(
   details: WebRequest.OnHeadersReceivedDetailsType & {
@@ -16,10 +17,16 @@ export default function onHeadersReceived(
   const channelName = findChannelFromVideoWeaverUrl(details.url);
 
   const proxyInfo = details.proxyInfo; // Firefox only.
-  if (!proxyInfo || proxyInfo.type === "direct")
+  if (!proxyInfo || proxyInfo.type === "direct") {
+    setStreamStatus(channelName, {
+      proxied: false,
+      reason: "Not proxied",
+      errors: [],
+    });
     return console.log(
       `❌ Did not proxy ${details.url} (${channelName ?? "unknown"})`
     );
+  }
 
   console.log(
     `✅ Proxied ${details.url} (${channelName ?? "unknown"}) through ${
@@ -27,5 +34,18 @@ export default function onHeadersReceived(
     }:${proxyInfo.port}`
   );
 
-  // TODO: Stream status.
+  setStreamStatus(channelName, {
+    proxied: true,
+    reason: `Proxied through ${proxyInfo.host}:${proxyInfo.port}`,
+    errors: [],
+  });
+}
+
+function setStreamStatus(
+  channelName: string | null,
+  streamStatus: StreamStatus
+): boolean {
+  if (!channelName) return false;
+  store.state.streamStatuses[channelName] = streamStatus;
+  return true;
 }

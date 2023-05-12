@@ -6,7 +6,7 @@ import {
 } from "../../common/ts/regexes";
 import store from "../../store";
 
-export default function onBeforeRequest(
+export default function onBeforeUsherRequest(
   details: WebRequest.OnBeforeRequestDetailsType
 ): void | WebRequest.BlockingResponseOrPromise {
   const match = twitchApiChannelNameRegex.exec(details.url);

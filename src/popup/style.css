@@ -74,17 +74,17 @@ main > * {
   padding: 15px;
 }
 /* Proxy status icon */
-#stream-status #redirected {
+#stream-status #proxied {
   display: flex;
   grid-area: top-left;
   align-items: center;
   justify-content: center;
   margin-right: 10px;
 }
-#stream-status #redirected.success {
+#stream-status #proxied.success {
   color: var(--success-color);
 }
-#stream-status #redirected.error {
+#stream-status #proxied.error {
   color: var(--error-color);
 }
 /* Proxy status stream ID */

@@ -6,7 +6,7 @@ import type { StreamStatus } from "../types";
 
 //#region HTML Elements
 const streamStatusElement = $("#stream-status") as HTMLDivElement;
-const redirectedElement = $("#redirected") as HTMLDivElement;
+const proxiedElement = $("#proxied") as HTMLDivElement;
 const streamIdElement = $("#stream-id") as HTMLHeadingElement;
 const reasonElement = $("#reason") as HTMLParagraphElement;
 const proxyCountryElement = $("#proxy-country") as HTMLElement;
@@ -44,13 +44,13 @@ function setStreamStatusElement(streamId: string) {
 }
 
 function setProxyStatus(streamIdLower: string, status: StreamStatus) {
-  // Redirected
-  if (status.redirected) {
-    redirectedElement.classList.remove("error");
-    redirectedElement.classList.add("success");
+  // proxied
+  if (status.proxied) {
+    proxiedElement.classList.remove("error");
+    proxiedElement.classList.add("success");
   } else {
-    redirectedElement.classList.remove("success");
-    redirectedElement.classList.add("error");
+    proxiedElement.classList.remove("success");
+    proxiedElement.classList.add("error");
   }
   // Stream ID
   streamIdElement.textContent = streamIdLower;

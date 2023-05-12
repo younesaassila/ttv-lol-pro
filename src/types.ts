@@ -4,7 +4,7 @@ export type KeyOfType<T, V> = keyof {
 };
 
 export interface StreamStatus {
-  redirected: boolean;
+  proxied: boolean;
   reason: string;
   errors: StreamStatusError[];
   proxyCountry?: string;

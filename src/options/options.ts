@@ -1,5 +1,6 @@
 import updateProxySettings from "../background/updateProxySettings";
 import $ from "../common/ts/$";
+import isChromium from "../common/ts/isChromium";
 import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
 import store from "../store";
@@ -26,6 +27,9 @@ type ListOptions = {
 
 //#region HTML Elements
 // Whitelisted channels
+const whitelistedChannelsSectionElement = $(
+  "#whitelisted-channels-section"
+) as HTMLElement;
 const whitelistedChannelsListElement = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
@@ -60,16 +64,20 @@ else store.addEventListener("load", main);
 
 function main() {
   // Whitelisted channels
-  listInit(
-    whitelistedChannelsListElement,
-    "whitelistedChannels",
-    store.state.whitelistedChannels,
-    {
-      getAlreadyExistsAlertMessage: channelName =>
-        `'${channelName}' is already whitelisted`,
-      getPromptPlaceholder: () => "Enter a channel name…",
-    }
-  );
+  if (isChromium) {
+    whitelistedChannelsSectionElement.style.display = "none";
+  } else {
+    listInit(
+      whitelistedChannelsListElement,
+      "whitelistedChannels",
+      store.state.whitelistedChannels,
+      {
+        getAlreadyExistsAlertMessage: channelName =>
+          `'${channelName}' is already whitelisted`,
+        getPromptPlaceholder: () => "Enter a channel name…",
+      }
+    );
+  }
   // Server list
   listInit(serversListElement, "servers", store.state.servers, {
     getPromptPlaceholder: insertMode => {
@@ -93,7 +101,7 @@ function main() {
       "Cannot edit or remove default proxy URLs",
     ],
     onEdit() {
-      updateProxySettings();
+      if (isChromium) updateProxySettings();
     },
     hidePromptMarker: true,
     insertMode: "both",
