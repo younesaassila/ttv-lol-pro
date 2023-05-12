@@ -1,6 +1,6 @@
 {
   "name": "ttv-lol-pro",
-  "version": "2.0.0-beta.0",
+  "version": "2.0.0-beta.1",
   "description": "TTV LOL PRO removes livestream ads from Twitch",
   "@parcel/bundler-default": {
     "minBundles": 10000000,
@@ -18,10 +18,12 @@
   },
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
-    "dev": "parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
+    "dev:firefox": "cpy src/manifest.firefox.json . --rename=manifest.json && parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
+    "dev:chromium": "cpy src/manifest.chromium.json . --rename=manifest.json && parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
     "lint": "prettier --check ./src",
     "lint:fix": "prettier --write ./src",
-    "build": "parcel build src/manifest.json --target webext-prod --no-source-maps"
+    "build:firefox": "cpy src/manifest.firefox.json . --rename=manifest.json && parcel build src/manifest.json --target webext-prod --no-source-maps",
+    "build:chromium": "cpy src/manifest.chromium.json . --rename=manifest.json && parcel build src/manifest.json --target webext-prod --no-source-maps"
   },
   "keywords": [
     "twitch",
@@ -39,10 +41,9 @@
   "devDependencies": {
     "@parcel/config-webextension": "^2.8.3",
     "@types/chrome": "^0.0.235",
-    "@types/react": "^18.2.6",
     "@types/semver-compare": "^1.0.1",
     "@types/webextension-polyfill": "^0.10.0",
-    "amazon-ivs-player": "^1.18.0",
+    "cpy-cli": "^4.2.0",
     "parcel": "^2.8.3",
     "postcss": "^8.4.23",
     "prettier": "^2.8.8",
