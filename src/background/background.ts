@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import isChrome from "../common/ts/isChrome";
+import isChromium from "../common/ts/isChromium";
 import onBeforeRequest from "./handlers/onBeforeRequest";
 import onHeadersReceived from "./handlers/onHeadersReceived";
 import onProxyRequest from "./handlers/onProxyRequest";
@@ -7,7 +7,7 @@ import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
 import onStartupUpdateCheck from "./handlers/onStartupUpdateCheck";
 import updateProxySettings from "./updateProxySettings";
 
-console.info("🚀 Background script running.");
+console.info("🚀 Background script loaded.");
 
 // Cleanup the session-related data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);
@@ -15,7 +15,7 @@ browser.runtime.onStartup.addListener(onStartupStoreCleanup);
 // Check for updates on startup.
 browser.runtime.onStartup.addListener(onStartupUpdateCheck);
 
-if (!isChrome) {
+if (!isChromium) {
   // Map channel names to video-weaver URLs.
   browser.webRequest.onBeforeRequest.addListener(
     onBeforeRequest,

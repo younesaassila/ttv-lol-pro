@@ -1,11 +1,11 @@
-import isChrome from "../common/ts/isChrome";
+import isChromium from "../common/ts/isChromium";
 import store from "../store";
 
 export default function updateProxySettings() {
   if (store.readyState !== "complete")
     return store.addEventListener("load", updateProxySettings);
 
-  if (isChrome) {
+  if (isChromium) {
     let proxies = store.state.servers.map(host => `PROXY ${host}`).join(";");
     if (proxies.length === 0) proxies = "DIRECT";
     const config = {
