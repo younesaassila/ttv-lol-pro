@@ -1,6 +1,7 @@
 import browser from "webextension-polyfill";
 import isChromium from "../common/ts/isChromium";
-import onBeforeRequest from "./handlers/onBeforeRequest";
+import store from "../store";
+import onBeforeUsherRequest from "./handlers/onBeforeUsherRequest";
 import onHeadersReceived from "./handlers/onHeadersReceived";
 import onProxyRequest from "./handlers/onProxyRequest";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
@@ -11,10 +12,17 @@ console.info("🚀 Background script loaded.");
 // Cleanup the session-related data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);
 
-if (!isChromium) {
+if (isChromium) {
+  const setProxySettings = () => {
+    if (store.readyState !== "complete")
+      return store.addEventListener("load", setProxySettings);
+    updateProxySettings();
+  };
+  setProxySettings();
+} else {
   // Map channel names to video-weaver URLs.
   browser.webRequest.onBeforeRequest.addListener(
-    onBeforeRequest,
+    onBeforeUsherRequest,
     {
       urls: ["https://usher.ttvnw.net/api/channel/hls/*"],
     },
@@ -30,4 +38,4 @@ if (!isChromium) {
   browser.webRequest.onHeadersReceived.addListener(onHeadersReceived, {
     urls: ["https://*.ttvnw.net/*"], // Filtered to video-weaver requests in the handler.
   });
-} else updateProxySettings();
+}
