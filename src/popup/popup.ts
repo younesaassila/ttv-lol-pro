@@ -9,7 +9,6 @@ const streamStatusElement = $("#stream-status") as HTMLDivElement;
 const proxiedElement = $("#proxied") as HTMLDivElement;
 const streamIdElement = $("#stream-id") as HTMLHeadingElement;
 const reasonElement = $("#reason") as HTMLParagraphElement;
-const proxyCountryElement = $("#proxy-country") as HTMLElement;
 const whitelistStatusElement = $("#whitelist-status") as HTMLDivElement;
 const whitelistToggleElement = $("#whitelist-toggle") as HTMLInputElement;
 //#endregion
@@ -44,7 +43,7 @@ function setStreamStatusElement(streamId: string) {
 }
 
 function setProxyStatus(streamIdLower: string, status: StreamStatus) {
-  // proxied
+  // Proxied
   if (status.proxied) {
     proxiedElement.classList.remove("error");
     proxiedElement.classList.add("success");
@@ -60,13 +59,6 @@ function setProxyStatus(streamIdLower: string, status: StreamStatus) {
     reasonElement.style.display = "";
   } else {
     reasonElement.style.display = "none";
-  }
-  // Proxy country
-  if (status.proxyCountry) {
-    proxyCountryElement.textContent = `Proxy country: ${status.proxyCountry}`;
-    proxyCountryElement.style.display = "";
-  } else {
-    proxyCountryElement.style.display = "none";
   }
 }
 

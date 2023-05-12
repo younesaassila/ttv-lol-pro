@@ -100,13 +100,6 @@ main > * {
   font-size: 9pt;
   opacity: 0.8;
 }
-/* Proxy status country */
-#stream-status #proxy-country {
-  grid-area: bottom-right;
-  margin: 10px 0 0 0;
-  font-size: 7pt;
-  opacity: 0.6;
-}
 /* Whitelist status */
 #whitelist-status {
   height: 40px;
