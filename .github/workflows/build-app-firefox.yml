@@ -1,0 +1,14 @@
+name: "Build App"
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: npm install
+      - name: Run Linter
+        run: npm run lint
+      - name: Build App
+        run: npm run build:firefox

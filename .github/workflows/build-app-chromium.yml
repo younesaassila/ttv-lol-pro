@@ -11,4 +11,4 @@ jobs:
       - name: Run Linter
         run: npm run lint
       - name: Build App
-        run: npm run build
+        run: npm run build:chromium
