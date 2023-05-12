@@ -21,7 +21,6 @@ export default function onHeadersReceived(
     setStreamStatus(channelName, {
       proxied: false,
       reason: "Not proxied",
-      errors: [],
     });
     console.log(
       `❌ Did not proxy ${details.url} (${channelName ?? "unknown"})`
@@ -33,7 +32,6 @@ export default function onHeadersReceived(
   setStreamStatus(channelName, {
     proxied: true,
     reason: `Proxied through ${proxy}`,
-    errors: [],
   });
   console.log(
     `✅ Proxied ${details.url} (${channelName ?? "unknown"}) through ${proxy}`
