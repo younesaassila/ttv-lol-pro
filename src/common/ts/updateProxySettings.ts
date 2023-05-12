@@ -1,5 +1,5 @@
-import { videoWeaverHostRegex } from "../common/ts/regexes";
-import store from "../store";
+import store from "../../store";
+import { videoWeaverHostRegex } from "./regexes";
 
 export default function updateProxySettings() {
   const proxies = store.state.servers;
@@ -15,7 +15,7 @@ export default function updateProxySettings() {
             if (hostRegex.test(host)) {
               return ${JSON.stringify(proxyInfo)};
             }
-            return 'DIRECT';
+            return "DIRECT";
           }`,
     },
   };

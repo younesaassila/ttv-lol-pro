@@ -1,11 +1,11 @@
 import browser from "webextension-polyfill";
 import isChromium from "../common/ts/isChromium";
+import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
 import onBeforeUsherRequest from "./handlers/onBeforeUsherRequest";
 import onHeadersReceived from "./handlers/onHeadersReceived";
 import onProxyRequest from "./handlers/onProxyRequest";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
-import updateProxySettings from "./updateProxySettings";
 
 console.info("🚀 Background script loaded.");
 
@@ -28,12 +28,10 @@ if (isChromium) {
     },
     ["blocking"]
   );
-
   // Proxy video-weaver requests.
   browser.proxy.onRequest.addListener(onProxyRequest, {
     urls: ["https://*.ttvnw.net/*"], // Filtered to video-weaver requests in the handler.
   });
-
   // Monitor video-weaver responses.
   browser.webRequest.onHeadersReceived.addListener(onHeadersReceived, {
     urls: ["https://*.ttvnw.net/*"], // Filtered to video-weaver requests in the handler.

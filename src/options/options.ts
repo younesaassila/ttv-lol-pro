@@ -1,8 +1,8 @@
-import updateProxySettings from "../background/updateProxySettings";
 import $ from "../common/ts/$";
 import isChromium from "../common/ts/isChromium";
 import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
+import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
 import getDefaultState from "../store/getDefaultState";
 import type { KeyOfType } from "../types";
