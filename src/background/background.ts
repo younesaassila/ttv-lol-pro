@@ -4,16 +4,12 @@ import onBeforeRequest from "./handlers/onBeforeRequest";
 import onHeadersReceived from "./handlers/onHeadersReceived";
 import onProxyRequest from "./handlers/onProxyRequest";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
-import onStartupUpdateCheck from "./handlers/onStartupUpdateCheck";
 import updateProxySettings from "./updateProxySettings";
 
 console.info("🚀 Background script loaded.");
 
 // Cleanup the session-related data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);
-
-// Check for updates on startup.
-browser.runtime.onStartup.addListener(onStartupUpdateCheck);
 
 if (!isChromium) {
   // Map channel names to video-weaver URLs.

@@ -14,11 +14,6 @@
     "default_title": "TTV LOL PRO",
     "default_popup": "popup/menu.html"
   },
-  "browser_specific_settings": {
-    "gecko": {
-      "update_url": "https://younesaassila.github.io/ttv-lol-pro/updates.json"
-    }
-  },
   "content_scripts": [
     {
       "matches": ["https://www.twitch.tv/*", "https://m.twitch.tv/*"],
@@ -44,6 +39,5 @@
     "https://m.twitch.tv/*",
     "https://player.twitch.tv/*",
     "https://embed.twitch.tv/*"
-  ],
-  "update_url": "https://younesaassila.github.io/ttv-lol-pro/updates.xml"
+  ]
 }

@@ -44,31 +44,6 @@ main > * {
   border-radius: var(--border-radius);
 }
 
-/* Update banner */
-
-#update-banner {
-  display: none;
-  margin: 3px 3px 0 3px;
-  padding: 15px;
-  border: 1px solid #7d5eba;
-  border-radius: 5px;
-  background-color: #7d5eba4d;
-  color: #ffffff;
-  font-size: 9pt;
-}
-
-#update-banner .update-banner-link,
-#update-banner .update-banner-link:visited {
-  color: currentColor;
-  transition: opacity 100ms ease-in-out;
-}
-
-#update-banner .update-banner-link:hover,
-#update-banner .update-banner-link:hover:visited {
-  color: currentColor;
-  opacity: 0.8;
-}
-
 /* Logo */
 
 .logo-wrapper {

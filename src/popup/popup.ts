@@ -5,7 +5,6 @@ import store from "../store";
 import type { StreamStatus } from "../types";
 
 //#region HTML Elements
-const updateBannerElement = $("#update-banner") as HTMLDivElement;
 const streamStatusElement = $("#stream-status") as HTMLDivElement;
 const redirectedElement = $("#redirected") as HTMLDivElement;
 const streamIdElement = $("#stream-id") as HTMLHeadingElement;
@@ -19,11 +18,6 @@ if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 
 async function main() {
-  // Show update banner if an update is available.
-  if (store.state.isUpdateAvailable) {
-    updateBannerElement.style.display = "block";
-  }
-
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   const activeTab = tabs[0];
   if (!activeTab || !activeTab.url) return;
