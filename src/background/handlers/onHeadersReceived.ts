@@ -23,22 +23,21 @@ export default function onHeadersReceived(
       reason: "Not proxied",
       errors: [],
     });
-    return console.log(
+    console.log(
       `❌ Did not proxy ${details.url} (${channelName ?? "unknown"})`
     );
+    return;
   }
 
-  console.log(
-    `✅ Proxied ${details.url} (${channelName ?? "unknown"}) through ${
-      proxyInfo.host
-    }:${proxyInfo.port}`
-  );
-
+  const proxy = `${proxyInfo.host}:${proxyInfo.port}`;
   setStreamStatus(channelName, {
     proxied: true,
-    reason: `Proxied through ${proxyInfo.host}:${proxyInfo.port}`,
+    reason: `Proxied through ${proxy}`,
     errors: [],
   });
+  console.log(
+    `✅ Proxied ${details.url} (${channelName ?? "unknown"}) through ${proxy}`
+  );
 }
 
 function setStreamStatus(
