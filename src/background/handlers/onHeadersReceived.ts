@@ -3,7 +3,7 @@ import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoW
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import { videoWeaverHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
-import { ProxyInfo, StreamStatus } from "../../types";
+import type { ProxyInfo, StreamStatus } from "../../types";
 
 export default function onHeadersReceived(
   details: WebRequest.OnHeadersReceivedDetailsType & {
