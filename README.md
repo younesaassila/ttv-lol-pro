@@ -28,19 +28,13 @@
 
 <br />
 
-> ℹ️ This is a fork of the original project at https://github.com/TTV-LOL/extensions
-
-> ℹ️ TTV LOL PRO uses the same backend server as the official TTV LOL extension, meaning it experiences the same server issues (if there are any).
-
 TTV LOL PRO removes livestream ads from [Twitch](https://www.twitch.tv/).
 
 This fork:
 
-- disables TTV LOL for channels you are subscribed to,
-- lets you whitelist channels,
-- improves TTV LOL's popup by showing stream status and "Whitelist" button,
-- falls back to the stream with ads if the API server errors out,
-- improves your privacy by removing your Twitch token from API requests,
+- removes livestream ads from Twitch,
+- lets you whitelist channels (Firefox only),
+- improves TTV LOL's popup by showing stream status and "Whitelist" button (Firefox only),
 - lets you add custom primary/fallback proxies.
 
 **Recommendations:**
@@ -49,11 +43,6 @@ This fork:
 
   - removes banner ads,
   - removes ads on VODs.
-
-- [vaft/video-swap-new](https://github.com/pixeltris/TwitchAdSolutions#scripts)
-
-  - increases ad removal success rate,
-  - reduces frequency of TTV LOL PRO player resets (momentary black screens).
 
 ## Screenshot
 
@@ -66,8 +55,6 @@ This fork:
 </div>
 
 ## Installation
-
-`⚠️ Please disable/uninstall the official TTV LOL extension to avoid conflicts.`
 
 ### 🦊 Firefox (Recommended)
 
