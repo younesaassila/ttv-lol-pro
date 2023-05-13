@@ -78,36 +78,27 @@ function main() {
       if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
       return "Enter a proxy URL… (Fallback)";
     },
-    isAddAllowed(host) {
-      try {
-        // Check if proxy URL is valid.
-        new URL(`http://${host}`);
-        if (host.includes("/")) {
-          return [false, "Proxy URLs cannot contain a path"];
-        }
-        return [true];
-      } catch {
-        return [false, `'${host}' is not a valid proxy URL`];
-      }
-    },
-    isEditAllowed(host) {
-      try {
-        // Check if proxy URL is valid.
-        new URL(`http://${host}`);
-        if (host.includes("/")) {
-          return [false, "Proxy URLs cannot contain a path"];
-        }
-        return [true];
-      } catch {
-        return [false, `'${host}' is not a valid proxy URL`];
-      }
-    },
+    isAddAllowed: isProxyUrlValid,
+    isEditAllowed: isProxyUrlValid,
     onEdit() {
       if (isChromium) updateProxySettings();
     },
     hidePromptMarker: true,
     insertMode: "both",
   });
+}
+
+function isProxyUrlValid(host: string): AllowedResult {
+  try {
+    // Check if proxy URL is valid.
+    new URL(`http://${host}`);
+    if (host.includes("/")) {
+      return [false, "Proxy URLs cannot contain a path"];
+    }
+    return [true];
+  } catch {
+    return [false, `'${host}' is not a valid proxy URL`];
+  }
 }
 
 /**
