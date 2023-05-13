@@ -1,13 +1,13 @@
 import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
-import { twitchWatchPageUrlRegex } from "../common/ts/regexes";
+import { twitchChannelNameRegex } from "../common/ts/regexes";
 import store from "../store";
 import type { StreamStatus } from "../types";
 
 //#region HTML Elements
 const streamStatusElement = $("#stream-status") as HTMLDivElement;
 const proxiedElement = $("#proxied") as HTMLDivElement;
-const streamIdElement = $("#stream-id") as HTMLHeadingElement;
+const channelNameElement = $("#channel-name") as HTMLHeadingElement;
 const reasonElement = $("#reason") as HTMLParagraphElement;
 const whitelistStatusElement = $("#whitelist-status") as HTMLDivElement;
 const whitelistToggleElement = $("#whitelist-toggle") as HTMLInputElement;
@@ -21,28 +21,28 @@ async function main() {
   const activeTab = tabs[0];
   if (!activeTab || !activeTab.url) return;
 
-  const match = twitchWatchPageUrlRegex.exec(activeTab.url);
+  const match = twitchChannelNameRegex.exec(activeTab.url);
   if (!match) return;
-  const [, streamId] = match;
-  if (!streamId) return;
+  const [, channelName] = match;
+  if (!channelName) return;
 
-  setStreamStatusElement(streamId);
-  store.addEventListener("change", () => setStreamStatusElement(streamId));
+  setStreamStatusElement(channelName);
+  store.addEventListener("change", () => setStreamStatusElement(channelName));
 }
 
-function setStreamStatusElement(streamId: string) {
-  const streamIdLower = streamId.toLowerCase();
-  const status = store.state.streamStatuses[streamIdLower];
+function setStreamStatusElement(channelName: string) {
+  const channelNameLower = channelName.toLowerCase();
+  const status = store.state.streamStatuses[channelNameLower];
   if (status) {
-    setProxyStatus(streamIdLower, status);
-    setWhitelistStatus(streamIdLower);
+    setProxyStatus(channelNameLower, status);
+    setWhitelistStatus(channelNameLower);
     streamStatusElement.style.display = "flex";
   } else {
     streamStatusElement.style.display = "none";
   }
 }
 
-function setProxyStatus(streamIdLower: string, status: StreamStatus) {
+function setProxyStatus(channelNameLower: string, status: StreamStatus) {
   // Proxied
   if (status.proxied) {
     proxiedElement.classList.remove("error");
@@ -51,8 +51,8 @@ function setProxyStatus(streamIdLower: string, status: StreamStatus) {
     proxiedElement.classList.remove("success");
     proxiedElement.classList.add("error");
   }
-  // Stream ID
-  streamIdElement.textContent = streamIdLower;
+  // Channel name
+  channelNameElement.textContent = channelNameLower;
   // Reason
   if (status.reason) {
     reasonElement.textContent = status.reason;
@@ -62,23 +62,23 @@ function setProxyStatus(streamIdLower: string, status: StreamStatus) {
   }
 }
 
-function setWhitelistStatus(streamIdLower: string) {
+function setWhitelistStatus(channelNameLower: string) {
   const whitelistedChannelsLower = store.state.whitelistedChannels.map(id =>
     id.toLowerCase()
   );
-  const isWhitelisted = whitelistedChannelsLower.includes(streamIdLower);
+  const isWhitelisted = whitelistedChannelsLower.includes(channelNameLower);
   whitelistStatusElement.setAttribute("data-whitelisted", `${isWhitelisted}`);
   whitelistToggleElement.checked = isWhitelisted;
   whitelistToggleElement.addEventListener("change", e => {
     const target = e.target as HTMLInputElement;
     const isWhitelisted = target.checked;
     if (isWhitelisted) {
-      // Add stream ID to whitelist.
-      store.state.whitelistedChannels.push(streamIdLower);
+      // Add channel name to whitelist.
+      store.state.whitelistedChannels.push(channelNameLower);
     } else {
-      // Remove stream ID from whitelist.
+      // Remove channel name from whitelist.
       store.state.whitelistedChannels = store.state.whitelistedChannels.filter(
-        id => id !== streamIdLower
+        id => id !== channelNameLower
       );
     }
     whitelistStatusElement.setAttribute("data-whitelisted", `${isWhitelisted}`);
