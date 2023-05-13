@@ -25,7 +25,7 @@ export default function onProxyRequest(
     return { type: "direct" };
   }
 
-  const proxies = store.state.servers;
+  const proxies = store.state.proxies;
   const proxyInfoArray: ProxyInfo[] = proxies.map(host => {
     const [hostname, port] = host.split(":");
     return {

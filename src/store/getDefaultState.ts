@@ -2,7 +2,7 @@ import type { State } from "./types";
 
 export default function getDefaultState() {
   return {
-    servers: [],
+    proxies: [],
     streamStatuses: {},
     videoWeaverUrlsByChannel: {},
     whitelistedChannels: [],

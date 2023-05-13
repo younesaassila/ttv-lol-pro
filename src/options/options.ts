@@ -4,7 +4,6 @@ import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
 import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
-import getDefaultState from "../store/getDefaultState";
 import type { KeyOfType } from "../types";
 
 //#region Types
@@ -35,14 +34,13 @@ const whitelistedChannelsListElement = $(
 ) as HTMLUListElement;
 $;
 // Proxies
-const serversListElement = $("#servers-list") as HTMLOListElement;
+const proxiesListElement = $("#proxies-list") as HTMLOListElement;
 // Import/Export
 const exportButtonElement = $("#export-button") as HTMLButtonElement;
 const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 //#endregion
 
-const DEFAULT_SERVERS = getDefaultState().servers;
 const DEFAULT_LIST_OPTIONS: ListOptions = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
@@ -74,8 +72,8 @@ function main() {
       }
     );
   }
-  // Server list
-  listInit(serversListElement, "servers", store.state.servers, {
+  // Proxy list
+  listInit(proxiesListElement, "proxies", store.state.proxies, {
     getPromptPlaceholder: insertMode => {
       if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
       return "Enter a proxy URL… (Fallback)";
@@ -92,10 +90,18 @@ function main() {
         return [false, `'${host}' is not a valid proxy URL`];
       }
     },
-    isEditAllowed: host => [
-      !DEFAULT_SERVERS.includes(host),
-      "Cannot edit or remove default proxy URLs",
-    ],
+    isEditAllowed(host) {
+      try {
+        // Check if proxy URL is valid.
+        new URL(`http://${host}`);
+        if (host.includes("/")) {
+          return [false, "Proxy URLs cannot contain a path"];
+        }
+        return [true];
+      } catch {
+        return [false, `'${host}' is not a valid proxy URL`];
+      }
+    },
     onEdit() {
       if (isChromium) updateProxySettings();
     },
@@ -257,7 +263,7 @@ exportButtonElement.addEventListener("click", () => {
   saveFile(
     "ttv-lol-pro_backup.json",
     JSON.stringify({
-      servers: store.state.servers,
+      proxies: store.state.proxies,
       whitelistedChannels: store.state.whitelistedChannels,
     }),
     "application/json;charset=utf-8"
