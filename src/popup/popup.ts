@@ -82,6 +82,5 @@ function setWhitelistStatus(channelNameLower: string) {
       );
     }
     whitelistStatusElement.setAttribute("data-whitelisted", `${isWhitelisted}`);
-    browser.tabs.reload();
   });
 }

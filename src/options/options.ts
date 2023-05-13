@@ -140,49 +140,58 @@ function listInit(
  * Appends an item to a list element.
  * @param listElement
  * @param storeKey
- * @param text
+ * @param initialText
  * @param options
  */
 function _listAppend(
   listElement: HTMLOListElement | HTMLUListElement,
   storeKey: StoreStringArrayKey,
-  text: string,
+  initialText: string,
   options: ListOptions
 ) {
   const listItem = document.createElement("li");
   const textInput = document.createElement("input");
   textInput.type = "text";
-  const [allowed] = options.isEditAllowed(text);
+  const [allowed] = options.isEditAllowed(initialText);
   if (!allowed) textInput.disabled = true;
 
-  textInput.placeholder = options.getItemPlaceholder(text);
+  textInput.placeholder = options.getItemPlaceholder(initialText);
   textInput.spellcheck = options.spellcheck;
-  textInput.value = text;
+  textInput.value = initialText;
 
   // Highlight text when focused.
   textInput.addEventListener("focus", textInput.select);
   // Update store when text is changed.
   textInput.addEventListener("change", e => {
-    const textInput = e.target as HTMLInputElement;
-    const [allowed, errorMessage] = options.isEditAllowed(text);
-    if (!allowed) {
-      alert(errorMessage || "You cannot edit this item");
-      textInput.value = text;
-      return;
-    }
-    const newText = textInput.value.trim();
-    const index = store.state[storeKey].findIndex(
-      str => str.toLowerCase() === text.toLowerCase()
+    // Get index of item in store.
+    const itemIndex = store.state[storeKey].findIndex(
+      str => str.toLowerCase() === initialText.toLowerCase()
     );
-    if (index === -1) return;
+    if (itemIndex === -1)
+      return console.error(`Item ${initialText} not found in store`);
+    const textInput = e.target as HTMLInputElement;
+    const newText = textInput.value.trim();
     // Remove item if text field is left empty.
     if (newText === "") {
-      store.state[storeKey].splice(index, 1);
+      store.state[storeKey].splice(itemIndex, 1);
       listItem.remove();
-    } else {
-      store.state[storeKey][index] = newText;
+      if (options.onEdit) options.onEdit(newText);
+      return;
     }
+    // Check if new text is valid.
+    const [allowed, errorMessage] = options.isEditAllowed(newText);
+    if (!allowed) {
+      alert(errorMessage || "You cannot edit this item");
+      textInput.value = initialText;
+      return;
+    }
+
+    store.state[storeKey][itemIndex] = newText;
+    textInput.placeholder = options.getItemPlaceholder(newText);
+    textInput.value = newText;
     if (options.onEdit) options.onEdit(newText);
+
+    initialText = newText;
   });
   // Append list item to list.
   listItem.append(textInput);
