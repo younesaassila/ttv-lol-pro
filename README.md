@@ -44,6 +44,11 @@ This fork:
   - removes banner ads,
   - removes ads on VODs.
 
+## Credits
+
+- Extension maintained by [Younes Aassila](https://github.com/younesaassila)
+- Proxies maintained by [zGato](https://github.com/zGato)
+
 ## Screenshot
 
 <div align="center">
