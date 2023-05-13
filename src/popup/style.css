@@ -87,8 +87,8 @@ main > * {
 #stream-status #proxied.error {
   color: var(--error-color);
 }
-/* Proxy status stream ID */
-#stream-status #stream-id {
+/* Proxy status channel name */
+#stream-status #channel-name {
   grid-area: top-right;
   margin: 0;
   font-size: 11pt;
