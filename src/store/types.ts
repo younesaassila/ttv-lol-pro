@@ -5,7 +5,7 @@ export type ReadyState = "loading" | "complete";
 export type StorageAreaName = "local" | "managed" | "sync";
 
 export interface State {
-  servers: string[];
+  proxies: string[];
   streamStatuses: Record<string, StreamStatus>;
   videoWeaverUrlsByChannel: Record<string, string[]>;
   whitelistedChannels: string[];

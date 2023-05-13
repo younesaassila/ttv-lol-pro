@@ -2,7 +2,7 @@ import store from "../../store";
 import { videoWeaverHostRegex } from "./regexes";
 
 export default function updateProxySettings() {
-  const proxies = store.state.servers;
+  const proxies = store.state.proxies;
   let proxyInfo = proxies.map(host => `PROXY ${host}`).join(";");
   if (proxyInfo.length === 0) proxyInfo = "DIRECT";
 
