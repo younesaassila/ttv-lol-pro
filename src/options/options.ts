@@ -36,10 +36,6 @@ const whitelistedChannelsListElement = $(
 $;
 // Proxies
 const serversListElement = $("#servers-list") as HTMLOListElement;
-// Ignored channel subscriptions
-const ignoredChannelSubscriptionsListElement = $(
-  "#ignored-channel-subscriptions-list"
-) as HTMLUListElement;
 // Import/Export
 const exportButtonElement = $("#export-button") as HTMLButtonElement;
 const importButtonElement = $("#import-button") as HTMLButtonElement;
@@ -106,15 +102,6 @@ function main() {
     hidePromptMarker: true,
     insertMode: "both",
   });
-  // Ignored channel subscriptions
-  listInit(
-    ignoredChannelSubscriptionsListElement,
-    "ignoredChannelSubscriptions",
-    store.state.ignoredChannelSubscriptions,
-    {
-      getPromptPlaceholder: () => "Enter a channel name…",
-    }
-  );
 }
 
 /**
@@ -270,7 +257,6 @@ exportButtonElement.addEventListener("click", () => {
   saveFile(
     "ttv-lol-pro_backup.json",
     JSON.stringify({
-      ignoredChannelSubscriptions: store.state.ignoredChannelSubscriptions,
       servers: store.state.servers,
       whitelistedChannels: store.state.whitelistedChannels,
     }),
