@@ -14,6 +14,11 @@
     "default_title": "TTV LOL PRO",
     "default_popup": "popup/menu.html"
   },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ttv-lol-pro@ttv-lol-pro"
+    }
+  },
   "icons": {
     "128": "images/brand/icon.png"
   },
