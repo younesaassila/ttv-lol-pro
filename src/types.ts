@@ -24,9 +24,9 @@ export const enum AdType {
 export interface AdLogEntry {
   adType: AdType;
   channel: string | null;
-  channelWhitelisted: boolean;
   proxy: string | null;
   timestamp: number;
+  videoWeaverHost: string;
   videoWeaverUrl: string;
 }
 
