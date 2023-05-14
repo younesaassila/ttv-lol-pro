@@ -1,10 +1,10 @@
 import $ from "../common/ts/$";
+import getFilteredAdLog from "../common/ts/getFilteredAdLog";
 import isChromium from "../common/ts/isChromium";
 import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
 import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
-import getDefaultState from "../store/getDefaultState";
 import type { KeyOfType } from "../types";
 
 //#region Types
@@ -41,11 +41,9 @@ const adLogSectionElement = $("#ad-log-section") as HTMLElement;
 const adLogEnabledCheckboxElement = $(
   "#ad-log-enabled-checkbox"
 ) as HTMLInputElement;
+const adLogSendButtonElement = $("#ad-log-send-button") as HTMLButtonElement;
 const adLogExportButtonElement = $(
   "#ad-log-export-button"
-) as HTMLButtonElement;
-const adLogExportFilteredButtonElement = $(
-  "#ad-log-export-filtered-button"
 ) as HTMLButtonElement;
 const adLogClearButtonElement = $("#ad-log-clear-button") as HTMLButtonElement;
 // Import/Export
@@ -54,7 +52,6 @@ const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 //#endregion
 
-const DEFAULT_PROXIES = getDefaultState().proxies;
 const DEFAULT_LIST_OPTIONS: ListOptions = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
@@ -282,26 +279,37 @@ function _listPrompt(
   if (options.focusPrompt) promptInput.focus();
 }
 
+adLogSendButtonElement.addEventListener("click", async () => {
+  const filteredAdLog = getFilteredAdLog(store.state.adLog).filter(
+    entry => entry.timestamp > store.state.adLogLastSent
+  );
+  if (filteredAdLog.length === 0) {
+    return alert("No log entries to send.");
+  }
+  let success = false;
+  try {
+    const response = await fetch("https://perfprod.com/ttvlolpro/telemetry", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(filteredAdLog),
+    });
+    success = response.ok;
+  } catch (error) {
+    console.error(error);
+  }
+  if (!success) {
+    return alert("Failed to send log.");
+  }
+  store.state.adLogLastSent = Date.now();
+  alert("Log sent successfully.");
+});
+
 adLogExportButtonElement.addEventListener("click", () => {
   saveFile(
     "ttv-lol-pro_ad-log.json",
     JSON.stringify(store.state.adLog),
-    "application/json;charset=utf-8"
-  );
-});
-
-adLogExportFilteredButtonElement.addEventListener("click", () => {
-  const filteredAdLog = store.state.adLog
-    .filter(
-      entry => entry.proxy !== null && DEFAULT_PROXIES.includes(entry.proxy)
-    )
-    .map(entry => ({
-      ...entry,
-      videoWeaverUrl: undefined,
-    }));
-  saveFile(
-    "ttv-lol-pro_ad-log_filtered.json",
-    JSON.stringify(filteredAdLog),
     "application/json;charset=utf-8"
   );
 });

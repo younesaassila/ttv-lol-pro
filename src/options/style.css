@@ -91,6 +91,15 @@ button:hover {
   background-color: var(--button-background-color-hover);
 }
 
+.btn-primary {
+  background-color: var(--brand-color);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: var(--link-hover);
+}
+
 input[type="checkbox"]:disabled + label {
   opacity: 0.7;
 }
