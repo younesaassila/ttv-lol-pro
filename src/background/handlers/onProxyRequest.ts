@@ -1,6 +1,7 @@
 import { Proxy } from "webextension-polyfill";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
+import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import { videoWeaverHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
 import type { ProxyInfo } from "../../types";
@@ -14,13 +15,7 @@ export default function onProxyRequest(
 
   // Check if the channel is whitelisted.
   const channelName = findChannelFromVideoWeaverUrl(details.url);
-  const isWhitelisted = (channelName: string) => {
-    const whitelistedChannelsLower = store.state.whitelistedChannels.map(
-      channel => channel.toLowerCase()
-    );
-    return whitelistedChannelsLower.includes(channelName.toLowerCase());
-  };
-  if (channelName != null && isWhitelisted(channelName)) {
+  if (isChannelWhitelisted(channelName)) {
     console.log(`✋ Channel ${channelName} is whitelisted.`);
     return { type: "direct" };
   }

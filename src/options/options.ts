@@ -35,6 +35,18 @@ const whitelistedChannelsListElement = $(
 $;
 // Proxies
 const proxiesListElement = $("#proxies-list") as HTMLOListElement;
+// Ad log
+const adLogSectionElement = $("#ad-log-section") as HTMLElement;
+const adLogEnabledCheckboxElement = $(
+  "#ad-log-enabled-checkbox"
+) as HTMLInputElement;
+const adLogExportButtonElement = $(
+  "#ad-log-export-button"
+) as HTMLButtonElement;
+const adLogExportFilteredButtonElement = $(
+  "#ad-log-export-filtered-button"
+) as HTMLButtonElement;
+const adLogClearButtonElement = $("#ad-log-clear-button") as HTMLButtonElement;
 // Import/Export
 const exportButtonElement = $("#export-button") as HTMLButtonElement;
 const importButtonElement = $("#import-button") as HTMLButtonElement;
@@ -86,6 +98,15 @@ function main() {
     hidePromptMarker: true,
     insertMode: "both",
   });
+  // Ad log
+  if (isChromium) {
+    adLogSectionElement.style.display = "none";
+  } else {
+    adLogEnabledCheckboxElement.checked = store.state.adLogEnabled;
+    adLogEnabledCheckboxElement.addEventListener("change", () => {
+      store.state.adLogEnabled = adLogEnabledCheckboxElement.checked;
+    });
+  }
 }
 
 function isProxyUrlValid(host: string): AllowedResult {
@@ -258,6 +279,36 @@ function _listPrompt(
   // Focus prompt if specified.
   if (options.focusPrompt) promptInput.focus();
 }
+
+adLogExportButtonElement.addEventListener("click", () => {
+  saveFile(
+    "ttv-lol-pro_ad-log.json",
+    JSON.stringify(store.state.adLog),
+    "application/json;charset=utf-8"
+  );
+});
+
+adLogExportFilteredButtonElement.addEventListener("click", () => {
+  const filteredAdLog = store.state.adLog.filter(
+    entry =>
+      entry.channelWhitelisted === false &&
+      entry.proxy !== null &&
+      entry.proxy.split(":")[0].endsWith(".perfprod.com")
+  );
+  saveFile(
+    "ttv-lol-pro_ad-log_filtered.json",
+    JSON.stringify(filteredAdLog),
+    "application/json;charset=utf-8"
+  );
+});
+
+adLogClearButtonElement.addEventListener("click", () => {
+  const confirmation = confirm(
+    "Are you sure you want to clear the ad log? This cannot be undone."
+  );
+  if (!confirmation) return;
+  store.state.adLog = [];
+});
 
 exportButtonElement.addEventListener("click", () => {
   saveFile(

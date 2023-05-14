@@ -3,6 +3,7 @@ import isChromium from "../common/ts/isChromium";
 import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
 import onBeforeUsherRequest from "./handlers/onBeforeUsherRequest";
+import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
 import onHeadersReceived from "./handlers/onHeadersReceived";
 import onProxyRequest from "./handlers/onProxyRequest";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
@@ -32,6 +33,14 @@ if (isChromium) {
   browser.proxy.onRequest.addListener(onProxyRequest, {
     urls: ["https://*.ttvnw.net/*"], // Filtered to video-weaver requests in the handler.
   });
+  // Check for ads in video-weaver responses.
+  browser.webRequest.onBeforeRequest.addListener(
+    onBeforeVideoWeaverRequest,
+    {
+      urls: ["https://*.ttvnw.net/*"], // Filtered to video-weaver requests in the handler.
+    },
+    ["blocking"]
+  );
   // Monitor video-weaver responses.
   browser.webRequest.onHeadersReceived.addListener(onHeadersReceived, {
     urls: ["https://*.ttvnw.net/*"], // Filtered to video-weaver requests in the handler.
