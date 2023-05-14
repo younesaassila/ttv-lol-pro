@@ -26,19 +26,21 @@ export default function onProxyRequest(
   }
 
   const proxies = store.state.proxies;
-  const proxyInfoArray: ProxyInfo[] = proxies.map(host => {
-    const [hostname, port] = host.split(":");
-    return {
-      type: "http",
-      host: hostname,
-      port: Number(port) ?? 3128,
-    } as ProxyInfo;
-  });
+  const proxyInfoArray: ProxyInfo[] = [
+    ...proxies.map(host => {
+      const [hostname, port] = host.split(":");
+      return {
+        type: "http",
+        host: hostname,
+        port: Number(port) ?? 3128,
+      } as ProxyInfo;
+    }),
+    { type: "direct" } as ProxyInfo,
+  ];
   console.log(
     `⌛ Proxying ${details.url} (${channelName ?? "unknown"}) through one of: ${
       proxies.toString() || "<empty>"
     }`
   );
-  if (proxyInfoArray.length === 0) return { type: "direct" };
   return proxyInfoArray;
 }
