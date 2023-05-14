@@ -1,10 +1,12 @@
-import type { StreamStatus } from "../types";
+import type { AdLogEntry, StreamStatus } from "../types";
 
 export type EventType = "load" | "change";
 export type ReadyState = "loading" | "complete";
 export type StorageAreaName = "local" | "managed" | "sync";
 
 export interface State {
+  adLog: AdLogEntry[];
+  adLogEnabled: boolean;
   proxies: string[];
   streamStatuses: Record<string, StreamStatus>;
   videoWeaverUrlsByChannel: Record<string, string[]>;
