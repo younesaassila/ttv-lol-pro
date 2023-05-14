@@ -2,7 +2,6 @@ import { WebRequest } from "webextension-polyfill";
 import filterResponseDataWrapper from "../../common/ts/filterResponseDataWrapper";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
-import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import { videoWeaverHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
 import { AdType, ProxyInfo } from "../../types";
@@ -29,25 +28,32 @@ export default function onBeforeVideoWeaverRequest(
     if (isAd || isMidroll) {
       const adType: AdType = isMidroll ? AdType.MIDROLL : AdType.PREROLL;
       const channel = findChannelFromVideoWeaverUrl(details.url);
-      const channelWhitelisted = isChannelWhitelisted(channel);
       let proxy: string | null = null;
       if (details.proxyInfo && details.proxyInfo.type !== "direct") {
         proxy = `${details.proxyInfo.host}:${details.proxyInfo.port}`;
       }
       const timestamp = Date.now();
+      const videoWeaverHost = host;
       const videoWeaverUrl = details.url;
 
+      const isDuplicate = store.state.adLog.some(
+        entry =>
+          entry.videoWeaverUrl === videoWeaverUrl &&
+          timestamp - entry.timestamp < 1000 * 30 // 30 seconds
+      );
+      if (isDuplicate) return text;
+
       const adLog = store.state.adLog.filter(
-        entry => Date.now() - entry.timestamp < 1000 * 60 * 60 * 24 * 7 // 7 days
+        entry => timestamp - entry.timestamp < 1000 * 60 * 60 * 24 * 7 // 7 days
       );
       store.state.adLog = [
         ...adLog,
         {
           adType,
           channel,
-          channelWhitelisted,
           proxy,
           timestamp,
+          videoWeaverHost,
           videoWeaverUrl,
         },
       ];

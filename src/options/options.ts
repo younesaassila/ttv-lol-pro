@@ -4,6 +4,7 @@ import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
 import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
+import getDefaultState from "../store/getDefaultState";
 import type { KeyOfType } from "../types";
 
 //#region Types
@@ -53,6 +54,7 @@ const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 //#endregion
 
+const DEFAULT_PROXIES = getDefaultState().proxies;
 const DEFAULT_LIST_OPTIONS: ListOptions = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
@@ -289,12 +291,14 @@ adLogExportButtonElement.addEventListener("click", () => {
 });
 
 adLogExportFilteredButtonElement.addEventListener("click", () => {
-  const filteredAdLog = store.state.adLog.filter(
-    entry =>
-      entry.channelWhitelisted === false &&
-      entry.proxy !== null &&
-      entry.proxy.split(":")[0].endsWith(".perfprod.com")
-  );
+  const filteredAdLog = store.state.adLog
+    .filter(
+      entry => entry.proxy !== null && DEFAULT_PROXIES.includes(entry.proxy)
+    )
+    .map(entry => ({
+      ...entry,
+      videoWeaverUrl: undefined,
+    }));
   saveFile(
     "ttv-lol-pro_ad-log_filtered.json",
     JSON.stringify(filteredAdLog),
