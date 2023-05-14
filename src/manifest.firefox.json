@@ -33,6 +33,7 @@
     "webRequest",
     "webRequestBlocking",
     "https://*.ttvnw.net/*",
-    "https://*.twitch.tv/*"
+    "https://*.twitch.tv/*",
+    "https://perfprod.com/ttvlolpro/telemetry"
   ]
 }

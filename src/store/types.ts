@@ -7,6 +7,7 @@ export type StorageAreaName = "local" | "managed" | "sync";
 export interface State {
   adLog: AdLogEntry[];
   adLogEnabled: boolean;
+  adLogLastSent: number;
   proxies: string[];
   streamStatuses: Record<string, StreamStatus>;
   videoWeaverUrlsByChannel: Record<string, string[]>;

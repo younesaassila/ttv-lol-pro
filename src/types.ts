@@ -30,6 +30,14 @@ export interface AdLogEntry {
   videoWeaverUrl: string;
 }
 
+export interface AdLogEntryFiltered {
+  adType: AdType;
+  channel: string | null;
+  proxy: string | null;
+  timestamp: number;
+  videoWeaverHost: string;
+}
+
 export interface StreamStatus {
   proxied: boolean;
   reason: string;
