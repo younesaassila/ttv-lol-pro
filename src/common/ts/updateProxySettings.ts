@@ -3,8 +3,9 @@ import { videoWeaverHostRegex } from "./regexes";
 
 export default function updateProxySettings() {
   const proxies = store.state.proxies;
-  let proxyInfo = proxies.map(host => `PROXY ${host}`).join(";");
-  if (proxyInfo.length === 0) proxyInfo = "DIRECT";
+  const proxyInfo = [...proxies.map(host => `PROXY ${host}`), "DIRECT"].join(
+    "; "
+  );
 
   const config = {
     mode: "pac_script",
