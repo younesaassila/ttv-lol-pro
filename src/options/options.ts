@@ -1,10 +1,11 @@
 import $ from "../common/ts/$";
-import getFilteredAdLog from "../common/ts/getFilteredAdLog";
 import isChromium from "../common/ts/isChromium";
 import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
+import sendAdLog from "../common/ts/sendAdLog";
 import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
+import getDefaultState from "../store/getDefaultState";
 import type { KeyOfType } from "../types";
 
 //#region Types
@@ -52,6 +53,7 @@ const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 //#endregion
 
+const DEFAULT_PROXIES = getDefaultState().proxies;
 const DEFAULT_LIST_OPTIONS: ListOptions = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
@@ -90,7 +92,14 @@ function main() {
       return "Enter a proxy URL… (Fallback)";
     },
     isAddAllowed: isProxyUrlValid,
-    isEditAllowed: isProxyUrlValid,
+    isEditAllowed(host) {
+      const result = isProxyUrlValid(host);
+      if (!result[0]) return result;
+      return [
+        !DEFAULT_PROXIES.includes(host),
+        "You cannot edit the default proxies",
+      ];
+    },
     onEdit() {
       if (isChromium) updateProxySettings();
     },
@@ -280,29 +289,13 @@ function _listPrompt(
 }
 
 adLogSendButtonElement.addEventListener("click", async () => {
-  const filteredAdLog = getFilteredAdLog(store.state.adLog).filter(
-    entry => entry.timestamp > store.state.adLogLastSent
-  );
-  if (filteredAdLog.length === 0) {
+  const success = await sendAdLog();
+  if (success === null) {
     return alert("No log entries to send.");
-  }
-  let success = false;
-  try {
-    const response = await fetch("https://perfprod.com/ttvlolpro/telemetry", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(filteredAdLog),
-    });
-    success = response.ok;
-  } catch (error) {
-    console.error(error);
   }
   if (!success) {
     return alert("Failed to send log.");
   }
-  store.state.adLogLastSent = Date.now();
   alert("Log sent successfully.");
 });
 
