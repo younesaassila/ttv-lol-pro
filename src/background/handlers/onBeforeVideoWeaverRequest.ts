@@ -32,7 +32,7 @@ export default function onBeforeVideoWeaverRequest(
       if (details.proxyInfo && details.proxyInfo.type !== "direct") {
         proxy = `${details.proxyInfo.host}:${details.proxyInfo.port}`;
       }
-      const timestamp = Date.now();
+      const timestamp = details.timeStamp;
       const videoWeaverHost = host;
       const videoWeaverUrl = details.url;
 
@@ -57,6 +57,7 @@ export default function onBeforeVideoWeaverRequest(
           videoWeaverUrl,
         },
       ];
+      console.log(`📝 Ad log updated (${adLog.length} entries).`);
     }
 
     return text;
