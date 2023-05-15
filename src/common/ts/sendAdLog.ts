@@ -1,15 +1,15 @@
 import store from "../../store";
-import getDefaultState from "../../store/getDefaultState";
+// import getDefaultState from "../../store/getDefaultState";
 
 export default async function sendAdLog(): Promise<boolean | null> {
-  const DEFAULT_PROXIES = getDefaultState().proxies;
+  // const DEFAULT_PROXIES = getDefaultState().proxies;
 
   const filteredAdLog = store.state.adLog
     .filter(
       entry =>
-        entry.timestamp > store.state.adLogLastSent &&
-        entry.proxy != null &&
-        DEFAULT_PROXIES.includes(entry.proxy)
+        entry.timestamp > store.state.adLogLastSent && entry.proxy != null
+      // FIXME: Filter out third-party proxies.
+      // && entry.proxy.split(":")[0].endsWith(".perfprod.com")
     )
     .map(entry => ({
       ...entry,
