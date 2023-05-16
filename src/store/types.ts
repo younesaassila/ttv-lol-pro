@@ -8,8 +8,10 @@ export interface State {
   adLog: AdLogEntry[];
   adLogEnabled: boolean;
   adLogLastSent: number;
-  proxies: string[];
+  proxyUsherRequests: boolean;
   streamStatuses: Record<string, StreamStatus>;
+  usherProxies: string[];
+  videoWeaverProxies: string[];
   videoWeaverUrlsByChannel: Record<string, string[]>;
   whitelistedChannels: string[];
 }

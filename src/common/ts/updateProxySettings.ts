@@ -1,20 +1,25 @@
 import store from "../../store";
-import { videoWeaverHostRegex } from "./regexes";
+import { usherHostRegex, videoWeaverHostRegex } from "./regexes";
 
 export default function updateProxySettings() {
-  const proxies = store.state.proxies;
-  const proxyInfo = [...proxies.map(host => `PROXY ${host}`), "DIRECT"].join(
-    "; "
-  );
+  const usherProxies = store.state.usherProxies;
+  const usherProxyInfo = getProxyInfoFromHosts(usherProxies);
+  const videoWeaverProxies = store.state.videoWeaverProxies;
+  const videoWeaverProxyInfo = getProxyInfoFromHosts(videoWeaverProxies);
 
   const config = {
     mode: "pac_script",
     pacScript: {
       data: `
           function FindProxyForURL(url, host) {
-            const hostRegex = ${videoWeaverHostRegex.toString()};
-            if (hostRegex.test(host)) {
-              return ${JSON.stringify(proxyInfo)};
+            const proxyUsherRequests = ${store.state.proxyUsherRequests};
+            const usherHostRegex = ${usherHostRegex.toString()};
+            const videoWeaverHostRegex = ${videoWeaverHostRegex.toString()};
+            if (proxyUsherRequests && usherHostRegex.test(host)) {
+              return ${JSON.stringify(usherProxyInfo)};
+            }
+            if (videoWeaverHostRegex.test(host)) {
+              return ${JSON.stringify(videoWeaverProxyInfo)};
             }
             return "DIRECT";
           }`,
@@ -22,10 +27,21 @@ export default function updateProxySettings() {
   };
 
   chrome.proxy.settings.set({ value: config, scope: "regular" }, function () {
+    if (store.state.proxyUsherRequests) {
+      console.log(
+        `⚙️ Proxying usher requests through one of: ${
+          usherProxies.toString() || "<empty>"
+        }`
+      );
+    }
     console.log(
       `⚙️ Proxying video-weaver requests through one of: ${
-        proxies.toString() || "<empty>"
+        videoWeaverProxies.toString() || "<empty>"
       }`
     );
   });
+}
+
+function getProxyInfoFromHosts(hosts: string[]): string {
+  return [...hosts.map(host => `PROXY ${host}`), "DIRECT"].join("; ");
 }

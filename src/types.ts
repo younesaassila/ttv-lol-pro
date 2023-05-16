@@ -25,17 +25,10 @@ export interface AdLogEntry {
   adType: AdType;
   channel: string | null;
   proxy: string | null;
+  proxyUsherRequests: boolean;
   timestamp: number;
   videoWeaverHost: string;
   videoWeaverUrl: string;
-}
-
-export interface AdLogEntryFiltered {
-  adType: AdType;
-  channel: string | null;
-  proxy: string | null;
-  timestamp: number;
-  videoWeaverHost: string;
 }
 
 export interface StreamStatus {

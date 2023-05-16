@@ -5,11 +5,16 @@ export default function getDefaultState() {
     adLog: [],
     adLogEnabled: true,
     adLogLastSent: 0,
-    proxies: [
+    proxyUsherRequests: false,
+    streamStatuses: {},
+    usherProxies: [
       "stable.ttvlolpro.perfprod.com:8019",
       "asia.ttvlolpro.perfprod.com:9019",
     ],
-    streamStatuses: {},
+    videoWeaverProxies: [
+      "stable.ttvlolpro.perfprod.com:8019",
+      "asia.ttvlolpro.perfprod.com:9019",
+    ],
     videoWeaverUrlsByChannel: {},
     whitelistedChannels: [],
   } as State;
