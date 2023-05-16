@@ -1,3 +1,4 @@
+import hamburgerAudio from "url:../audio/hamburger.mp3";
 import $ from "../common/ts/$";
 import isChromium from "../common/ts/isChromium";
 import readFile from "../common/ts/readFile";
@@ -5,7 +6,6 @@ import saveFile from "../common/ts/saveFile";
 import sendAdLog from "../common/ts/sendAdLog";
 import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
-import getDefaultState from "../store/getDefaultState";
 import type { KeyOfType } from "../types";
 
 //#region Types
@@ -27,6 +27,11 @@ type ListOptions = {
 //#endregion
 
 //#region HTML Elements
+// Proxy Usher requests
+const proxyUsherRequestsCheckboxElement = $(
+  "#proxy-usher-requests-checkbox"
+) as HTMLInputElement;
+const usherProxiesListElement = $("#usher-proxies-list") as HTMLOListElement;
 // Whitelisted channels
 const whitelistedChannelsSectionElement = $(
   "#whitelisted-channels-section"
@@ -35,8 +40,10 @@ const whitelistedChannelsListElement = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
 $;
-// Proxies
-const proxiesListElement = $("#proxies-list") as HTMLOListElement;
+// Video Weaver proxies
+const videoWeaverProxiesListElement = $(
+  "#video-weaver-proxies-list"
+) as HTMLOListElement;
 // Ad log
 const adLogSectionElement = $("#ad-log-section") as HTMLElement;
 const adLogEnabledCheckboxElement = $(
@@ -53,7 +60,6 @@ const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 //#endregion
 
-const DEFAULT_PROXIES = getDefaultState().proxies;
 const DEFAULT_LIST_OPTIONS: ListOptions = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
@@ -70,6 +76,32 @@ if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 
 function main() {
+  // Proxy Usher requests
+  proxyUsherRequestsCheckboxElement.checked = store.state.proxyUsherRequests;
+  if (store.state.proxyUsherRequests)
+    usherProxiesListElement.style.display = "block";
+  else usherProxiesListElement.style.display = "none";
+  proxyUsherRequestsCheckboxElement.addEventListener("change", () => {
+    store.state.proxyUsherRequests = proxyUsherRequestsCheckboxElement.checked;
+    if (isChromium) updateProxySettings();
+    if (store.state.proxyUsherRequests) {
+      usherProxiesListElement.style.display = "block";
+      new Audio(hamburgerAudio).play();
+    } else usherProxiesListElement.style.display = "none";
+  });
+  listInit(usherProxiesListElement, "usherProxies", store.state.usherProxies, {
+    getPromptPlaceholder: insertMode => {
+      if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
+      return "Enter a proxy URL… (Fallback)";
+    },
+    isAddAllowed: isProxyUrlValid,
+    isEditAllowed: isProxyUrlValid,
+    onEdit() {
+      if (isChromium) updateProxySettings();
+    },
+    hidePromptMarker: true,
+    insertMode: "both",
+  });
   // Whitelisted channels
   if (isChromium) {
     whitelistedChannelsSectionElement.style.display = "none";
@@ -85,27 +117,25 @@ function main() {
       }
     );
   }
-  // Proxy list
-  listInit(proxiesListElement, "proxies", store.state.proxies, {
-    getPromptPlaceholder: insertMode => {
-      if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
-      return "Enter a proxy URL… (Fallback)";
-    },
-    isAddAllowed: isProxyUrlValid,
-    isEditAllowed(host) {
-      const result = isProxyUrlValid(host);
-      if (!result[0]) return result;
-      return [
-        !DEFAULT_PROXIES.includes(host),
-        "You cannot edit the default proxies",
-      ];
-    },
-    onEdit() {
-      if (isChromium) updateProxySettings();
-    },
-    hidePromptMarker: true,
-    insertMode: "both",
-  });
+  // Video Weaver proxies
+  listInit(
+    videoWeaverProxiesListElement,
+    "videoWeaverProxies",
+    store.state.videoWeaverProxies,
+    {
+      getPromptPlaceholder: insertMode => {
+        if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
+        return "Enter a proxy URL… (Fallback)";
+      },
+      isAddAllowed: isProxyUrlValid,
+      isEditAllowed: isProxyUrlValid,
+      onEdit() {
+        if (isChromium) updateProxySettings();
+      },
+      hidePromptMarker: true,
+      insertMode: "both",
+    }
+  );
   // Ad log
   if (isChromium) {
     adLogSectionElement.style.display = "none";
@@ -319,7 +349,7 @@ exportButtonElement.addEventListener("click", () => {
   saveFile(
     "ttv-lol-pro_backup.json",
     JSON.stringify({
-      proxies: store.state.proxies,
+      proxies: store.state.videoWeaverProxies,
       whitelistedChannels: store.state.whitelistedChannels,
     }),
     "application/json;charset=utf-8"

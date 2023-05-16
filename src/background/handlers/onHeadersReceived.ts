@@ -1,7 +1,7 @@
 import { WebRequest } from "webextension-polyfill";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
-import { videoWeaverHostRegex } from "../../common/ts/regexes";
+import { usherHostRegex, videoWeaverHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
 import type { ProxyInfo, StreamStatus } from "../../types";
 
@@ -10,32 +10,48 @@ export default function onHeadersReceived(
     proxyInfo?: ProxyInfo;
   }
 ): void | WebRequest.BlockingResponseOrPromise {
-  // Filter to video-weaver responses.
   const host = getHostFromUrl(details.url);
-  if (!host || !videoWeaverHostRegex.test(host)) return;
+  if (!host) return;
 
-  const channelName = findChannelFromVideoWeaverUrl(details.url);
+  const proxy = getProxyFromDetails(details);
 
-  const proxyInfo = details.proxyInfo; // Firefox only.
-  if (!proxyInfo || proxyInfo.type === "direct") {
-    setStreamStatus(channelName, {
-      proxied: false,
-      reason: "Not proxied",
-    });
-    console.log(
-      `❌ Did not proxy ${details.url} (${channelName ?? "unknown"})`
-    );
-    return;
+  // Usher requests.
+  if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
+    if (!proxy) return console.log(`❌ Did not proxy ${details.url}`);
+    console.log(`✅ Proxied ${details.url} through ${proxy}`);
   }
 
-  const proxy = `${proxyInfo.host}:${proxyInfo.port}`;
-  setStreamStatus(channelName, {
-    proxied: true,
-    reason: `Proxied through ${proxy}`,
-  });
-  console.log(
-    `✅ Proxied ${details.url} (${channelName ?? "unknown"}) through ${proxy}`
-  );
+  // Video-weaver requests.
+  if (videoWeaverHostRegex.test(host)) {
+    const channelName = findChannelFromVideoWeaverUrl(details.url);
+    if (!proxy) {
+      setStreamStatus(channelName, {
+        proxied: false,
+        reason: "Not proxied",
+      });
+      console.log(
+        `❌ Did not proxy ${details.url} (${channelName ?? "unknown"})`
+      );
+      return;
+    }
+    setStreamStatus(channelName, {
+      proxied: true,
+      reason: `Proxied through ${proxy}`,
+    });
+    console.log(
+      `✅ Proxied ${details.url} (${channelName ?? "unknown"}) through ${proxy}`
+    );
+  }
+}
+
+function getProxyFromDetails(
+  details: WebRequest.OnHeadersReceivedDetailsType & {
+    proxyInfo?: ProxyInfo;
+  }
+): string | null {
+  const proxyInfo = details.proxyInfo; // Firefox only.
+  if (!proxyInfo || proxyInfo.type === "direct") return null;
+  return `${proxyInfo.host}:${proxyInfo.port}`;
 }
 
 function setStreamStatus(

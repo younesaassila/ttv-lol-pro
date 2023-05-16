@@ -31,18 +31,18 @@ if (isChromium) {
   );
   // Proxy video-weaver requests.
   browser.proxy.onRequest.addListener(onProxyRequest, {
-    urls: ["https://*.ttvnw.net/*"], // Filtered to video-weaver requests in the handler.
+    urls: ["https://*.ttvnw.net/*"],
   });
   // Check for ads in video-weaver responses.
   browser.webRequest.onBeforeRequest.addListener(
     onBeforeVideoWeaverRequest,
     {
-      urls: ["https://*.ttvnw.net/*"], // Filtered to video-weaver requests in the handler.
+      urls: ["https://*.ttvnw.net/*"],
     },
     ["blocking"]
   );
   // Monitor video-weaver responses.
   browser.webRequest.onHeadersReceived.addListener(onHeadersReceived, {
-    urls: ["https://*.ttvnw.net/*"], // Filtered to video-weaver requests in the handler.
+    urls: ["https://*.ttvnw.net/*"],
   });
 }

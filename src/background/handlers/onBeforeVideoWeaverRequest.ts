@@ -14,7 +14,6 @@ export default function onBeforeVideoWeaverRequest(
   // Filter to video-weaver responses.
   const host = getHostFromUrl(details.url);
   if (!host || !videoWeaverHostRegex.test(host)) return;
-
   if (!store.state.adLogEnabled) return;
 
   filterResponseDataWrapper(details, text => {
@@ -32,6 +31,7 @@ export default function onBeforeVideoWeaverRequest(
       if (details.proxyInfo && details.proxyInfo.type !== "direct") {
         proxy = `${details.proxyInfo.host}:${details.proxyInfo.port}`;
       }
+      const proxyUsherRequests = store.state.proxyUsherRequests;
       const timestamp = details.timeStamp;
       const videoWeaverHost = host;
       const videoWeaverUrl = details.url;
@@ -52,12 +52,13 @@ export default function onBeforeVideoWeaverRequest(
           adType,
           channel,
           proxy,
+          proxyUsherRequests,
           timestamp,
           videoWeaverHost,
           videoWeaverUrl,
         },
       ];
-      console.log(`📝 Ad log updated (${adLog.length} entries).`);
+      console.log(`📝 Ad log updated (${adLog.length + 1} entries).`);
     }
 
     return text;
