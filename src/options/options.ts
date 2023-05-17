@@ -349,7 +349,7 @@ exportButtonElement.addEventListener("click", () => {
   saveFile(
     "ttv-lol-pro_backup.json",
     JSON.stringify({
-      proxies: store.state.videoWeaverProxies,
+      videoWeaverProxies: store.state.videoWeaverProxies,
       whitelistedChannels: store.state.whitelistedChannels,
     }),
     "application/json;charset=utf-8"
