@@ -263,7 +263,7 @@ namespace TTV_LOL_PRO {
             const recentResets = lastResetsTimestamps.filter(
               timestamp => Date.now() - timestamp < 15000 // 15 seconds
             );
-            if (recentResets.length >= 3) return; // Limit to 3 player resets per 15 seconds.
+            if (recentResets.length >= 1) return; // Limit to 1 player reset per 15 seconds.
             lastResetsTimestamps = [...recentResets, Date.now()];
             onMidroll();
             break;
