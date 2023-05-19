@@ -6,6 +6,7 @@ import saveFile from "../common/ts/saveFile";
 import sendAdLog from "../common/ts/sendAdLog";
 import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
+import type { State } from "../store/types";
 import type { KeyOfType } from "../types";
 
 //#region Types
@@ -346,12 +347,16 @@ adLogClearButtonElement.addEventListener("click", () => {
 });
 
 exportButtonElement.addEventListener("click", () => {
+  const state: Partial<State> = {
+    adLogEnabled: store.state.adLogEnabled,
+    proxyUsherRequests: store.state.proxyUsherRequests,
+    usherProxies: store.state.usherProxies,
+    videoWeaverProxies: store.state.videoWeaverProxies,
+    whitelistedChannels: store.state.whitelistedChannels,
+  };
   saveFile(
     "ttv-lol-pro_backup.json",
-    JSON.stringify({
-      videoWeaverProxies: store.state.videoWeaverProxies,
-      whitelistedChannels: store.state.whitelistedChannels,
-    }),
+    JSON.stringify(state),
     "application/json;charset=utf-8"
   );
 });
