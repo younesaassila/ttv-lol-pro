@@ -30,8 +30,6 @@
 
 > ℹ️ This is a fork of the original project at https://github.com/TTV-LOL/extensions
 
-> ℹ️ TTV LOL PRO uses the same backend server as the official TTV LOL extension, meaning it experiences the same server issues (if there are any).
-
 TTV LOL PRO removes livestream ads from [Twitch](https://www.twitch.tv/).
 
 This fork:
