@@ -44,11 +44,6 @@ This fork:
   - removes banner ads,
   - removes ads on VODs.
 
-## Credits
-
-- Extension maintained by [Younes Aassila](https://github.com/younesaassila)
-- Proxies maintained by [zGato](https://github.com/zGato)
-
 ## Screenshot
 
 <div align="center">
@@ -61,41 +56,13 @@ This fork:
 
 ## Installation
 
-### 🦊 Firefox (Recommended)
+> ⚠️ **Please remove any other Twitch-specific ad blocker (this includes the [VAFT](https://github.com/pixeltris/TwitchAdSolutions#scripts) script). [uBlock Origin](https://ublockorigin.com/) is recommended as it is a general-purpose ad blocker. Please clear your browser's cache after installing the beta.**
 
-1. Download the [latest version](https://github.com/younesaassila/ttv-lol-pro/releases/latest) of this extension from the [Releases page](https://github.com/younesaassila/ttv-lol-pro/releases) (XPI file)
-1. Go to `about:addons`
-1. Click on the gear icon then select "Install Add-on From File…"
-1. Select the XPI file you just downloaded
+- **Chrome _(Permanent)_:** Unzip > Go to `chrome://extensions` > Enable developer mode > Load unpacked
+- **Firefox all editions _(Temporary)_:** Go to `about:debugging#/runtime/this-firefox` > Load Temporary Add-on
+- **[Firefox Developer Edition](https://www.mozilla.org/en-US/firefox/developer/) _(Permanent)_:** Go to `about:config` > Set `xpinstall.signatures.required` to `false` > Extensions page > Gear > Install Add-on From File
 
-### 🌐 Chromium (Chrome, Edge, or Brave)
+## Credits
 
-#### Without Automatic Updates (All operating systems)
-
-1. Download the [latest version](https://github.com/younesaassila/ttv-lol-pro/releases/latest) of this extension from the [Releases page](https://github.com/younesaassila/ttv-lol-pro/releases) (ZIP file)
-1. Unzip the ZIP file you just downloaded
-1. Go to `chrome://extensions`
-1. Turn on `Developer mode`
-1. Click on `Load unpacked`
-1. Select the unzipped folder you just created
-
-> ℹ️ Deleting the unzipped folder will remove the extension from your browser.
-
-#### With Automatic Updates (Windows & Linux)
-
-> ⚠️ **For Windows users:** Please note that Chromium browsers only support auto-updates for `.crx` extensions. Unfortunately, these browsers do not allow the installation of third-party `.crx` extensions by default. To allow the installation of third-party `.crx` extensions, the "ExtensionInstallAllowlist" Enterprise policy must be enabled via the Windows Registry. Using this policy will make your browser display a warning message stating "Your browser is managed by your organization." because it thinks that the policy was set by a system administrator in your organization (since users don't typically mess with the Registry) -- that is not the case, so you can safely ignore this message. Your browser will still be managed by you and you only.
-> **If you are not comfortable having your browser display a warning message, please use the method above (without automatic updates).**
-
-1. Download the [latest version](https://github.com/younesaassila/ttv-lol-pro/releases/latest) of this extension as a CRX file (Save link as…) from the [Releases page](https://github.com/younesaassila/ttv-lol-pro/releases)
-1. Go to `chrome://extensions`
-1. Turn on "Developer mode" (top right-hand corner)
-1. Drag and drop the CRX file anywhere on the extensions page (you should see something like [this](https://user-images.githubusercontent.com/47226184/213722956-73fcc824-8065-441f-a893-ed96c33c2139.png) on Windows)
-1. **For Windows users only:** Add this extension to your browser's allowlist via the Registry Editor _(if you don't do this, Chrome will disable the extension the next time it launches and prevent Automatic Updates)_
-   1. **Recommended:** Read the warning above to make sure you understand why this is necessary
-   1. Download the `allowlist.zip` file from the [latest release](https://github.com/younesaassila/ttv-lol-pro/releases/latest)
-   1. Unzip the ZIP file you just downloaded
-   1. Run the REG file for your browser (Chrome, Edge, or Brave)
-   1. Fully close and restart your browser
-   1. _You can see the policy changes applied at `chrome://policy`_
-
-> ℹ️ If you want to revert the changes made to the Registry, an `unallow` folder is included in the `allowlist.zip` file. You can run the REG file in that folder to revert the policy changes.
+- Extension maintained by [Younes Aassila](https://github.com/younesaassila)
+- Default proxies maintained by [zGato](https://github.com/zGato)
