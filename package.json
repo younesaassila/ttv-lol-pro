@@ -36,13 +36,15 @@
   ],
   "license": "GPL-3.0",
   "dependencies": {
-    "semver-compare": "^1.0.0"
+    "semver-compare": "^1.0.0",
+    "xhook": "^1.6.0"
   },
   "devDependencies": {
     "@parcel/config-webextension": "^2.8.3",
     "@types/chrome": "^0.0.236",
     "@types/semver-compare": "^1.0.1",
     "@types/webextension-polyfill": "^0.10.0",
+    "@types/xhook": "^1.5.0",
     "cpy-cli": "^4.2.0",
     "parcel": "^2.8.3",
     "postcss": "^8.4.23",

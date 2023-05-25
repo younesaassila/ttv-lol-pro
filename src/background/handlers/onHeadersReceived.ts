@@ -15,6 +15,12 @@ export default function onHeadersReceived(
 
   const proxy = getProxyFromDetails(details);
 
+  // GQL requests.
+  if (host === "gql.twitch.tv") {
+    if (!proxy) return; // Expected for nearly all requests.
+    console.log(`✅ Proxied ${details.url} through ${proxy}`);
+  }
+
   // Usher requests.
   if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
     if (!proxy) return console.log(`❌ Did not proxy ${details.url}`);

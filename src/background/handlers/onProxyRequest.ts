@@ -2,18 +2,34 @@ import { Proxy } from "webextension-polyfill";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
+import isFlaggedRequest from "../../common/ts/isFlaggedRequest";
 import { usherHostRegex, videoWeaverHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
 import type { ProxyInfo } from "../../types";
 
-export default function onProxyRequest(
+export default async function onProxyRequest(
   details: Proxy.OnRequestDetailsType
-): ProxyInfo | ProxyInfo[] | Promise<ProxyInfo | ProxyInfo[]> {
+): Promise<ProxyInfo | ProxyInfo[]> {
   const host = getHostFromUrl(details.url);
   if (!host) return { type: "direct" };
 
-  // Usher requests.
-  if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
+  // Wait for the store to be ready.
+  if (store.readyState !== "complete") {
+    await new Promise(resolve => {
+      const listener = () => {
+        store.removeEventListener("load", listener);
+        resolve(onProxyRequest(details));
+      };
+      store.addEventListener("load", listener);
+    });
+  }
+
+  // GQL & Usher requests.
+  if (
+    store.state.proxyUsherRequests &&
+    (isFlaggedRequest(details.requestHeaders) || usherHostRegex.test(host))
+  ) {
+    // TODO: Check if channel is whitelisted.
     const proxies = store.state.usherProxies;
     const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
     console.log(

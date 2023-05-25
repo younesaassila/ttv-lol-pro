@@ -19,6 +19,13 @@
       "id": "ttv-lol-pro@ttv-lol-pro"
     }
   },
+  "content_scripts": [
+    {
+      "matches": ["https://*.twitch.tv/*"],
+      "js": ["content/content.ts"],
+      "run_at": "document_start"
+    }
+  ],
   "icons": {
     "128": "images/brand/icon.png"
   },
