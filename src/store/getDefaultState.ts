@@ -5,6 +5,7 @@ export default function getDefaultState() {
     adLog: [],
     adLogEnabled: true,
     adLogLastSent: 0,
+    proxyTwitchWebpage: false,
     proxyUsherRequests: false,
     streamStatuses: {},
     usherProxies: ["stable.ttvlolpro.perfprod.com:8019"],

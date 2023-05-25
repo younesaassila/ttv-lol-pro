@@ -1,4 +1,8 @@
 import hamburgerAudio from "url:../audio/hamburger.mp3";
+import konamiEndAudio from "url:../audio/konami_end.mp3";
+import konamiProgress1Audio from "url:../audio/konami_progress_1.mp3";
+import konamiProgress2Audio from "url:../audio/konami_progress_2.mp3";
+import konamiProgress3Audio from "url:../audio/konami_progress_3.mp3";
 import $ from "../common/ts/$";
 import isChromium from "../common/ts/isChromium";
 import readFile from "../common/ts/readFile";
@@ -31,6 +35,12 @@ type ListOptions = {
 // Proxy Usher requests
 const proxyUsherRequestsCheckboxElement = $(
   "#proxy-usher-requests-checkbox"
+) as HTMLInputElement;
+const proxyTwitchWebpageLiElement = $(
+  "#proxy-twitch-webpage-li"
+) as HTMLElement;
+const proxyTwitchWebpageCheckboxElement = $(
+  "#proxy-twitch-webpage-checkbox"
 ) as HTMLInputElement;
 const usherProxiesListElement = $("#usher-proxies-list") as HTMLOListElement;
 // Whitelisted channels
@@ -89,6 +99,11 @@ function main() {
       usherProxiesListElement.style.display = "block";
       new Audio(hamburgerAudio).play();
     } else usherProxiesListElement.style.display = "none";
+  });
+  proxyTwitchWebpageCheckboxElement.checked = store.state.proxyTwitchWebpage;
+  proxyTwitchWebpageCheckboxElement.addEventListener("change", () => {
+    store.state.proxyTwitchWebpage = proxyTwitchWebpageCheckboxElement.checked;
+    if (isChromium) updateProxySettings();
   });
   listInit(usherProxiesListElement, "usherProxies", store.state.usherProxies, {
     getPromptPlaceholder: insertMode => {
@@ -382,3 +397,78 @@ resetButtonElement.addEventListener("click", () => {
   store.clear();
   window.location.reload(); // Reload page to update UI.
 });
+
+// From https://stackoverflow.com/a/31627191
+
+const konamiCode = [
+  "ArrowUp",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowLeft",
+  "ArrowRight",
+  "b",
+  "a",
+];
+
+const titles = [
+  "What was that?",
+  "What are you doing?",
+  "A secret code you say?",
+  "For what?",
+  "A hidden feature you say?",
+  "And what would it do?",
+  "Improve ad blocking with what?",
+  "A Whopper you say???",
+  "Sir, this is a Wendy's.",
+];
+
+// A variable to remember the position the user has reached so far.
+let konamiCodePosition = 0;
+
+let restoreTitleTimeout: number | null = null;
+
+function restoreTitle() {
+  document.title = "Options - TTV LOL PRO";
+}
+
+document.addEventListener("keydown", function (e) {
+  const key = e.key;
+  const expectedKey = konamiCode[konamiCodePosition];
+
+  if (key == expectedKey) {
+    konamiCodePosition += 1;
+
+    const randomAudio = Math.floor(Math.random() * 3);
+    let src = "";
+    if (randomAudio === 0) src = konamiProgress1Audio;
+    else if (randomAudio === 1) src = konamiProgress2Audio;
+    else src = konamiProgress3Audio;
+    const audio = new Audio(src);
+    audio.volume = 0.5;
+    audio.play();
+
+    // Complete code entered correctly.
+    if (konamiCodePosition == konamiCode.length) {
+      new Audio(konamiEndAudio).play();
+      konamiCodeActivate();
+      konamiCodePosition = 0;
+    } else {
+      document.title = titles[konamiCodePosition - 1];
+    }
+
+    if (restoreTitleTimeout) clearTimeout(restoreTitleTimeout);
+    restoreTitleTimeout = setTimeout(restoreTitle, 5000);
+  } else {
+    konamiCodePosition = 0;
+  }
+});
+
+function konamiCodeActivate() {
+  setTimeout(() => {
+    document.title = "YOU SCARED ME!!!";
+    proxyTwitchWebpageLiElement.style.display = "block";
+  }, 250);
+}

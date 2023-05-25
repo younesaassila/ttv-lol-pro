@@ -12,9 +12,13 @@ export default function updateProxySettings() {
     pacScript: {
       data: `
           function FindProxyForURL(url, host) {
+            const proxyTwitchWebpage = ${store.state.proxyTwitchWebpage};
             const proxyUsherRequests = ${store.state.proxyUsherRequests};
             const usherHostRegex = ${usherHostRegex.toString()};
             const videoWeaverHostRegex = ${videoWeaverHostRegex.toString()};
+            if (proxyTwitchWebpage && host === "www.twitch.tv") {
+              return ${JSON.stringify(usherProxyInfo)};
+            }
             if (proxyUsherRequests && usherHostRegex.test(host)) {
               return ${JSON.stringify(usherProxyInfo)};
             }

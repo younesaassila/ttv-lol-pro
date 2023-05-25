@@ -179,3 +179,22 @@ li.hide-marker::marker {
   left: -1.6rem;
   margin-top: 0.3rem;
 }
+
+#proxy-twitch-webpage-li {
+  display: none;
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  animation: option-appear 5s ease-out 0s forwards;
+}
+
+#proxy-twitch-webpage-li > label {
+  text-shadow: 0 0 10px;
+}
+
+@keyframes option-appear {
+  from {
+    background-color: var(--brand-color);
+  }
+  to {
+    background-color: initial;
+  }
+}

@@ -8,6 +8,7 @@ export interface State {
   adLog: AdLogEntry[];
   adLogEnabled: boolean;
   adLogLastSent: number;
+  proxyTwitchWebpage: boolean;
   proxyUsherRequests: boolean;
   streamStatuses: Record<string, StreamStatus>;
   usherProxies: string[];

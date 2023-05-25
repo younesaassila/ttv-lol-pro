@@ -24,6 +24,14 @@ export default async function onProxyRequest(
     });
   }
 
+  // Twitch webpage requests.
+  if (store.state.proxyTwitchWebpage && host === "www.twitch.tv") {
+    const proxies = store.state.usherProxies;
+    const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
+    console.log(`⌛ Proxying ${details.url} through one of: <empty>`);
+    return proxyInfoArray;
+  }
+
   // GQL & Usher requests.
   if (
     store.state.proxyUsherRequests &&
