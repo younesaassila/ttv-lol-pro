@@ -1,5 +1,5 @@
 import clientIdFlag from "../common/ts/clientIdFlag";
-import generateRandomString from "../common/ts/generateRandomString";
+// import generateRandomString from "../common/ts/generateRandomString";
 import getHostFromUrl from "../common/ts/getHostFromUrl";
 import { twitchGqlHostRegex } from "../common/ts/regexes";
 
@@ -97,14 +97,14 @@ namespace TTV_LOL_PRO {
     if (isGqlRequest && isPlaybackAccessTokenRequest) {
       console.log("[TTV LOL PRO] 🥅 Caught PlaybackAccessToken request.");
       const clientId = getHeaderFromMap(headersMap, "Client-ID");
-      setHeaderToMap(headersMap, "Authorization", "undefined");
       setHeaderToMap(
         headersMap,
         "Client-ID",
         `${clientId || ""}${clientIdFlag}`
       );
-      setHeaderToMap(headersMap, "Device-ID", generateRandomString(32));
-      removeHeaderFromMap(headersMap, "Sec-GPC");
+      // setHeaderToMap(headersMap, "Authorization", "undefined");
+      // setHeaderToMap(headersMap, "Device-ID", generateRandomString(32));
+      // removeHeaderFromMap(headersMap, "Sec-GPC");
     }
 
     return NATIVE_FETCH(input, {
