@@ -1,10 +1,20 @@
 import browser from "webextension-polyfill";
+import isChrome from "../common/ts/isChrome";
 import onApiHeadersReceived from "./handlers/onApiHeadersReceived";
 import onBeforeManifestRequest from "./handlers/onBeforeManifestRequest";
 import onBeforeSendApiHeaders from "./handlers/onBeforeSendApiHeaders";
 import onInstalledResetUpdateFlag from "./handlers/onInstalledResetUpdateFlag";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
 import onStartupUpdateCheck from "./handlers/onStartupUpdateCheck";
+
+if (isChrome) {
+  // Chrome shows two warnings when loading the extension:
+  //  1. Unrecognized manifest key 'browser_specific_settings'.
+  //  2. Manifest version 2 is deprecated.
+  console.warn(
+    "⬆️ THE TWO WARNINGS ABOVE ARE EXPECTED ⬆️ No need to report them."
+  );
+}
 
 // Cleanup the session-related data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);
