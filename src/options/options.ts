@@ -52,8 +52,9 @@ const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 //#endregion
 
-const DEFAULT_SERVERS = getDefaultState().servers;
-const DEFAULT_LIST_OPTIONS: ListOptions = Object.freeze({
+const DEFAULT_STATE_KEYS = Object.freeze(Object.keys(getDefaultState()));
+const DEFAULT_SERVERS = Object.freeze(getDefaultState().servers);
+const DEFAULT_LIST_OPTIONS = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
   getPromptPlaceholder: () => "Enter text to create a new item…",
@@ -63,7 +64,7 @@ const DEFAULT_LIST_OPTIONS: ListOptions = Object.freeze({
   hidePromptMarker: false,
   insertMode: "append",
   spellcheck: false,
-});
+} as ListOptions);
 
 if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
@@ -333,6 +334,10 @@ importButtonElement.addEventListener("click", async () => {
     const data = await readFile("application/json;charset=utf-8");
     const state = JSON.parse(data);
     for (const [key, value] of Object.entries(state)) {
+      if (!DEFAULT_STATE_KEYS.includes(key)) {
+        console.warn(`Unknown key '${key}' in imported settings`);
+        continue;
+      }
       store.state[key] = value;
     }
     window.location.reload(); // Reload page to update UI.
