@@ -34,6 +34,7 @@
   ],
   "license": "GPL-3.0",
   "dependencies": {
+    "bowser": "^2.11.0",
     "semver-compare": "^1.0.0"
   },
   "devDependencies": {
