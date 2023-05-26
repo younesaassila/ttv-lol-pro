@@ -116,7 +116,10 @@ function main() {
       Url = new URL(url);
     } catch {}
     if (!Url) return [false, `'${url}' is not a valid URL`];
-    if (Url.protocol.endsWith(".ttvlolpro.perfprod.com:"))
+    if (
+      Url.protocol.endsWith(".ttvlolpro.perfprod.com:") ||
+      Url.hostname.endsWith(".ttvlolpro.perfprod.com")
+    )
       return [false, `'${url}' is a proxy server for TTV LOL PRO v2`];
     if (Url.protocol !== "https:")
       return [false, `'${url}' is not a valid HTTPS URL`];
