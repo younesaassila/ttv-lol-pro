@@ -180,10 +180,14 @@ main > * {
   flex-direction: row;
   align-items: center;
   justify-content: start;
+  width: 100%;
   padding: 10px 15px;
+  border: none;
   background-color: var(--background-secondary);
   color: var(--text-color);
+  text-align: left;
   text-decoration: none;
+  cursor: pointer;
   transition: background-color 100ms ease-in-out;
 }
 

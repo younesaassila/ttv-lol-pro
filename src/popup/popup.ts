@@ -1,3 +1,4 @@
+import Bowser from "bowser";
 import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
 import { twitchChannelNameRegex } from "../common/ts/regexes";
@@ -11,6 +12,12 @@ const channelNameElement = $("#channel-name") as HTMLHeadingElement;
 const reasonElement = $("#reason") as HTMLParagraphElement;
 const whitelistStatusElement = $("#whitelist-status") as HTMLDivElement;
 const whitelistToggleElement = $("#whitelist-toggle") as HTMLInputElement;
+const copyDebugInfoButtonElement = $(
+  "#copy-debug-info-button"
+) as HTMLButtonElement;
+const copyDebugInfoButtonDescriptionElement = $(
+  "#copy-debug-info-button-description"
+) as HTMLParagraphElement;
 //#endregion
 
 if (store.readyState === "complete") main();
@@ -84,3 +91,36 @@ function setWhitelistStatus(channelNameLower: string) {
     whitelistStatusElement.setAttribute("data-whitelisted", `${isWhitelisted}`);
   });
 }
+
+copyDebugInfoButtonElement.addEventListener("click", async () => {
+  const extensionInfo = await browser.management.getSelf();
+  const userAgentParser = Bowser.getParser(window.navigator.userAgent);
+
+  const debugInfo = [
+    `${extensionInfo.name} v${extensionInfo.version}`,
+    `- Install type: ${extensionInfo.installType}`,
+    `- Browser: ${userAgentParser.getBrowserName()} ${userAgentParser.getBrowserVersion()}`,
+    `- OS: ${userAgentParser.getOSName()} ${userAgentParser.getOSVersion()}`,
+    `- Proxy Twitch webpage: ${store.state.proxyTwitchWebpage}`,
+    `- Proxy Usher requests: ${store.state.proxyUsherRequests}`,
+    `- Usher proxies: ${JSON.stringify(store.state.usherProxies)}`,
+    `- Video Weaver proxies: ${JSON.stringify(store.state.videoWeaverProxies)}`,
+    `- Last ad log entry: ${
+      store.state.adLog.length
+        ? JSON.stringify({
+            ...store.state.adLog[store.state.adLog.length - 1],
+            videoWeaverUrl: undefined,
+          })
+        : "N/A"
+    }`,
+  ].join("\n");
+
+  try {
+    await navigator.clipboard.writeText(debugInfo);
+    copyDebugInfoButtonDescriptionElement.textContent = "Copied to clipboard!";
+  } catch (error) {
+    console.error(error);
+    copyDebugInfoButtonDescriptionElement.textContent =
+      "Failed to copy to clipboard.";
+  }
+});

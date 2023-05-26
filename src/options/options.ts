@@ -10,6 +10,7 @@ import saveFile from "../common/ts/saveFile";
 import sendAdLog from "../common/ts/sendAdLog";
 import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
+import getDefaultState from "../store/getDefaultState";
 import type { State } from "../store/types";
 import type { KeyOfType } from "../types";
 
@@ -71,17 +72,18 @@ const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 //#endregion
 
-const DEFAULT_LIST_OPTIONS: ListOptions = Object.freeze({
+const DEFAULT_STATE_KEYS = Object.freeze(Object.keys(getDefaultState()));
+const DEFAULT_LIST_OPTIONS = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
   getPromptPlaceholder: () => "Enter text to create a new item…",
   isAddAllowed: () => [true] as AllowedResult,
   isEditAllowed: () => [true] as AllowedResult,
-  focusPrompt: false, // Is set to true once the user has added an item.
+  focusPrompt: false, // Is set to `true` once the user has added an item.
   hidePromptMarker: false,
   insertMode: "append",
   spellcheck: false,
-});
+} as ListOptions);
 
 if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
@@ -165,10 +167,9 @@ function main() {
 
 function isProxyUrlValid(host: string): AllowedResult {
   try {
-    // Check if proxy URL is valid.
     new URL(`http://${host}`);
     if (host.includes("/")) {
-      return [false, "Proxy URLs cannot contain a path"];
+      return [false, "Proxy URLs cannot contain a path (e.g. '/path')"];
     }
     return [true];
   } catch {
@@ -215,61 +216,64 @@ function listInit(
  * Appends an item to a list element.
  * @param listElement
  * @param storeKey
- * @param initialText
+ * @param text
  * @param options
  */
 function _listAppend(
   listElement: HTMLOListElement | HTMLUListElement,
   storeKey: StoreStringArrayKey,
-  initialText: string,
+  text: string,
   options: ListOptions
 ) {
   const listItem = document.createElement("li");
   const textInput = document.createElement("input");
   textInput.type = "text";
-  const [allowed] = options.isEditAllowed(initialText);
+
+  const [allowed] = options.isEditAllowed(text);
   if (!allowed) textInput.disabled = true;
 
-  textInput.placeholder = options.getItemPlaceholder(initialText);
+  textInput.placeholder = options.getItemPlaceholder(text);
   textInput.spellcheck = options.spellcheck;
-  textInput.value = initialText;
+  textInput.value = text;
 
   // Highlight text when focused.
-  textInput.addEventListener("focus", textInput.select);
+  textInput.addEventListener("focus", textInput.select.bind(textInput));
+
   // Update store when text is changed.
   textInput.addEventListener("change", e => {
-    // Get index of item in store.
+    // Get index of item in array.
     const itemIndex = store.state[storeKey].findIndex(
-      str => str.toLowerCase() === initialText.toLowerCase()
+      item => item.toLowerCase() === text.toLowerCase()
     );
     if (itemIndex === -1)
-      return console.error(`Item ${initialText} not found in store`);
+      return console.error(`Item '${text}' not found in '${storeKey}' array`);
+
     const textInput = e.target as HTMLInputElement;
     const newText = textInput.value.trim();
-    // Remove item if text field is left empty.
+    // Remove item if text is empty.
     if (newText === "") {
       store.state[storeKey].splice(itemIndex, 1);
       listItem.remove();
       if (options.onEdit) options.onEdit(newText);
       return;
     }
-    // Check if new text is valid.
-    const [allowed, errorMessage] = options.isEditAllowed(newText);
+    // Check if text is valid.
+    const [allowed, error] = options.isEditAllowed(newText);
     if (!allowed) {
-      alert(errorMessage || "You cannot edit this item");
-      textInput.value = initialText;
+      alert(error || "You cannot edit this item");
+      textInput.value = text;
       return;
     }
-
+    // Update item in array.
     store.state[storeKey][itemIndex] = newText;
     textInput.placeholder = options.getItemPlaceholder(newText);
-    textInput.value = newText;
+    textInput.value = newText; // Update text in case it was trimmed.
+    text = newText; // Update current text variable.
     if (options.onEdit) options.onEdit(newText);
-
-    initialText = newText;
   });
-  // Append list item to list.
+
   listItem.append(textInput);
+
   if (options.insertMode === "prepend") listElement.prepend(listItem);
   else listElement.append(listItem);
 }
@@ -297,40 +301,44 @@ function _listPrompt(
   promptInput.addEventListener("change", e => {
     const promptInput = e.target as HTMLInputElement;
     const text = promptInput.value.trim();
+    // Do nothing if text is empty.
     if (text === "") return;
-    const [allowed, errorMessage] = options.isAddAllowed(text);
+    // Check if text is valid.
+    const [allowed, error] = options.isAddAllowed(text);
     if (!allowed) {
-      alert(errorMessage || "You cannot add this item");
+      alert(error || "You cannot add this item");
+      promptInput.value = "";
       return;
     }
     // Check if item already exists.
     const alreadyExists = store.state[storeKey].some(
-      str => str.toLowerCase() === text.toLowerCase()
+      item => item.toLowerCase() === text.toLowerCase()
     );
     if (alreadyExists) {
       alert(options.getAlreadyExistsAlertMessage(text));
       promptInput.value = "";
       return;
     }
-    // Add item to store.
-    const list = store.state[storeKey]; // Store a reference to the array for the proxy to work.
-    if (options.insertMode === "prepend") list.unshift(text);
-    else list.push(text);
-    store.state[storeKey] = list;
+    // Add item to array.
+    const newArray = store.state[storeKey];
+    if (options.insertMode === "prepend") newArray.unshift(text);
+    else newArray.push(text);
+    store.state[storeKey] = newArray;
     if (options.onEdit) options.onEdit(text);
 
-    listItem.remove(); // This will also remove the prompt.
+    listItem.remove();
     _listAppend(listElement, storeKey, text, options);
     _listPrompt(listElement, storeKey, {
       ...options,
       focusPrompt: true,
     });
   });
-  // Append prompt to list.
+
   listItem.append(promptInput);
+
   if (options.insertMode === "prepend") listElement.prepend(listItem);
   else listElement.append(listItem);
-  // Focus prompt if specified.
+
   if (options.focusPrompt) promptInput.focus();
 }
 
@@ -362,16 +370,16 @@ adLogClearButtonElement.addEventListener("click", () => {
 });
 
 exportButtonElement.addEventListener("click", () => {
-  const state: Partial<State> = {
-    adLogEnabled: store.state.adLogEnabled,
-    proxyUsherRequests: store.state.proxyUsherRequests,
-    usherProxies: store.state.usherProxies,
-    videoWeaverProxies: store.state.videoWeaverProxies,
-    whitelistedChannels: store.state.whitelistedChannels,
-  };
   saveFile(
     "ttv-lol-pro_backup.json",
-    JSON.stringify(state),
+    JSON.stringify({
+      adLogEnabled: store.state.adLogEnabled,
+      proxyTwitchWebpage: store.state.proxyTwitchWebpage,
+      proxyUsherRequests: store.state.proxyUsherRequests,
+      usherProxies: store.state.usherProxies,
+      videoWeaverProxies: store.state.videoWeaverProxies,
+      whitelistedChannels: store.state.whitelistedChannels,
+    } as Partial<State>),
     "application/json;charset=utf-8"
   );
 });
@@ -381,11 +389,15 @@ importButtonElement.addEventListener("click", async () => {
     const data = await readFile("application/json;charset=utf-8");
     const state = JSON.parse(data);
     for (const [key, value] of Object.entries(state)) {
+      if (!DEFAULT_STATE_KEYS.includes(key)) {
+        console.warn(`Unknown key '${key}' in imported settings`);
+        continue;
+      }
       store.state[key] = value;
     }
     window.location.reload(); // Reload page to update UI.
   } catch (error) {
-    alert(`Error: ${error}}`);
+    alert(`An error occurred while importing settings: ${error}`);
   }
 });
 
@@ -412,8 +424,9 @@ const konamiCode = [
   "b",
   "a",
 ];
+let konamiCodePosition = 0;
 
-const titles = [
+const documentTitles = [
   "What was that?",
   "What are you doing?",
   "A secret code you say?",
@@ -424,12 +437,7 @@ const titles = [
   "A Whopper you say???",
   "Sir, this is a Wendy's.",
 ];
-
-// A variable to remember the position the user has reached so far.
-let konamiCodePosition = 0;
-
 let restoreTitleTimeout: number | null = null;
-
 function restoreTitle() {
   document.title = "Options - TTV LOL PRO";
 }
@@ -456,7 +464,7 @@ document.addEventListener("keydown", function (e) {
       konamiCodeActivate();
       konamiCodePosition = 0;
     } else {
-      document.title = titles[konamiCodePosition - 1];
+      document.title = documentTitles[konamiCodePosition - 1];
     }
 
     if (restoreTitleTimeout) clearTimeout(restoreTitleTimeout);
@@ -470,5 +478,5 @@ function konamiCodeActivate() {
   setTimeout(() => {
     document.title = "YOU SCARED ME!!!";
     proxyTwitchWebpageLiElement.style.display = "block";
-  }, 250);
+  }, 200);
 }
