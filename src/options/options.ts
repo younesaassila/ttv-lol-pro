@@ -3,6 +3,7 @@ import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
 import store from "../store";
 import getDefaultState from "../store/getDefaultState";
+import { State } from "../store/types";
 import type { KeyOfType } from "../types";
 
 //#region Types
@@ -299,7 +300,7 @@ exportButtonElement.addEventListener("click", () => {
       resetPlayerOnMidroll: store.state.resetPlayerOnMidroll,
       servers: store.state.servers,
       whitelistedChannels: store.state.whitelistedChannels,
-    }),
+    } as Partial<State>),
     "application/json;charset=utf-8"
   );
 });
