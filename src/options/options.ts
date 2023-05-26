@@ -2,6 +2,7 @@ import $ from "../common/ts/$";
 import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
 import store from "../store";
+import getDefaultState from "../store/getDefaultState";
 import { State } from "../store/types";
 import type { KeyOfType } from "../types";
 
@@ -51,6 +52,7 @@ const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 //#endregion
 
+const DEFAULT_SERVERS = getDefaultState().servers;
 const DEFAULT_LIST_OPTIONS: ListOptions = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
@@ -111,6 +113,8 @@ function main() {
   });
   // Server list
   const isServerUrlValid = (url: string): AllowedResult => {
+    if (DEFAULT_SERVERS.includes(url))
+      return [false, `'${url}' is a default server URL`];
     let Url: URL | undefined;
     try {
       Url = new URL(url);
@@ -119,8 +123,9 @@ function main() {
     if (
       Url.protocol.endsWith(".ttvlolpro.perfprod.com:") ||
       Url.hostname.endsWith(".ttvlolpro.perfprod.com")
-    )
+    ) {
       return [false, `'${url}' is a proxy server for TTV LOL PRO v2`];
+    }
     if (Url.protocol !== "https:")
       return [false, `'${url}' is not a valid HTTPS URL`];
     return [true];
