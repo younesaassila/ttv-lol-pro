@@ -14,13 +14,6 @@
     "default_title": "TTV LOL PRO",
     "default_popup": "popup/menu.html"
   },
-  "content_scripts": [
-    {
-      "matches": ["https://*.twitch.tv/*"],
-      "js": ["content/content.ts"],
-      "run_at": "document_start"
-    }
-  ],
   "icons": {
     "128": "images/brand/icon.png"
   },
