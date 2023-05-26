@@ -2,6 +2,7 @@ import browser from "webextension-polyfill";
 import onApiHeadersReceived from "./handlers/onApiHeadersReceived";
 import onBeforeManifestRequest from "./handlers/onBeforeManifestRequest";
 import onBeforeSendApiHeaders from "./handlers/onBeforeSendApiHeaders";
+import onInstalledResetUpdateFlag from "./handlers/onInstalledResetUpdateFlag";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
 import onStartupUpdateCheck from "./handlers/onStartupUpdateCheck";
 
@@ -10,6 +11,10 @@ browser.runtime.onStartup.addListener(onStartupStoreCleanup);
 
 // Check for updates on startup.
 browser.runtime.onStartup.addListener(onStartupUpdateCheck);
+
+// Reset the `isUpdateAvailable` flag on update, since the update check is only
+// performed at browser startup.
+browser.runtime.onInstalled.addListener(onInstalledResetUpdateFlag);
 
 // Redirect the HLS master manifest request to TTV LOL's API.
 browser.webRequest.onBeforeRequest.addListener(
