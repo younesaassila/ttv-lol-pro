@@ -2,7 +2,6 @@ import $ from "../common/ts/$";
 import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
 import store from "../store";
-import getDefaultState from "../store/getDefaultState";
 import { State } from "../store/types";
 import type { KeyOfType } from "../types";
 
@@ -36,7 +35,7 @@ const whitelistedChannelsListElement = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
 $;
-// Proxies
+// Server list
 const serversListElement = $("#servers-list") as HTMLOListElement;
 // Privacy
 const disableVodRedirectCheckboxElement = $(
@@ -52,14 +51,13 @@ const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 //#endregion
 
-const DEFAULT_SERVERS = getDefaultState().servers;
 const DEFAULT_LIST_OPTIONS: ListOptions = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
   getPromptPlaceholder: () => "Enter text to create a new item…",
   isAddAllowed: () => [true] as AllowedResult,
   isEditAllowed: () => [true] as AllowedResult,
-  focusPrompt: false, // Is set to true once the user has added an item.
+  focusPrompt: false, // Is set to `true` once the user has added an item.
   hidePromptMarker: false,
   insertMode: "append",
   spellcheck: false,
@@ -112,23 +110,25 @@ function main() {
     }
   });
   // Server list
+  const isServerUrlValid = (url: string): AllowedResult => {
+    let Url: URL | undefined;
+    try {
+      Url = new URL(url);
+    } catch {}
+    if (!Url) return [false, `'${url}' is not a valid URL`];
+    if (Url.protocol.endsWith(".ttvlolpro.perfprod.com:"))
+      return [false, `'${url}' is a proxy server for TTV LOL PRO v2`];
+    if (Url.protocol !== "https:")
+      return [false, `'${url}' is not a valid HTTPS URL`];
+    return [true];
+  };
   listInit(serversListElement, "servers", store.state.servers, {
     getPromptPlaceholder: insertMode => {
       if (insertMode == "prepend") return "Enter a server URL… (Primary)";
       return "Enter a server URL… (Fallback)";
     },
-    isAddAllowed(url) {
-      try {
-        new URL(url);
-        return [true];
-      } catch {
-        return [false, `'${url}' is not a valid URL`];
-      }
-    },
-    isEditAllowed: url => [
-      !DEFAULT_SERVERS.includes(url),
-      "Cannot edit or remove default servers",
-    ],
+    isAddAllowed: isServerUrlValid,
+    isEditAllowed: isServerUrlValid,
     hidePromptMarker: true,
     insertMode: "both",
   });
@@ -194,6 +194,7 @@ function _listAppend(
   const listItem = document.createElement("li");
   const textInput = document.createElement("input");
   textInput.type = "text";
+
   const [allowed] = options.isEditAllowed(text);
   if (!allowed) textInput.disabled = true;
 
@@ -202,31 +203,41 @@ function _listAppend(
   textInput.value = text;
 
   // Highlight text when focused.
-  textInput.addEventListener("focus", textInput.select);
+  textInput.addEventListener("focus", textInput.select.bind(textInput));
+
   // Update store when text is changed.
   textInput.addEventListener("change", e => {
+    // Get index of item in array.
+    const itemIndex = store.state[storeKey].findIndex(
+      item => item.toLowerCase() === text.toLowerCase()
+    );
+    if (itemIndex === -1)
+      return console.error(`Item '${text}' not found in '${storeKey}' array`);
+
     const textInput = e.target as HTMLInputElement;
-    const [allowed, errorMessage] = options.isEditAllowed(text);
+    const newText = textInput.value.trim();
+    // Remove item if text is empty.
+    if (newText === "") {
+      store.state[storeKey].splice(itemIndex, 1);
+      listItem.remove();
+      return;
+    }
+    // Check if text is valid.
+    const [allowed, error] = options.isEditAllowed(newText);
     if (!allowed) {
-      alert(errorMessage || "You cannot edit this item");
+      alert(error || "You cannot edit this item");
       textInput.value = text;
       return;
     }
-    const newText = textInput.value.trim();
-    const index = store.state[storeKey].findIndex(
-      str => str.toLowerCase() === text.toLowerCase()
-    );
-    if (index === -1) return;
-    // Remove item if text field is left empty.
-    if (newText === "") {
-      store.state[storeKey].splice(index, 1);
-      listItem.remove();
-    } else {
-      store.state[storeKey][index] = newText;
-    }
+    // Update item in array.
+    store.state[storeKey][itemIndex] = newText;
+    textInput.placeholder = options.getItemPlaceholder(newText);
+    textInput.value = newText; // Update text in case it was trimmed.
+    text = newText; // Update current text variable.
   });
-  // Append list item to list.
+
   listItem.append(textInput);
+
   if (options.insertMode === "prepend") listElement.prepend(listItem);
   else listElement.append(listItem);
 }
@@ -254,39 +265,43 @@ function _listPrompt(
   promptInput.addEventListener("change", e => {
     const promptInput = e.target as HTMLInputElement;
     const text = promptInput.value.trim();
+    // Do nothing if text is empty.
     if (text === "") return;
-    const [allowed, errorMessage] = options.isAddAllowed(text);
+    // Check if text is valid.
+    const [allowed, error] = options.isAddAllowed(text);
     if (!allowed) {
-      alert(errorMessage || "You cannot add this item");
+      alert(error || "You cannot add this item");
+      promptInput.value = "";
       return;
     }
     // Check if item already exists.
     const alreadyExists = store.state[storeKey].some(
-      str => str.toLowerCase() === text.toLowerCase()
+      item => item.toLowerCase() === text.toLowerCase()
     );
     if (alreadyExists) {
       alert(options.getAlreadyExistsAlertMessage(text));
       promptInput.value = "";
       return;
     }
-    // Add item to store.
-    const list = store.state[storeKey]; // Store a reference to the array for the proxy to work.
-    if (options.insertMode === "prepend") list.unshift(text);
-    else list.push(text);
-    store.state[storeKey] = list;
+    // Add item to array.
+    const newArray = store.state[storeKey];
+    if (options.insertMode === "prepend") newArray.unshift(text);
+    else newArray.push(text);
+    store.state[storeKey] = newArray;
 
-    listItem.remove(); // This will also remove the prompt.
+    listItem.remove();
     _listAppend(listElement, storeKey, text, options);
     _listPrompt(listElement, storeKey, {
       ...options,
       focusPrompt: true,
     });
   });
-  // Append prompt to list.
+
   listItem.append(promptInput);
+
   if (options.insertMode === "prepend") listElement.prepend(listItem);
   else listElement.append(listItem);
-  // Focus prompt if specified.
+
   if (options.focusPrompt) promptInput.focus();
 }
 
@@ -314,7 +329,7 @@ importButtonElement.addEventListener("click", async () => {
     }
     window.location.reload(); // Reload page to update UI.
   } catch (error) {
-    alert(`Error: ${error}}`);
+    alert(`An error occurred while importing settings: ${error}`);
   }
 });
 
