@@ -31,6 +31,7 @@ export default function onBeforeVideoWeaverRequest(
       if (details.proxyInfo && details.proxyInfo.type !== "direct") {
         proxy = `${details.proxyInfo.host}:${details.proxyInfo.port}`;
       }
+      const proxyTwitchWebpage = store.state.proxyTwitchWebpage;
       const proxyUsherRequests = store.state.proxyUsherRequests;
       const timestamp = details.timeStamp;
       const videoWeaverHost = host;
@@ -52,6 +53,7 @@ export default function onBeforeVideoWeaverRequest(
           adType,
           channel,
           proxy,
+          proxyTwitchWebpage,
           proxyUsherRequests,
           timestamp,
           videoWeaverHost,
@@ -59,6 +61,7 @@ export default function onBeforeVideoWeaverRequest(
         },
       ];
       console.log(`📝 Ad log updated (${adLog.length + 1} entries).`);
+      console.log(text);
     }
 
     return text;

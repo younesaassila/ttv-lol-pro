@@ -1,3 +1,4 @@
+export const passportHostRegex = /^passport\.twitch\.tv$/i;
 export const twitchApiChannelNameRegex = /\/hls\/(.+)\.m3u8/i;
 export const twitchChannelNameRegex =
   /^https?:\/\/(?:(?:www|m)\.)?twitch\.tv\/(?:videos\/)?(\w+)/i;

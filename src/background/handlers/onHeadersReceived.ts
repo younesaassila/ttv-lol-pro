@@ -1,7 +1,11 @@
 import { WebRequest } from "webextension-polyfill";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
-import { usherHostRegex, videoWeaverHostRegex } from "../../common/ts/regexes";
+import {
+  passportHostRegex,
+  usherHostRegex,
+  videoWeaverHostRegex,
+} from "../../common/ts/regexes";
 import store from "../../store";
 import type { ProxyInfo, StreamStatus } from "../../types";
 
@@ -21,14 +25,11 @@ export default function onHeadersReceived(
     console.log(`✅ Proxied ${details.url} through ${proxy}`);
   }
 
-  // GQL requests.
-  if (host === "gql.twitch.tv") {
-    if (!proxy) return; // Expected for nearly all requests.
-    console.log(`✅ Proxied ${details.url} through ${proxy}`);
-  }
-
-  // Usher requests.
-  if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
+  // Passport & Usher requests.
+  if (
+    store.state.proxyUsherRequests &&
+    (passportHostRegex.test(host) || usherHostRegex.test(host))
+  ) {
     if (!proxy) return console.log(`❌ Did not proxy ${details.url}`);
     console.log(`✅ Proxied ${details.url} through ${proxy}`);
   }

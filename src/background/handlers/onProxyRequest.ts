@@ -2,8 +2,11 @@ import { Proxy } from "webextension-polyfill";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
-import isFlaggedRequest from "../../common/ts/isFlaggedRequest";
-import { usherHostRegex, videoWeaverHostRegex } from "../../common/ts/regexes";
+import {
+  passportHostRegex,
+  usherHostRegex,
+  videoWeaverHostRegex,
+} from "../../common/ts/regexes";
 import store from "../../store";
 import type { ProxyInfo } from "../../types";
 
@@ -26,19 +29,19 @@ export default async function onProxyRequest(
 
   // Twitch webpage requests.
   if (store.state.proxyTwitchWebpage && host === "www.twitch.tv") {
-    const proxies = store.state.usherProxies;
+    const proxies = store.state.videoWeaverProxies;
     const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
     console.log(`⌛ Proxying ${details.url} through one of: <empty>`);
     return proxyInfoArray;
   }
 
-  // GQL & Usher requests.
+  // Passport & Usher requests.
   if (
     store.state.proxyUsherRequests &&
-    (isFlaggedRequest(details.requestHeaders) || usherHostRegex.test(host))
+    (passportHostRegex.test(host) || usherHostRegex.test(host))
   ) {
     // TODO: Check if channel is whitelisted.
-    const proxies = store.state.usherProxies;
+    const proxies = store.state.videoWeaverProxies;
     const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
     console.log(
       `⌛ Proxying ${details.url} through one of: ${

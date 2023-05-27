@@ -25,6 +25,7 @@ export interface AdLogEntry {
   adType: AdType;
   channel: string | null;
   proxy: string | null;
+  proxyTwitchWebpage: boolean;
   proxyUsherRequests: boolean;
   timestamp: number;
   videoWeaverHost: string;

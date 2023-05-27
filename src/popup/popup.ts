@@ -101,9 +101,8 @@ copyDebugInfoButtonElement.addEventListener("click", async () => {
     `- Install type: ${extensionInfo.installType}`,
     `- Browser: ${userAgentParser.getBrowserName()} ${userAgentParser.getBrowserVersion()}`,
     `- OS: ${userAgentParser.getOSName()} ${userAgentParser.getOSVersion()}`,
-    `- Proxy Twitch webpage: ${store.state.proxyTwitchWebpage}`,
-    `- Proxy Usher requests: ${store.state.proxyUsherRequests}`,
-    `- Usher proxies: ${JSON.stringify(store.state.usherProxies)}`,
+    `- Passport enabled: ${store.state.proxyUsherRequests}`,
+    `- Is laissez-passer: ${store.state.proxyTwitchWebpage}`,
     `- Video Weaver proxies: ${JSON.stringify(store.state.videoWeaverProxies)}`,
     `- Last ad log entry: ${
       store.state.adLog.length

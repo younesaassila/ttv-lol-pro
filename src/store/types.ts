@@ -11,7 +11,6 @@ export interface State {
   proxyTwitchWebpage: boolean;
   proxyUsherRequests: boolean;
   streamStatuses: Record<string, StreamStatus>;
-  usherProxies: string[];
   videoWeaverProxies: string[];
   videoWeaverUrlsByChannel: Record<string, string[]>;
   whitelistedChannels: string[];

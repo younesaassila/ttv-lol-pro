@@ -21,43 +21,47 @@
 
       <!-- Proxy Usher requests -->
       <section class="section">
-        <h2>Whopper mode</h2>
-        <ul class="options-list">
-          <li>
-            <input
-              type="checkbox"
-              name="proxy-usher-requests-checkbox"
-              id="proxy-usher-requests-checkbox"
-            />
-            <label for="proxy-usher-requests-checkbox">
-              Enable Whopper mode (experimental)
-            </label>
-            <br />
-            <small>
-              Only enable this if you are seeing ads with the default proxies.
-              While this proxies requests containing your playback token, rest
-              assured that all of these requests are encrypted and cannot be
-              decrypted by anyone other than Twitch. This means the proxies you
-              use cannot read your playback token.
-            </small>
-          </li>
-          <li id="proxy-twitch-webpage-li">
-            <input
-              type="checkbox"
-              name="proxy-twitch-webpage-checkbox"
-              id="proxy-twitch-webpage-checkbox"
-            />
-            <label for="proxy-twitch-webpage-checkbox">
-              DOUBLE WHOPPER MODE !!!!!
-            </label>
-            <br />
-            <small>
-              Again, please only enable this if you are seeing ads with the
-              default Whopper mode.
-            </small>
-          </li>
-        </ul>
-        <ol id="usher-proxies-list" class="store-list" start="0"></ol>
+        <h2>Passport</h2>
+        <div id="passport-container">
+          <img src="../images/passport.png" alt="TTV LOL PRO passport" />
+          <ul class="options-list">
+            <li>
+              <input
+                type="checkbox"
+                name="proxy-usher-requests-checkbox"
+                id="proxy-usher-requests-checkbox"
+              />
+              <label for="proxy-usher-requests-checkbox">
+                Use my TTV LOL PRO passport
+              </label>
+              <br />
+              <small>
+                Browse Twitch as a TTV LOL PRO citizen. This option enables
+                advanced proxying to prevent ads.
+              </small>
+            </li>
+            <li id="proxy-twitch-webpage-li">
+              <input
+                type="checkbox"
+                name="proxy-twitch-webpage-checkbox"
+                id="proxy-twitch-webpage-checkbox"
+              />
+              <label for="proxy-twitch-webpage-checkbox">
+                Make the passport a laissez-passer
+              </label>
+              <br />
+              <small>
+                Learn more about laissez-passers
+                <a
+                  href="https://en.wikipedia.org/wiki/Laissez-passer"
+                  target="_blank"
+                  >here</a
+                >.
+              </small>
+            </li>
+            <small><b>Expiration date:</b> 2038-01-19T03:14:07.000Z</small>
+          </ul>
+        </div>
       </section>
 
       <!-- Whitelisted channels -->

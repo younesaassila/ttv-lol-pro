@@ -1,9 +1,11 @@
 import store from "../../store";
-import { usherHostRegex, videoWeaverHostRegex } from "./regexes";
+import {
+  passportHostRegex,
+  usherHostRegex,
+  videoWeaverHostRegex,
+} from "./regexes";
 
 export default function updateProxySettings() {
-  const usherProxies = store.state.usherProxies;
-  const usherProxyInfo = getProxyInfoFromHosts(usherProxies);
   const videoWeaverProxies = store.state.videoWeaverProxies;
   const videoWeaverProxyInfo = getProxyInfoFromHosts(videoWeaverProxies);
 
@@ -14,13 +16,16 @@ export default function updateProxySettings() {
           function FindProxyForURL(url, host) {
             const proxyTwitchWebpage = ${store.state.proxyTwitchWebpage};
             const proxyUsherRequests = ${store.state.proxyUsherRequests};
+
+            const passportHostRegex = ${passportHostRegex.toString()};
             const usherHostRegex = ${usherHostRegex.toString()};
             const videoWeaverHostRegex = ${videoWeaverHostRegex.toString()};
+
             if (proxyTwitchWebpage && host === "www.twitch.tv") {
-              return ${JSON.stringify(usherProxyInfo)};
+              return ${JSON.stringify(videoWeaverProxyInfo)};
             }
-            if (proxyUsherRequests && usherHostRegex.test(host)) {
-              return ${JSON.stringify(usherProxyInfo)};
+            if (proxyUsherRequests && (passportHostRegex.test(host) || usherHostRegex.test(host))) {
+              return ${JSON.stringify(videoWeaverProxyInfo)};
             }
             if (videoWeaverHostRegex.test(host)) {
               return ${JSON.stringify(videoWeaverProxyInfo)};
@@ -34,7 +39,7 @@ export default function updateProxySettings() {
     if (store.state.proxyUsherRequests) {
       console.log(
         `⚙️ Proxying usher requests through one of: ${
-          usherProxies.toString() || "<empty>"
+          videoWeaverProxies.toString() || "<empty>"
         }`
       );
     }

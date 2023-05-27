@@ -1,4 +1,4 @@
-import hamburgerAudio from "url:../audio/hamburger.mp3";
+import airportAudio from "url:../audio/airport.mp3";
 import konamiEndAudio from "url:../audio/konami_end.mp3";
 import konamiProgress1Audio from "url:../audio/konami_progress_1.mp3";
 import konamiProgress2Audio from "url:../audio/konami_progress_2.mp3";
@@ -43,7 +43,6 @@ const proxyTwitchWebpageLiElement = $(
 const proxyTwitchWebpageCheckboxElement = $(
   "#proxy-twitch-webpage-checkbox"
 ) as HTMLInputElement;
-const usherProxiesListElement = $("#usher-proxies-list") as HTMLOListElement;
 // Whitelisted channels
 const whitelistedChannelsSectionElement = $(
   "#whitelisted-channels-section"
@@ -91,34 +90,16 @@ else store.addEventListener("load", main);
 function main() {
   // Proxy Usher requests
   proxyUsherRequestsCheckboxElement.checked = store.state.proxyUsherRequests;
-  if (store.state.proxyUsherRequests)
-    usherProxiesListElement.style.display = "block";
-  else usherProxiesListElement.style.display = "none";
   proxyUsherRequestsCheckboxElement.addEventListener("change", () => {
-    store.state.proxyUsherRequests = proxyUsherRequestsCheckboxElement.checked;
+    const checked = proxyUsherRequestsCheckboxElement.checked;
+    store.state.proxyUsherRequests = checked;
+    if (checked) new Audio(airportAudio).play();
     if (isChromium) updateProxySettings();
-    if (store.state.proxyUsherRequests) {
-      usherProxiesListElement.style.display = "block";
-      new Audio(hamburgerAudio).play();
-    } else usherProxiesListElement.style.display = "none";
   });
   proxyTwitchWebpageCheckboxElement.checked = store.state.proxyTwitchWebpage;
   proxyTwitchWebpageCheckboxElement.addEventListener("change", () => {
     store.state.proxyTwitchWebpage = proxyTwitchWebpageCheckboxElement.checked;
     if (isChromium) updateProxySettings();
-  });
-  listInit(usherProxiesListElement, "usherProxies", store.state.usherProxies, {
-    getPromptPlaceholder: insertMode => {
-      if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
-      return "Enter a proxy URL… (Fallback)";
-    },
-    isAddAllowed: isProxyUrlValid,
-    isEditAllowed: isProxyUrlValid,
-    onEdit() {
-      if (isChromium) updateProxySettings();
-    },
-    hidePromptMarker: true,
-    insertMode: "both",
   });
   // Whitelisted channels
   if (isChromium) {
@@ -376,7 +357,6 @@ exportButtonElement.addEventListener("click", () => {
       adLogEnabled: store.state.adLogEnabled,
       proxyTwitchWebpage: store.state.proxyTwitchWebpage,
       proxyUsherRequests: store.state.proxyUsherRequests,
-      usherProxies: store.state.usherProxies,
       videoWeaverProxies: store.state.videoWeaverProxies,
       whitelistedChannels: store.state.whitelistedChannels,
     } as Partial<State>),
@@ -426,22 +406,6 @@ const konamiCode = [
 ];
 let konamiCodePosition = 0;
 
-const documentTitles = [
-  "What was that?",
-  "What are you doing?",
-  "A secret code you say?",
-  "For what?",
-  "A hidden feature you say?",
-  "And what would it do?",
-  "Improve ad blocking with what?",
-  "A Whopper you say???",
-  "Sir, this is a Wendy's.",
-];
-let restoreTitleTimeout: number | null = null;
-function restoreTitle() {
-  document.title = "Options - TTV LOL PRO";
-}
-
 document.addEventListener("keydown", function (e) {
   const key = e.key;
   const expectedKey = konamiCode[konamiCodePosition];
@@ -463,12 +427,7 @@ document.addEventListener("keydown", function (e) {
       new Audio(konamiEndAudio).play();
       konamiCodeActivate();
       konamiCodePosition = 0;
-    } else {
-      document.title = documentTitles[konamiCodePosition - 1];
     }
-
-    if (restoreTitleTimeout) clearTimeout(restoreTitleTimeout);
-    restoreTitleTimeout = setTimeout(restoreTitle, 5000);
   } else {
     konamiCodePosition = 0;
   }
@@ -476,7 +435,6 @@ document.addEventListener("keydown", function (e) {
 
 function konamiCodeActivate() {
   setTimeout(() => {
-    document.title = "YOU SCARED ME!!!";
     proxyTwitchWebpageLiElement.style.display = "block";
   }, 200);
 }
