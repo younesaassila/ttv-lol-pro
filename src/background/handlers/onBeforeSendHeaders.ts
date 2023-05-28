@@ -6,7 +6,7 @@ export default function onBeforeSendHeaders(
   details: WebRequest.OnBeforeSendHeadersDetailsType
 ): WebRequest.BlockingResponse | Promise<WebRequest.BlockingResponse> {
   if (isFlaggedRequest(details.requestHeaders)) {
-    console.log("🔎 Found flagged request, removing flag...");
+    console.log("🔎 Found flagged request, removing flag…");
     return {
       requestHeaders: details.requestHeaders!.reduce((acc, curr) => {
         if (curr.name.toLowerCase() === "accept") {
