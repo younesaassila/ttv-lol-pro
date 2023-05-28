@@ -1,19 +1,19 @@
 import { WebRequest } from "webextension-polyfill";
-import clientIdFlag from "../../common/ts/clientIdFlag";
+import acceptFlag from "../../common/ts/acceptFlag";
 import isFlaggedRequest from "../../common/ts/isFlaggedRequest";
 
 export default function onBeforeSendHeaders(
   details: WebRequest.OnBeforeSendHeadersDetailsType
 ): WebRequest.BlockingResponse | Promise<WebRequest.BlockingResponse> {
   if (isFlaggedRequest(details.requestHeaders)) {
-    console.log("🔄 Found flagged request, removing Client-ID header...");
+    console.log("🔎 Found flagged request, removing flag...");
     return {
       requestHeaders: details.requestHeaders!.reduce((acc, curr) => {
-        if (curr.name.toLowerCase() === "client-id") {
-          if (curr.value === clientIdFlag) return acc; // Remove header.
+        if (curr.name.toLowerCase() === "accept") {
+          if (curr.value === acceptFlag) return acc; // Remove header.
           acc.push({
             name: curr.name,
-            value: curr.value?.replace(clientIdFlag, ""),
+            value: curr.value?.replace(acceptFlag, ""),
           });
           return acc;
         }

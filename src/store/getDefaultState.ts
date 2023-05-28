@@ -8,7 +8,7 @@ export default function getDefaultState() {
     proxyTwitchWebpage: false,
     proxyUsherRequests: true,
     streamStatuses: {},
-    videoWeaverProxies: ["stable.ttvlolpro.perfprod.com:8019"],
+    videoWeaverProxies: ["dev.ttvlolpro.perfprod.com:2023"],
     videoWeaverUrlsByChannel: {},
     whitelistedChannels: [],
   } as State;

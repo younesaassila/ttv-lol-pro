@@ -1,5 +1,5 @@
 import { WebRequest } from "webextension-polyfill";
-import clientIdFlag from "./clientIdFlag";
+import acceptFlag from "./acceptFlag";
 
 export default function isFlaggedRequest(
   headers: WebRequest.HttpHeaders | undefined
@@ -7,7 +7,7 @@ export default function isFlaggedRequest(
   if (!headers) return false;
   return headers.some(
     header =>
-      header.name.toLowerCase() === "client-id" &&
-      header.value?.includes(clientIdFlag)
+      header.name.toLowerCase() === "accept" &&
+      header.value?.includes(acceptFlag)
   );
 }

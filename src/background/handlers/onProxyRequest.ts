@@ -2,11 +2,8 @@ import { Proxy } from "webextension-polyfill";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
-import {
-  passportHostRegex,
-  usherHostRegex,
-  videoWeaverHostRegex,
-} from "../../common/ts/regexes";
+import isFlaggedRequest from "../../common/ts/isFlaggedRequest";
+import { passportHostRegex, usherHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
 import type { ProxyInfo } from "../../types";
 
@@ -52,7 +49,7 @@ export default async function onProxyRequest(
   }
 
   // Video-weaver requests.
-  if (videoWeaverHostRegex.test(host)) {
+  if (isFlaggedRequest(details.requestHeaders)) {
     const proxies = store.state.videoWeaverProxies;
     const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
     // Don't proxy whitelisted channels.

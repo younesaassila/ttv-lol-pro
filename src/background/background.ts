@@ -2,7 +2,7 @@ import browser from "webextension-polyfill";
 import isChromium from "../common/ts/isChromium";
 import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
-// import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
+import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
 import onBeforeUsherRequest from "./handlers/onBeforeUsherRequest";
 import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
 import onHeadersReceived from "./handlers/onHeadersReceived";
@@ -38,14 +38,14 @@ if (isChromium) {
     },
     ["requestHeaders"]
   );
-  // // Remove the Client-Id flag from requests.
-  // browser.webRequest.onBeforeSendHeaders.addListener(
-  //   onBeforeSendHeaders,
-  //   {
-  //     urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
-  //   },
-  //   ["blocking", "requestHeaders"]
-  // );
+  // Remove the Accept flag from requests.
+  browser.webRequest.onBeforeSendHeaders.addListener(
+    onBeforeSendHeaders,
+    {
+      urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
+    },
+    ["blocking", "requestHeaders"]
+  );
   // Check for ads in video-weaver responses.
   browser.webRequest.onBeforeRequest.addListener(
     onBeforeVideoWeaverRequest,
