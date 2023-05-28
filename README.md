@@ -30,7 +30,7 @@
 
 > ℹ️ This is a fork of the original project at https://github.com/TTV-LOL/extensions
 
-TTV LOL PRO removes livestream ads from [Twitch](https://www.twitch.tv/).
+TTV LOL PRO removes most livestream ads from Twitch. This is free, don't expect it to be perfect. Issues? Complain to Twitch
 
 This fork:
 
