@@ -1,10 +1,12 @@
-import { fetch } from "./fetch";
+import { getFetch } from "./fetch";
 
 console.info("[TTV LOL PRO] 🚀 Page script running.");
 
 const params = JSON.parse(document.currentScript.dataset.params);
 
-window.fetch = fetch;
+window.fetch = getFetch({
+  proxyTwitchWebpage: params.proxyTwitchWebpage,
+});
 
 window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {

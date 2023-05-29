@@ -5,12 +5,7 @@ export default async function sendAdLog(): Promise<boolean | null> {
   // const DEFAULT_PROXIES = getDefaultState().videoWeaverProxies;
 
   const filteredAdLog = store.state.adLog
-    .filter(
-      entry =>
-        entry.timestamp > store.state.adLogLastSent && entry.proxy != null
-      // FIXME: Filter out third-party proxies.
-      // && entry.proxy.split(":")[0].endsWith(".perfprod.com")
-    )
+    .filter(entry => entry.timestamp > store.state.adLogLastSent)
     .map(entry => ({
       ...entry,
       videoWeaverUrl: undefined, // Remove the video-weaver URL from the log.

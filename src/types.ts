@@ -24,6 +24,7 @@ export const enum AdType {
 export interface AdLogEntry {
   adType: AdType;
   channel: string | null;
+  isPurpleScreen: boolean;
   proxy: string | null;
   proxyTwitchWebpage: boolean;
   proxyUsherRequests: boolean;
@@ -35,4 +36,8 @@ export interface AdLogEntry {
 export interface StreamStatus {
   proxied: boolean;
   reason: string;
+  stats?: {
+    proxied: number;
+    notProxied: number;
+  };
 }

@@ -3,6 +3,7 @@ import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoW
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import {
   passportHostRegex,
+  twitchGqlHostRegex,
   usherHostRegex,
   videoWeaverHostRegex,
 } from "../../common/ts/regexes";
@@ -20,8 +21,18 @@ export default function onHeadersReceived(
   const proxy = getProxyFromDetails(details);
 
   // Twitch webpage requests.
-  if (store.state.proxyTwitchWebpage && host === "www.twitch.tv") {
+  if (
+    store.state.proxyTwitchWebpage &&
+    host === "www.twitch.tv" &&
+    !details.url.endsWith(".js") &&
+    details.url.split("/").length <= 4
+  ) {
     if (!proxy) return console.log(`❌ Did not proxy ${details.url}`);
+    console.log(`✅ Proxied ${details.url} through ${proxy}`);
+  }
+  // Twitch GraphQL requests.
+  if (store.state.proxyTwitchWebpage && twitchGqlHostRegex.test(host)) {
+    if (!proxy) return;
     console.log(`✅ Proxied ${details.url} through ${proxy}`);
   }
 
@@ -37,19 +48,32 @@ export default function onHeadersReceived(
   // Video-weaver requests.
   if (videoWeaverHostRegex.test(host)) {
     const channelName = findChannelFromVideoWeaverUrl(details.url);
+    const streamStatus = getStreamStatus(channelName);
     if (!proxy) {
+      let reason = "Not proxied";
+      if (streamStatus?.stats != null) {
+        streamStatus.stats.notProxied++;
+        reason = `Not proxied (Proxied: ${streamStatus.stats.proxied} | Not proxied: ${streamStatus.stats.notProxied})`;
+      }
       setStreamStatus(channelName, {
         proxied: false,
-        reason: "Not proxied",
+        reason: reason,
+        stats: streamStatus?.stats ?? { proxied: 0, notProxied: 1 },
       });
       console.log(
         `❌ Did not proxy ${details.url} (${channelName ?? "unknown"})`
       );
       return;
     }
+    let reason = `Proxied through ${proxy}`;
+    if (streamStatus?.stats != null) {
+      streamStatus.stats.proxied++;
+      reason = `Proxied through ${proxy} (Proxied: ${streamStatus.stats.proxied} | Not proxied: ${streamStatus.stats.notProxied})`;
+    }
     setStreamStatus(channelName, {
       proxied: true,
-      reason: `Proxied through ${proxy}`,
+      reason: reason,
+      stats: streamStatus?.stats ?? { proxied: 1, notProxied: 0 },
     });
     console.log(
       `✅ Proxied ${details.url} (${channelName ?? "unknown"}) through ${proxy}`
@@ -65,6 +89,11 @@ function getProxyFromDetails(
   const proxyInfo = details.proxyInfo; // Firefox only.
   if (!proxyInfo || proxyInfo.type === "direct") return null;
   return `${proxyInfo.host}:${proxyInfo.port}`;
+}
+
+function getStreamStatus(channelName: string | null): StreamStatus | null {
+  if (!channelName) return null;
+  return store.state.streamStatuses[channelName] ?? null;
 }
 
 function setStreamStatus(

@@ -27,6 +27,9 @@ export default function onBeforeVideoWeaverRequest(
     if (isAd || isMidroll) {
       const adType: AdType = isMidroll ? AdType.MIDROLL : AdType.PREROLL;
       const channel = findChannelFromVideoWeaverUrl(details.url);
+      const isPurpleScreen = textLower.includes(
+        "https://help.twitch.tv/s/article/ad-experience-on-twitch"
+      );
       let proxy: string | null = null;
       if (details.proxyInfo && details.proxyInfo.type !== "direct") {
         proxy = `${details.proxyInfo.host}:${details.proxyInfo.port}`;
@@ -52,6 +55,7 @@ export default function onBeforeVideoWeaverRequest(
         {
           adType,
           channel,
+          isPurpleScreen,
           proxy,
           proxyTwitchWebpage,
           proxyUsherRequests,
