@@ -25,12 +25,7 @@ export default async function onProxyRequest(
   }
 
   // Twitch webpage requests.
-  if (
-    store.state.proxyTwitchWebpage &&
-    host === "www.twitch.tv" &&
-    !details.url.endsWith(".js") &&
-    details.url.split("/").length <= 4
-  ) {
+  if (store.state.proxyTwitchWebpage && host === "www.twitch.tv") {
     const proxies = store.state.videoWeaverProxies;
     const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
     console.log(`⌛ Proxying ${details.url} through one of: <empty>`);

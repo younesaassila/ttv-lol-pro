@@ -22,6 +22,12 @@ if (isChromium) {
   };
   setProxySettings();
 } else {
+  // Block tracking pixels.
+  browser.webRequest.onBeforeRequest.addListener(
+    () => ({ cancel: true }),
+    { urls: ["https://*.twitch.tv/r/*"] },
+    ["blocking"]
+  );
   // Map channel names to video-weaver URLs.
   browser.webRequest.onBeforeRequest.addListener(
     onBeforeUsherRequest,

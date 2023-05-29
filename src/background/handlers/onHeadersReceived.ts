@@ -21,12 +21,7 @@ export default function onHeadersReceived(
   const proxy = getProxyFromDetails(details);
 
   // Twitch webpage requests.
-  if (
-    store.state.proxyTwitchWebpage &&
-    host === "www.twitch.tv" &&
-    !details.url.endsWith(".js") &&
-    details.url.split("/").length <= 4
-  ) {
+  if (store.state.proxyTwitchWebpage && host === "www.twitch.tv") {
     if (!proxy) return console.log(`❌ Did not proxy ${details.url}`);
     console.log(`✅ Proxied ${details.url} through ${proxy}`);
   }
