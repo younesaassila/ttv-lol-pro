@@ -1,4 +1,5 @@
 import { Proxy } from "webextension-polyfill";
+import findChannelFromUsherUrl from "../../common/ts/findChannelFromUsherUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
@@ -32,18 +33,32 @@ export default async function onProxyRequest(
     return proxyInfoArray;
   }
 
-  // Passport & Usher requests.
-  if (
-    store.state.proxyUsherRequests &&
-    (passportHostRegex.test(host) || usherHostRegex.test(host))
-  ) {
-    // TODO: Check if channel is whitelisted.
+  // Passport requests.
+  if (store.state.proxyUsherRequests && passportHostRegex.test(host)) {
     const proxies = store.state.videoWeaverProxies;
     const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
     console.log(
       `⌛ Proxying ${details.url} through one of: ${
         proxies.toString() || "<empty>"
       }`
+    );
+    return proxyInfoArray;
+  }
+
+  // Usher requests.
+  if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
+    const proxies = store.state.videoWeaverProxies;
+    const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
+    // Don't proxy whitelisted channels.
+    const channelName = findChannelFromUsherUrl(details.url);
+    if (isChannelWhitelisted(channelName)) {
+      console.log(`✋ Channel '${channelName}' is whitelisted.`);
+      return { type: "direct" };
+    }
+    console.log(
+      `⌛ Proxying ${details.url} (${
+        channelName ?? "unknown"
+      }) through one of: ${proxies.toString() || "<empty>"}`
     );
     return proxyInfoArray;
   }
