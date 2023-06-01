@@ -1,9 +1,6 @@
 import store from "../../store";
-// import getDefaultState from "../../store/getDefaultState";
 
 export default async function sendAdLog(): Promise<boolean | null> {
-  // const DEFAULT_PROXIES = getDefaultState().videoWeaverProxies;
-
   const filteredAdLog = store.state.adLog
     .filter(entry => entry.timestamp > store.state.adLogLastSent)
     .map(entry => ({

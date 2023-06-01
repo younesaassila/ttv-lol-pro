@@ -25,9 +25,11 @@ export default function onHeadersReceived(
     if (!proxy) return console.log(`❌ Did not proxy ${details.url}`);
     console.log(`✅ Proxied ${details.url} through ${proxy}`);
   }
+
   // Twitch GraphQL requests.
   if (store.state.proxyTwitchWebpage && twitchGqlHostRegex.test(host)) {
-    if (!proxy) return;
+    if (!proxy && store.state.optimizedProxiesEnabled) return; // Expected for most requests.
+    if (!proxy) return console.log(`❌ Did not proxy ${details.url}`);
     console.log(`✅ Proxied ${details.url} through ${proxy}`);
   }
 

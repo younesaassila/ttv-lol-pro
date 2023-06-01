@@ -115,6 +115,10 @@ export function getFetch(
       host != null &&
       twitchGqlHostRegex.test(host)
     ) {
+      if (url === "https://gql.twitch.tv/integrity") {
+        console.log("[TTV LOL PRO] 🥅 Caught integrity request. Flagging…");
+        flagRequest(headersMap);
+      }
       if (requestBody != null && requestBody.includes("PlaybackAccessToken")) {
         console.log(
           "[TTV LOL PRO] 🥅 Caught PlaybackAccessToken request. Flagging…"

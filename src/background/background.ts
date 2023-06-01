@@ -40,7 +40,7 @@ if (isChromium) {
   browser.proxy.onRequest.addListener(
     onProxyRequest,
     {
-      urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
+      urls: ["https://*.twitch.tv/*", "https://*.ttvnw.net/*"],
     },
     ["requestHeaders"]
   );
@@ -48,7 +48,7 @@ if (isChromium) {
   browser.webRequest.onBeforeSendHeaders.addListener(
     onBeforeSendHeaders,
     {
-      urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
+      urls: ["https://*.twitch.tv/*", "https://*.ttvnw.net/*"],
     },
     ["blocking", "requestHeaders"]
   );
@@ -62,6 +62,6 @@ if (isChromium) {
   );
   // Monitor responses of proxied requests.
   browser.webRequest.onHeadersReceived.addListener(onHeadersReceived, {
-    urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
+    urls: ["https://*.twitch.tv/*", "https://*.ttvnw.net/*"],
   });
 }

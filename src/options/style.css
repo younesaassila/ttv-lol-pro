@@ -48,6 +48,10 @@ body {
   font-weight: bold;
 }
 
+fieldset {
+  border: 0;
+}
+
 a,
 a:visited {
   color: var(--link);

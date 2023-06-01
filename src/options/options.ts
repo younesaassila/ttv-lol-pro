@@ -51,10 +51,16 @@ const whitelistedChannelsListElement = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
 $;
-// Video Weaver proxies
-const videoWeaverProxiesListElement = $(
-  "#video-weaver-proxies-list"
+// Proxies
+const optimizedProxiesDivElement = $(
+  "#optimized-proxies-div"
+) as HTMLDivElement;
+const optimizedProxiesInputElement = $("#optimized") as HTMLInputElement;
+const optimizedProxiesListElement = $(
+  "#optimized-proxies-list"
 ) as HTMLOListElement;
+const normalProxiesInputElement = $("#normal") as HTMLInputElement;
+const normalProxiesListElement = $("#normal-proxies-list") as HTMLOListElement;
 // Ad log
 const adLogSectionElement = $("#ad-log-section") as HTMLElement;
 const adLogEnabledCheckboxElement = $(
@@ -101,40 +107,57 @@ function main() {
     store.state.proxyTwitchWebpage = proxyTwitchWebpageCheckboxElement.checked;
     if (isChromium) updateProxySettings();
   });
+  if (proxyTwitchWebpageCheckboxElement.checked) {
+    proxyTwitchWebpageLiElement.style.display = "block";
+  }
   // Whitelisted channels
   if (isChromium) {
     whitelistedChannelsSectionElement.style.display = "none";
   } else {
-    listInit(
-      whitelistedChannelsListElement,
-      "whitelistedChannels",
-      store.state.whitelistedChannels,
-      {
-        getAlreadyExistsAlertMessage: channelName =>
-          `'${channelName}' is already whitelisted`,
-        getPromptPlaceholder: () => "Enter a channel name…",
-      }
-    );
+    listInit(whitelistedChannelsListElement, "whitelistedChannels", {
+      getAlreadyExistsAlertMessage: channelName =>
+        `'${channelName}' is already whitelisted`,
+      getPromptPlaceholder: () => "Enter a channel name…",
+    });
   }
-  // Video Weaver proxies
-  listInit(
-    videoWeaverProxiesListElement,
-    "videoWeaverProxies",
-    store.state.videoWeaverProxies,
-    {
-      getPromptPlaceholder: insertMode => {
-        if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
-        return "Enter a proxy URL… (Fallback)";
-      },
-      isAddAllowed: isProxyUrlValid,
-      isEditAllowed: isProxyUrlValid,
-      onEdit() {
-        if (isChromium) updateProxySettings();
-      },
-      hidePromptMarker: true,
-      insertMode: "both",
-    }
-  );
+  // Proxies
+  if (isChromium) {
+    optimizedProxiesDivElement.style.display = "none";
+    normalProxiesInputElement.checked = true;
+  } else {
+    if (store.state.optimizedProxiesEnabled)
+      optimizedProxiesInputElement.checked = true;
+    else normalProxiesInputElement.checked = true;
+    const onProxyTypeChange = () => {
+      store.state.optimizedProxiesEnabled =
+        optimizedProxiesInputElement.checked;
+    };
+    optimizedProxiesInputElement.addEventListener("change", onProxyTypeChange);
+    normalProxiesInputElement.addEventListener("change", onProxyTypeChange);
+  }
+  listInit(optimizedProxiesListElement, "optimizedProxies", {
+    getPromptPlaceholder: insertMode => {
+      if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
+      return "Enter a proxy URL… (Fallback)";
+    },
+    isAddAllowed: isOptimizedProxyUrlValid,
+    isEditAllowed: isOptimizedProxyUrlValid,
+    hidePromptMarker: true,
+    insertMode: "both",
+  });
+  listInit(normalProxiesListElement, "normalProxies", {
+    getPromptPlaceholder: insertMode => {
+      if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
+      return "Enter a proxy URL… (Fallback)";
+    },
+    isAddAllowed: isNormalProxyUrlValid,
+    isEditAllowed: isNormalProxyUrlValid,
+    onEdit() {
+      if (isChromium) updateProxySettings();
+    },
+    hidePromptMarker: true,
+    insertMode: "both",
+  });
   // Ad log
   if (isChromium) {
     adLogSectionElement.style.display = "none";
@@ -146,7 +169,16 @@ function main() {
   }
 }
 
-function isProxyUrlValid(host: string): AllowedResult {
+function isOptimizedProxyUrlValid(host: string): AllowedResult {
+  if (
+    host.toLowerCase().startsWith("http://") ||
+    host.toLowerCase().startsWith("https://")
+  ) {
+    return [
+      false,
+      "Proxy URLs cannot contain a protocol (e.g. 'http://'). Reminder: TTV LOL PRO v1 proxies are not compatible",
+    ];
+  }
   try {
     new URL(`http://${host}`);
     if (host.includes("/")) {
@@ -158,21 +190,28 @@ function isProxyUrlValid(host: string): AllowedResult {
   }
 }
 
+function isNormalProxyUrlValid(host: string): AllowedResult {
+  const [allowed, error] = isOptimizedProxyUrlValid(host);
+  if (!allowed) return [false, error];
+  if (host.toLowerCase().includes("perfprod.com")) {
+    return [false, "This proxy cannot be used for all requests"];
+  }
+  return [true];
+}
+
 /**
  * Initializes a list element.
  * @param listElement
  * @param storeKey
- * @param stringArray
  * @param options
  */
 function listInit(
   listElement: HTMLOListElement | HTMLUListElement,
   storeKey: StoreStringArrayKey,
-  stringArray: string[] = [],
   options: Partial<ListOptions> = {}
 ) {
   const listOptions: ListOptions = { ...DEFAULT_LIST_OPTIONS, ...options };
-  for (const text of stringArray) {
+  for (const text of store.state[storeKey]) {
     _listAppend(listElement, storeKey, text, {
       ...listOptions,
       insertMode: "append", // Always append when initializing because the array is already in the correct order.
@@ -355,9 +394,11 @@ exportButtonElement.addEventListener("click", () => {
     "ttv-lol-pro_backup.json",
     JSON.stringify({
       adLogEnabled: store.state.adLogEnabled,
+      normalProxies: store.state.normalProxies,
+      optimizedProxies: store.state.optimizedProxies,
+      optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
       proxyTwitchWebpage: store.state.proxyTwitchWebpage,
       proxyUsherRequests: store.state.proxyUsherRequests,
-      videoWeaverProxies: store.state.videoWeaverProxies,
       whitelistedChannels: store.state.whitelistedChannels,
     } as Partial<State>),
     "application/json;charset=utf-8"
@@ -373,7 +414,17 @@ importButtonElement.addEventListener("click", async () => {
         console.warn(`Unknown key '${key}' in imported settings`);
         continue;
       }
-      store.state[key] = value;
+      let filteredValue = value;
+      if (key !== "optimizedProxies" && Array.isArray(value)) {
+        filteredValue = value.filter(item =>
+          typeof item === "string"
+            ? !item.toLowerCase().includes("perfprod.com")
+            : true
+        );
+      }
+      if (key === "optimizedProxiesEnabled" && isChromium)
+        filteredValue = false;
+      store.state[key] = filteredValue;
     }
     window.location.reload(); // Reload page to update UI.
   } catch (error) {

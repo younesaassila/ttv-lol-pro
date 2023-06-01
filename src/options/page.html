@@ -90,7 +90,24 @@
           Proxies for TTV LOL PRO v1 are not compatible.
         </small>
         <br />
-        <ol id="video-weaver-proxies-list" class="store-list" start="0"></ol>
+        <fieldset>
+          <div id="optimized-proxies-div">
+            <input
+              type="radio"
+              id="optimized"
+              name="drone"
+              value="optimized"
+              checked
+            />
+            <label for="optimized">Proxy ad requests only</label>
+            <ol id="optimized-proxies-list" class="store-list" start="0"></ol>
+          </div>
+          <div>
+            <input type="radio" id="normal" name="drone" value="normal" />
+            <label for="normal">Proxy all requests</label>
+            <ol id="normal-proxies-list" class="store-list" start="0"></ol>
+          </div>
+        </fieldset>
         <small>
           Looking for other proxies? Check out the "<a
             href="https://github.com/younesaassila/ttv-lol-pro/discussions/130"

@@ -4,7 +4,12 @@ import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoW
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import isFlaggedRequest from "../../common/ts/isFlaggedRequest";
-import { passportHostRegex, usherHostRegex } from "../../common/ts/regexes";
+import {
+  passportHostRegex,
+  twitchGqlHostRegex,
+  usherHostRegex,
+  videoWeaverHostRegex,
+} from "../../common/ts/regexes";
 import store from "../../store";
 import type { ProxyInfo } from "../../types";
 
@@ -25,18 +30,37 @@ export default async function onProxyRequest(
     });
   }
 
+  const isFlagged =
+    (store.state.optimizedProxiesEnabled &&
+      isFlaggedRequest(details.requestHeaders)) ||
+    !store.state.optimizedProxiesEnabled;
+  const proxies = store.state.optimizedProxiesEnabled
+    ? store.state.optimizedProxies
+    : store.state.normalProxies;
+  const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
+
   // Twitch webpage requests.
   if (store.state.proxyTwitchWebpage && host === "www.twitch.tv") {
-    const proxies = store.state.videoWeaverProxies;
-    const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
     console.log(`⌛ Proxying ${details.url} through one of: <empty>`);
+    return proxyInfoArray;
+  }
+
+  // Twitch GraphQL requests.
+  if (
+    store.state.proxyTwitchWebpage &&
+    twitchGqlHostRegex.test(host) &&
+    isFlagged
+  ) {
+    console.log(
+      `⌛ Proxying ${details.url} through one of: ${
+        proxies.toString() || "<empty>"
+      }`
+    );
     return proxyInfoArray;
   }
 
   // Passport requests.
   if (store.state.proxyUsherRequests && passportHostRegex.test(host)) {
-    const proxies = store.state.videoWeaverProxies;
-    const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
     console.log(
       `⌛ Proxying ${details.url} through one of: ${
         proxies.toString() || "<empty>"
@@ -47,8 +71,6 @@ export default async function onProxyRequest(
 
   // Usher requests.
   if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
-    const proxies = store.state.videoWeaverProxies;
-    const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
     // Don't proxy whitelisted channels.
     const channelName = findChannelFromUsherUrl(details.url);
     if (isChannelWhitelisted(channelName)) {
@@ -64,9 +86,7 @@ export default async function onProxyRequest(
   }
 
   // Video-weaver requests.
-  if (isFlaggedRequest(details.requestHeaders)) {
-    const proxies = store.state.videoWeaverProxies;
-    const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
+  if (videoWeaverHostRegex.test(host) && isFlagged) {
     // Don't proxy whitelisted channels.
     const channelName = findChannelFromVideoWeaverUrl(details.url);
     if (isChannelWhitelisted(channelName)) {

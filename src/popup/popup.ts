@@ -89,6 +89,7 @@ function setWhitelistStatus(channelNameLower: string) {
       );
     }
     whitelistStatusElement.setAttribute("data-whitelisted", `${isWhitelisted}`);
+    browser.tabs.reload();
   });
 }
 
@@ -103,7 +104,9 @@ copyDebugInfoButtonElement.addEventListener("click", async () => {
     `- OS: ${userAgentParser.getOSName()} ${userAgentParser.getOSVersion()}`,
     `- Passport enabled: ${store.state.proxyUsherRequests}`,
     `- Is laissez-passer: ${store.state.proxyTwitchWebpage}`,
-    `- Video Weaver proxies: ${JSON.stringify(store.state.videoWeaverProxies)}`,
+    `- Optimized proxies enabled: ${store.state.optimizedProxiesEnabled}`,
+    `- Optimized proxies: ${JSON.stringify(store.state.optimizedProxies)}`,
+    `- Normal proxies: ${JSON.stringify(store.state.normalProxies)}`,
     `- Last ad log entry: ${
       store.state.adLog.length
         ? JSON.stringify({

@@ -1,34 +1,38 @@
 import store from "../../store";
 import {
   passportHostRegex,
+  twitchGqlHostRegex,
   usherHostRegex,
   videoWeaverHostRegex,
 } from "./regexes";
 
 export default function updateProxySettings() {
-  const videoWeaverProxies = store.state.videoWeaverProxies;
-  const videoWeaverProxyInfo = getProxyInfoFromHosts(videoWeaverProxies);
+  const proxies = store.state.normalProxies;
+  const proxyInfo = getProxyInfoFromHosts(proxies);
+  const proxyInfoStringified = JSON.stringify(proxyInfo);
 
   const config = {
     mode: "pac_script",
     pacScript: {
       data: `
           function FindProxyForURL(url, host) {
+            // Settings
             const proxyTwitchWebpage = ${store.state.proxyTwitchWebpage};
             const proxyUsherRequests = ${store.state.proxyUsherRequests};
-
+            // Regexes
+            const twitchGqlHostRegex = ${twitchGqlHostRegex.toString()};
             const passportHostRegex = ${passportHostRegex.toString()};
             const usherHostRegex = ${usherHostRegex.toString()};
             const videoWeaverHostRegex = ${videoWeaverHostRegex.toString()};
 
-            if (proxyTwitchWebpage && host === "www.twitch.tv") {
-              return ${JSON.stringify(videoWeaverProxyInfo)};
+            if (proxyTwitchWebpage && (host === "www.twitch.tv" || twitchGqlHostRegex.test(host))) {
+              return ${proxyInfoStringified};
             }
             if (proxyUsherRequests && (passportHostRegex.test(host) || usherHostRegex.test(host))) {
-              return ${JSON.stringify(videoWeaverProxyInfo)};
+              return ${proxyInfoStringified};
             }
             if (videoWeaverHostRegex.test(host)) {
-              return ${JSON.stringify(videoWeaverProxyInfo)};
+              return ${proxyInfoStringified};
             }
             return "DIRECT";
           }`,
@@ -36,17 +40,8 @@ export default function updateProxySettings() {
   };
 
   chrome.proxy.settings.set({ value: config, scope: "regular" }, function () {
-    if (store.state.proxyUsherRequests) {
-      console.log(
-        `⚙️ Proxying usher requests through one of: ${
-          videoWeaverProxies.toString() || "<empty>"
-        }`
-      );
-    }
     console.log(
-      `⚙️ Proxying video-weaver requests through one of: ${
-        videoWeaverProxies.toString() || "<empty>"
-      }`
+      `⚙️ Proxying requests through one of: ${proxies.toString() || "<empty>"}`
     );
   });
 }
