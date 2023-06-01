@@ -12,6 +12,7 @@ const streamStatusElement = $("#stream-status") as HTMLDivElement;
 const proxiedElement = $("#proxied") as HTMLDivElement;
 const channelNameElement = $("#channel-name") as HTMLHeadingElement;
 const reasonElement = $("#reason") as HTMLParagraphElement;
+const infoElement = $("#info") as HTMLElement;
 const whitelistStatusElement = $("#whitelist-status") as HTMLDivElement;
 const whitelistToggleElement = $("#whitelist-toggle") as HTMLInputElement;
 const copyDebugInfoButtonElement = $(
@@ -84,6 +85,11 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
     reasonElement.style.display = "";
   } else {
     reasonElement.style.display = "none";
+  }
+  // Info
+  if (store.state.optimizedProxiesEnabled) {
+    infoElement.textContent = "Proxy optimizations enabled";
+    infoElement.style.display = "block";
   }
 }
 

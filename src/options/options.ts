@@ -470,7 +470,5 @@ document.addEventListener("keydown", function (e) {
 });
 
 function konamiCodeActivate() {
-  setTimeout(() => {
-    proxyTwitchWebpageLiElement.style.display = "block";
-  }, 200);
+  proxyTwitchWebpageLiElement.style.display = "block";
 }

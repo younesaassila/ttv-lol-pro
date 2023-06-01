@@ -1,5 +1,6 @@
 import pageScript from "url:../page/page.ts";
 import workerScript from "url:../page/worker.ts";
+import { twitchChannelNameRegex } from "../common/ts/regexes";
 import store from "../store";
 
 console.info("[TTV LOL PRO] 🚀 Content script running.");
@@ -8,7 +9,24 @@ if (store.readyState === "complete") onStoreReady();
 else store.addEventListener("load", onStoreReady);
 
 function onStoreReady() {
+  // Clear stats for stream on page load/reload.
+  clearStats();
+  // Inject page script into page.
   injectScript(pageScript);
+}
+
+function clearStats() {
+  const match = twitchChannelNameRegex.exec(location.href);
+  if (!match) return;
+  const [, streamId] = match;
+  if (!streamId) return;
+
+  if (store.state.streamStatuses.hasOwnProperty(streamId)) {
+    store.state.streamStatuses[streamId].stats = {
+      proxied: 0,
+      notProxied: 0,
+    };
+  }
 }
 
 function injectScript(src: string) {

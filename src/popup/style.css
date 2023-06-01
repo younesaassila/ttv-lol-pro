@@ -127,6 +127,14 @@ main > * {
   font-size: 9pt;
   opacity: 0.8;
 }
+/* Proxy status info */
+#stream-status #info {
+  display: none;
+  grid-area: bottom-right;
+  margin: 4px 0 0 0;
+  font-size: 7pt;
+  opacity: 0.7;
+}
 /* Whitelist status */
 #whitelist-status {
   height: 40px;

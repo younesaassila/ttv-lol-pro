@@ -201,18 +201,8 @@ li.hide-marker::marker {
 
 #proxy-twitch-webpage-li {
   display: none;
-  animation: option-appear 5s ease-out 0s forwards;
 }
 
 #proxy-twitch-webpage-li > label {
   text-shadow: 0 0 10px;
-}
-
-@keyframes option-appear {
-  from {
-    background-color: var(--brand-color);
-  }
-  to {
-    background-color: initial;
-  }
 }

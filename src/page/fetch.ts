@@ -119,6 +119,16 @@ export function getFetch(
         console.log("[TTV LOL PRO] 🥅 Caught integrity request. Flagging…");
         flagRequest(headersMap);
       }
+      const clientIntegrityHeader = getHeaderFromMap(
+        headersMap,
+        "Client-Integrity"
+      );
+      if (clientIntegrityHeader != null) {
+        console.log(
+          "[TTV LOL PRO] 🥅 Caught request with Client-Integrity header. Flagging…"
+        );
+        flagRequest(headersMap);
+      }
       if (requestBody != null && requestBody.includes("PlaybackAccessToken")) {
         console.log(
           "[TTV LOL PRO] 🥅 Caught PlaybackAccessToken request. Flagging…"
