@@ -1,5 +1,5 @@
-import { getFetch } from "./fetch";
+import { fetch } from "./fetch";
 
 console.info("[TTV LOL PRO] 🚀 Worker script running.");
 
-self.fetch = getFetch();
+self.fetch = fetch;

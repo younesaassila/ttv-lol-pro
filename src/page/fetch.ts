@@ -97,117 +97,106 @@ export interface FetchOptions {
   proxyTwitchWebpage: boolean;
 }
 
-export function getFetch(
-  options?: Partial<FetchOptions>
-): (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> {
-  return async (
-    input: RequestInfo | URL,
-    init?: RequestInit
-  ): Promise<Response> => {
-    const url = input instanceof Request ? input.url : input.toString();
-    const host = getHostFromUrl(url);
-    const headersMap = getHeadersMap(init?.headers);
-    const requestBody = await getRequestBodyText(init?.body);
+export async function fetch(
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<Response> {
+  const url = input instanceof Request ? input.url : input.toString();
+  const host = getHostFromUrl(url);
+  const headersMap = getHeadersMap(init?.headers);
+  const requestBody = await getRequestBodyText(init?.body);
 
-    // Twitch GraphQL requests.
-    if (
-      options?.proxyTwitchWebpage &&
-      host != null &&
-      twitchGqlHostRegex.test(host)
-    ) {
-      if (url === "https://gql.twitch.tv/integrity") {
-        console.log("[TTV LOL PRO] 🥅 Caught integrity request. Flagging…");
-        flagRequest(headersMap);
-      }
-      const clientIntegrityHeader = getHeaderFromMap(
-        headersMap,
-        "Client-Integrity"
+  // Twitch GraphQL requests.
+  if (host != null && twitchGqlHostRegex.test(host)) {
+    if (url === "https://gql.twitch.tv/integrity") {
+      console.log("[TTV LOL PRO] 🥅 Caught integrity request. Flagging…");
+      flagRequest(headersMap);
+    }
+    const clientIntegrityHeader = getHeaderFromMap(
+      headersMap,
+      "Client-Integrity"
+    );
+    if (clientIntegrityHeader != null) {
+      console.log(
+        "[TTV LOL PRO] 🥅 Caught request with Client-Integrity header. Flagging…"
       );
-      if (clientIntegrityHeader != null) {
-        console.log(
-          "[TTV LOL PRO] 🥅 Caught request with Client-Integrity header. Flagging…"
-        );
-        flagRequest(headersMap);
-      }
-      if (requestBody != null && requestBody.includes("PlaybackAccessToken")) {
-        console.log(
-          "[TTV LOL PRO] 🥅 Caught PlaybackAccessToken request. Flagging…"
-        );
-        flagRequest(headersMap);
-      }
+      flagRequest(headersMap);
     }
-
-    // Usher requests.
-    if (host != null && usherHostRegex.test(host)) {
-      console.log("[TTV LOL PRO] 🥅 Caught Usher request.");
+    if (requestBody != null && requestBody.includes("PlaybackAccessToken")) {
+      console.log(
+        "[TTV LOL PRO] 🥅 Caught PlaybackAccessToken request. Flagging…"
+      );
+      flagRequest(headersMap);
     }
+  }
 
-    // Video Weaver requests.
-    if (host != null && videoWeaverHostRegex.test(host)) {
-      const isNewUrl = !knownVideoWeaverUrls.has(url);
-      const isFlaggedUrl = videoWeaverUrlsToFlag.has(url);
-      if (isNewUrl || isFlaggedUrl) {
-        console.log(
-          "[TTV LOL PRO] 🥅 Caught new or ad-containing Video Weaver request. Flagging…"
-        );
-        flagRequest(headersMap);
-        if (isNewUrl) knownVideoWeaverUrls.add(url);
-        videoWeaverUrlsToFlag.set(
-          url,
-          (videoWeaverUrlsToFlag.get(url) ?? 0) + 1
-        );
+  // Usher requests.
+  if (host != null && usherHostRegex.test(host)) {
+    console.log("[TTV LOL PRO] 🥅 Caught Usher request.");
+  }
+
+  // Video Weaver requests.
+  if (host != null && videoWeaverHostRegex.test(host)) {
+    const isNewUrl = !knownVideoWeaverUrls.has(url);
+    const isFlaggedUrl = videoWeaverUrlsToFlag.has(url);
+    if (isNewUrl || isFlaggedUrl) {
+      console.log(
+        "[TTV LOL PRO] 🥅 Caught new or ad-containing Video Weaver request. Flagging…"
+      );
+      flagRequest(headersMap);
+      if (isNewUrl) knownVideoWeaverUrls.add(url);
+      videoWeaverUrlsToFlag.set(url, (videoWeaverUrlsToFlag.get(url) ?? 0) + 1);
+    }
+  }
+
+  const response = await NATIVE_FETCH(input, {
+    ...init,
+    headers: Object.fromEntries(headersMap),
+  });
+  const clonedResponse = response.clone();
+
+  // Usher responses.
+  if (host != null && usherHostRegex.test(host)) {
+    console.log("[TTV LOL PRO] 🥅 Caught Usher response.");
+    const responseBody = await clonedResponse.text();
+    responseBody.split("\n").forEach(line => {
+      if (line.includes("video-weaver.")) {
+        knownVideoWeaverUrls.delete(line.trim());
       }
-    }
-
-    const response = await NATIVE_FETCH(input, {
-      ...init,
-      headers: Object.fromEntries(headersMap),
     });
-    const clonedResponse = response.clone();
+  }
 
-    // Usher responses.
-    if (host != null && usherHostRegex.test(host)) {
-      console.log("[TTV LOL PRO] 🥅 Caught Usher response.");
-      const responseBody = await clonedResponse.text();
-      responseBody.split("\n").forEach(line => {
-        if (line.includes("video-weaver.")) {
-          knownVideoWeaverUrls.delete(line.trim());
-        }
-      });
-    }
+  // Video Weaver responses.
+  if (host != null && videoWeaverHostRegex.test(host)) {
+    const responseBody = await clonedResponse.text();
 
-    // Video Weaver responses.
-    if (host != null && videoWeaverHostRegex.test(host)) {
-      const responseBody = await clonedResponse.text();
-
-      if (responseBody.includes("stitched")) {
-        console.log(
-          "[TTV LOL PRO] 🥅 Caught Video Weaver response containing ad."
-        );
-        if (!videoWeaverUrlsToFlag.has(url)) {
-          // Let's proxy the next request for this URL, 2 attempts left.
-          videoWeaverUrlsToFlag.set(url, 0);
-          cancelRequest();
-        }
-        // 0: First attempt, not proxied, cancelled.
-        // 1: Second attempt, proxied, cancelled?
-        // 2: Third attempt, proxied, last attempt by Twitch.
-        // If the third attempt contains an ad, we have to let it through.
-        const isCancellable = videoWeaverUrlsToFlag.get(url) < 2;
-        if (isCancellable) {
-          cancelRequest();
-        } else {
-          console.error(
-            "[TTV LOL PRO] ❌ Could not cancel Video Weaver response containing ad. All attempts used."
-          );
-          videoWeaverUrlsToFlag.delete(url); // Reset attempts.
-        }
-      } else {
-        // No ad, remove from flagged list.
-        videoWeaverUrlsToFlag.delete(url);
+    if (responseBody.includes("stitched")) {
+      console.log(
+        "[TTV LOL PRO] 🥅 Caught Video Weaver response containing ad."
+      );
+      if (!videoWeaverUrlsToFlag.has(url)) {
+        // Let's proxy the next request for this URL, 2 attempts left.
+        videoWeaverUrlsToFlag.set(url, 0);
+        cancelRequest();
       }
+      // 0: First attempt, not proxied, cancelled.
+      // 1: Second attempt, proxied, cancelled?
+      // 2: Third attempt, proxied, last attempt by Twitch.
+      // If the third attempt contains an ad, we have to let it through.
+      const isCancellable = videoWeaverUrlsToFlag.get(url) < 2;
+      if (isCancellable) {
+        cancelRequest();
+      } else {
+        console.error(
+          "[TTV LOL PRO] ❌ Could not cancel Video Weaver response containing ad. All attempts used."
+        );
+        videoWeaverUrlsToFlag.delete(url); // Reset attempts.
+      }
+    } else {
+      // No ad, remove from flagged list.
+      videoWeaverUrlsToFlag.delete(url);
     }
+  }
 
-    return response;
-  };
+  return response;
 }

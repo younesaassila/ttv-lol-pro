@@ -72,9 +72,19 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
   // Proxied
   if (status.proxied) {
     proxiedElement.classList.remove("error");
+    proxiedElement.classList.remove("idle");
     proxiedElement.classList.add("success");
+  } else if (
+    !status.proxied &&
+    store.state.optimizedProxiesEnabled &&
+    store.state.optimizedProxies.length > 0
+  ) {
+    proxiedElement.classList.remove("error");
+    proxiedElement.classList.remove("success");
+    proxiedElement.classList.add("idle");
   } else {
     proxiedElement.classList.remove("success");
+    proxiedElement.classList.remove("idle");
     proxiedElement.classList.add("error");
   }
   // Channel name
@@ -88,8 +98,11 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
   }
   // Info
   let messages = [];
+  if (status.proxyHost) {
+    messages.push(`Proxy: ${status.proxyHost}`);
+  }
   if (status.proxyCountry) {
-    messages.push(`Proxy country: ${status.proxyCountry}`);
+    messages.push(`Country: ${status.proxyCountry}`);
   }
   if (store.state.optimizedProxiesEnabled) {
     messages.push("Optimized proxies enabled");

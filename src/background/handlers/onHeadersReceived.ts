@@ -46,33 +46,28 @@ export default function onHeadersReceived(
   if (videoWeaverHostRegex.test(host)) {
     const channelName = findChannelFromVideoWeaverUrl(details.url);
     const streamStatus = getStreamStatus(channelName);
+    const stats = streamStatus?.stats ?? { proxied: 0, notProxied: 0 };
     if (!proxy) {
-      let reason = "Not proxied";
-      if (streamStatus?.stats != null) {
-        streamStatus.stats.notProxied++;
-        reason = `Not proxied (Proxied: ${streamStatus.stats.proxied} | Not proxied: ${streamStatus.stats.notProxied})`;
-      }
+      stats.notProxied++;
       setStreamStatus(channelName, {
         proxied: false,
+        proxyHost: streamStatus?.proxyHost ? streamStatus.proxyHost : undefined,
         proxyCountry: streamStatus?.proxyCountry,
-        reason: reason,
-        stats: streamStatus?.stats ?? { proxied: 0, notProxied: 1 },
+        reason: `Proxied: ${stats.proxied} | [Not proxied]: ${stats.notProxied}`,
+        stats,
       });
       console.log(
         `❌ Did not proxy ${details.url} (${channelName ?? "unknown"})`
       );
       return;
     }
-    let reason = `Proxied through ${proxy}`;
-    if (streamStatus?.stats != null) {
-      streamStatus.stats.proxied++;
-      reason = `Proxied through ${proxy} (Proxied: ${streamStatus.stats.proxied} | Not proxied: ${streamStatus.stats.notProxied})`;
-    }
+    stats.proxied++;
     setStreamStatus(channelName, {
       proxied: true,
+      proxyHost: proxy,
       proxyCountry: streamStatus?.proxyCountry,
-      reason: reason,
-      stats: streamStatus?.stats ?? { proxied: 1, notProxied: 0 },
+      reason: `[Proxied]: ${stats.proxied} | Not proxied: ${stats.notProxied}`,
+      stats,
     });
     console.log(
       `✅ Proxied ${details.url} (${channelName ?? "unknown"}) through ${proxy}`

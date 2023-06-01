@@ -111,6 +111,9 @@ main > * {
 #stream-status #proxied.success {
   color: var(--success-color);
 }
+#stream-status #proxied.idle {
+  color: #999;
+}
 #stream-status #proxied.error {
   color: var(--error-color);
 }

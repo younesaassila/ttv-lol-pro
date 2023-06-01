@@ -1,15 +1,14 @@
-import { getFetch } from "./fetch";
+import { fetch } from "./fetch";
 
 console.info("[TTV LOL PRO] 🚀 Page script running.");
 
 const params = JSON.parse(document.currentScript.dataset.params);
 
-window.fetch = getFetch({
-  proxyTwitchWebpage: params.proxyTwitchWebpage,
-});
+window.fetch = fetch;
 
 window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
+    console.log("SCRIPT URL", scriptURL);
     const url = scriptURL.toString();
     let script = "";
     // Firefox Nightly errors out when trying to import a blob URL directly.
