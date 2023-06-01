@@ -87,8 +87,15 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
     reasonElement.style.display = "none";
   }
   // Info
+  let messages = [];
+  if (status.proxyCountry) {
+    messages.push(`Proxy country: ${status.proxyCountry}`);
+  }
   if (store.state.optimizedProxiesEnabled) {
-    infoElement.textContent = "Proxy optimizations enabled";
+    messages.push("Optimized proxies enabled");
+  }
+  if (messages.length > 0) {
+    infoElement.textContent = messages.join(", ");
     infoElement.style.display = "block";
   }
 }

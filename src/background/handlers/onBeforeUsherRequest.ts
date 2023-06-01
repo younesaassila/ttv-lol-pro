@@ -5,6 +5,7 @@ import {
   videoWeaverUrlRegex,
 } from "../../common/ts/regexes";
 import store from "../../store";
+import type { StreamStatus } from "../../types";
 
 export default function onBeforeUsherRequest(
   details: WebRequest.OnBeforeRequestDetailsType
@@ -29,6 +30,32 @@ export default function onBeforeUsherRequest(
       ...existingVideoWeaverUrls,
       ...newVideoWeaverUrls,
     ];
+    const streamStatus = getStreamStatus(channelName);
+    setStreamStatus(channelName, {
+      ...(streamStatus ?? { proxied: false, reason: "" }),
+      proxyCountry: extractProxyCountryFromManifest(text),
+    });
     return text;
   });
+}
+
+function getStreamStatus(channelName: string | null): StreamStatus | null {
+  if (!channelName) return null;
+  return store.state.streamStatuses[channelName] ?? null;
+}
+
+function setStreamStatus(
+  channelName: string | null,
+  streamStatus: StreamStatus
+): boolean {
+  if (!channelName) return false;
+  store.state.streamStatuses[channelName] = streamStatus;
+  return true;
+}
+
+function extractProxyCountryFromManifest(text: string): string | undefined {
+  const match = /USER-COUNTRY="([A-Z]+)"/i.exec(text);
+  if (!match) return;
+  const [, proxyCountry] = match;
+  return proxyCountry;
 }

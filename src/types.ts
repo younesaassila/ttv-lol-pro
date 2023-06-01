@@ -35,6 +35,7 @@ export interface AdLogEntry {
 
 export interface StreamStatus {
   proxied: boolean;
+  proxyCountry?: string;
   reason: string;
   stats?: {
     proxied: number;

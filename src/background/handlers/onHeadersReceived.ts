@@ -54,6 +54,7 @@ export default function onHeadersReceived(
       }
       setStreamStatus(channelName, {
         proxied: false,
+        proxyCountry: streamStatus?.proxyCountry,
         reason: reason,
         stats: streamStatus?.stats ?? { proxied: 0, notProxied: 1 },
       });
@@ -69,6 +70,7 @@ export default function onHeadersReceived(
     }
     setStreamStatus(channelName, {
       proxied: true,
+      proxyCountry: streamStatus?.proxyCountry,
       reason: reason,
       stats: streamStatus?.stats ?? { proxied: 1, notProxied: 0 },
     });
