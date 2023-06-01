@@ -7,10 +7,10 @@
   --font-primary: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
     sans-serif;
 
-  --brand-color: #9147ff;
+  --brand-color: #aa51b8;
   --ui-background-color: #151619;
 
-  --text-primary: #c9cbcd;
+  --text-primary: #e4e6e7;
   --text-secondary: #8d9296;
 
   --input-background-color: #1d1f23;
@@ -23,8 +23,8 @@
   --button-background-color-hover: #464953;
   --button-text-primary: #c3c4ca;
 
-  --link: #9d5cff;
-  --link-hover: #af7aff;
+  --link: #be68ce;
+  --link-hover: #cc88d8;
 
   --header-height: 2.5rem;
 }
@@ -36,6 +36,10 @@ body {
   accent-color: var(--brand-color);
   font-size: 100%;
   font-family: var(--font-primary);
+}
+
+main {
+  margin-left: 1.5rem;
 }
 
 ::-moz-selection,
