@@ -15,6 +15,8 @@
   --border-radius: 8px;
   --text-color: #c9cbcd;
   --success-color: #43b581;
+  --warning-color: #faa61a;
+  --warning-background-color: #faa61a4d;
   --error-color: #f04747;
   --whitelisted-color: #baaadb;
 }
@@ -42,6 +44,31 @@ main > * {
   margin: 0;
   overflow: hidden;
   border-radius: var(--border-radius);
+}
+
+/* Warning banner */
+
+#warning-banner {
+  display: none;
+  margin: 3px 3px 0 3px;
+  padding: 15px;
+  border: 1px solid var(--warning-color);
+  border-radius: 5px;
+  background-color: var(--warning-background-color);
+  color: #ffffff;
+  font-size: 9pt;
+}
+
+#warning-banner .warning-banner-link,
+#warning-banner .warning-banner-link:visited {
+  color: currentColor;
+  transition: opacity 100ms ease-in-out;
+}
+
+#warning-banner .warning-banner-link:hover,
+#warning-banner .warning-banner-link:hover:visited {
+  color: currentColor;
+  opacity: 0.8;
 }
 
 /* Logo */

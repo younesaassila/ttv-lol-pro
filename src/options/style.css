@@ -49,6 +49,7 @@ body {
 }
 
 fieldset {
+  margin-top: 1rem;
   border: 0;
 }
 

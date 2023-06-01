@@ -1,8 +1,3 @@
-import airportAudio from "url:../audio/airport.mp3";
-import konamiEndAudio from "url:../audio/konami_end.mp3";
-import konamiProgress1Audio from "url:../audio/konami_progress_1.mp3";
-import konamiProgress2Audio from "url:../audio/konami_progress_2.mp3";
-import konamiProgress3Audio from "url:../audio/konami_progress_3.mp3";
 import $ from "../common/ts/$";
 import isChromium from "../common/ts/isChromium";
 import readFile from "../common/ts/readFile";
@@ -99,7 +94,6 @@ function main() {
   proxyUsherRequestsCheckboxElement.addEventListener("change", () => {
     const checked = proxyUsherRequestsCheckboxElement.checked;
     store.state.proxyUsherRequests = checked;
-    if (checked) new Audio(airportAudio).play();
     if (isChromium) updateProxySettings();
   });
   proxyTwitchWebpageCheckboxElement.checked = store.state.proxyTwitchWebpage;
@@ -194,6 +188,7 @@ function isNormalProxyUrlValid(host: string): AllowedResult {
   const [allowed, error] = isOptimizedProxyUrlValid(host);
   if (!allowed) return [false, error];
   if (host.toLowerCase().includes("perfprod.com")) {
+    if (isChromium) return [false, "This proxy can only be used on Firefox"];
     return [false, "This proxy cannot be used for all requests"];
   }
   return [true];
@@ -464,18 +459,8 @@ document.addEventListener("keydown", function (e) {
   if (key == expectedKey) {
     konamiCodePosition += 1;
 
-    const randomAudio = Math.floor(Math.random() * 3);
-    let src = "";
-    if (randomAudio === 0) src = konamiProgress1Audio;
-    else if (randomAudio === 1) src = konamiProgress2Audio;
-    else src = konamiProgress3Audio;
-    const audio = new Audio(src);
-    audio.volume = 0.5;
-    audio.play();
-
     // Complete code entered correctly.
     if (konamiCodePosition == konamiCode.length) {
-      new Audio(konamiEndAudio).play();
       konamiCodeActivate();
       konamiCodePosition = 0;
     }

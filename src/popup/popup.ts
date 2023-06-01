@@ -1,11 +1,13 @@
 import Bowser from "bowser";
 import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
+import isChromium from "../common/ts/isChromium";
 import { twitchChannelNameRegex } from "../common/ts/regexes";
 import store from "../store";
 import type { StreamStatus } from "../types";
 
 //#region HTML Elements
+const warningBannerElement = $("#warning-banner") as HTMLDivElement;
 const streamStatusElement = $("#stream-status") as HTMLDivElement;
 const proxiedElement = $("#proxied") as HTMLDivElement;
 const channelNameElement = $("#channel-name") as HTMLHeadingElement;
@@ -24,6 +26,22 @@ if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 
 async function main() {
+  if (isChromium && store.state.normalProxies.length === 0) {
+    warningBannerElement.style.display = "block";
+  } else if (
+    !isChromium &&
+    store.state.optimizedProxiesEnabled &&
+    store.state.optimizedProxies.length === 0
+  ) {
+    warningBannerElement.style.display = "block";
+  } else if (
+    !isChromium &&
+    !store.state.optimizedProxiesEnabled &&
+    store.state.normalProxies.length === 0
+  ) {
+    warningBannerElement.style.display = "block";
+  }
+
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   const activeTab = tabs[0];
   if (!activeTab || !activeTab.url) return;
