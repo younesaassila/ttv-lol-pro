@@ -48,7 +48,7 @@ This fork:
 
 <div align="center">
   <img
-    src="https://user-images.githubusercontent.com/47226184/230387477-fa47fc75-69d5-42d2-b3ea-fb4e8f513035.png"
+    src="https://github.com/younesaassila/ttv-lol-pro/assets/47226184/9841764f-a9ae-46da-9236-e1cce0164081"
     alt="Popup on Firefox"
     height="450"
   />
