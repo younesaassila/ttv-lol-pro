@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "TTV LOL PRO",
   "description": "TTV LOL PRO removes livestream ads from Twitch.",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "background": {
     "persistent": true,
     "scripts": ["background/background.ts"]

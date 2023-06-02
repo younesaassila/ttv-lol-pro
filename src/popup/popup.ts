@@ -1,3 +1,4 @@
+import Bowser from "bowser";
 import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
 import { TWITCH_URL_REGEX } from "../common/ts/regexes";
@@ -13,6 +14,12 @@ const reasonElement = $("#reason") as HTMLParagraphElement;
 const proxyCountryElement = $("#proxy-country") as HTMLElement;
 const whitelistStatusElement = $("#whitelist-status") as HTMLDivElement;
 const whitelistToggleElement = $("#whitelist-toggle") as HTMLInputElement;
+const copyDebugInfoButtonElement = $(
+  "#copy-debug-info-button"
+) as HTMLButtonElement;
+const copyDebugInfoButtonDescriptionElement = $(
+  "#copy-debug-info-button-description"
+) as HTMLParagraphElement;
 //#endregion
 
 if (store.readyState === "complete") main();
@@ -99,3 +106,26 @@ function setWhitelistStatus(streamIdLower: string) {
     browser.tabs.reload();
   });
 }
+
+copyDebugInfoButtonElement.addEventListener("click", async () => {
+  const extensionInfo = await browser.management.getSelf();
+  const userAgentParser = Bowser.getParser(window.navigator.userAgent);
+
+  const debugInfo = [
+    `${extensionInfo.name} v${extensionInfo.version}`,
+    `- Install type: ${extensionInfo.installType}`,
+    `- Browser: ${userAgentParser.getBrowserName()} ${userAgentParser.getBrowserVersion()}`,
+    `- OS: ${userAgentParser.getOSName()} ${userAgentParser.getOSVersion()}`,
+    `- Servers: ${JSON.stringify(store.state.servers)}`,
+    `- Reset player on midroll: ${store.state.resetPlayerOnMidroll}`,
+  ].join("\n");
+
+  try {
+    await navigator.clipboard.writeText(debugInfo);
+    copyDebugInfoButtonDescriptionElement.textContent = "Copied to clipboard!";
+  } catch (error) {
+    console.error(error);
+    copyDebugInfoButtonDescriptionElement.textContent =
+      "Failed to copy to clipboard.";
+  }
+});
