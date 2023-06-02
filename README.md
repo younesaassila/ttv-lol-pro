@@ -48,9 +48,9 @@ TTV LOL PRO:
 
 <div align="center">
   <img
-    src="https://github.com/younesaassila/ttv-lol-pro/assets/47226184/9841764f-a9ae-46da-9236-e1cce0164081"
+    src="https://github.com/younesaassila/ttv-lol-pro/assets/47226184/45073ec3-c919-4c5e-9f4f-68cb99e0b7b5"
     alt="Popup on Firefox"
-    height="450"
+    height="550"
   />
 </div>
 
