@@ -8,6 +8,7 @@ import {
 
 const NATIVE_FETCH = self.fetch;
 
+const ignoredVideoWeaverUrls = new Set<string>();
 const knownVideoWeaverUrls = new Set<string>();
 const videoWeaverUrlsToFlag = new Map<string, number>(); // URL -> No. of times flagged.
 
@@ -137,9 +138,10 @@ export async function fetch(
 
   // Video Weaver requests.
   if (host != null && videoWeaverHostRegex.test(host)) {
+    const isIgnoredUrl = ignoredVideoWeaverUrls.has(url);
     const isNewUrl = !knownVideoWeaverUrls.has(url);
     const isFlaggedUrl = videoWeaverUrlsToFlag.has(url);
-    if (isNewUrl || isFlaggedUrl) {
+    if (!isIgnoredUrl && (isNewUrl || isFlaggedUrl)) {
       console.log(
         "[TTV LOL PRO] 🥅 Caught new or ad-containing Video Weaver request. Flagging…"
       );
@@ -170,10 +172,14 @@ export async function fetch(
   if (host != null && videoWeaverHostRegex.test(host)) {
     const responseBody = await clonedResponse.text();
 
-    if (responseBody.includes("stitched")) {
+    if (
+      responseBody.includes("stitched-ad") ||
+      responseBody.includes("twitch-maf-ad")
+    ) {
       console.log(
         "[TTV LOL PRO] 🥅 Caught Video Weaver response containing ad."
       );
+      if (ignoredVideoWeaverUrls.has(url)) return response;
       if (!videoWeaverUrlsToFlag.has(url)) {
         // Let's proxy the next request for this URL, 2 attempts left.
         videoWeaverUrlsToFlag.set(url, 0);
@@ -190,11 +196,13 @@ export async function fetch(
         console.error(
           "[TTV LOL PRO] ❌ Could not cancel Video Weaver response containing ad. All attempts used."
         );
-        videoWeaverUrlsToFlag.delete(url); // Reset attempts.
+        videoWeaverUrlsToFlag.delete(url); // Clear attempts.
+        ignoredVideoWeaverUrls.add(url); // Ignore this URL, there's nothing we can do.
       }
     } else {
       // No ad, remove from flagged list.
       videoWeaverUrlsToFlag.delete(url);
+      ignoredVideoWeaverUrls.delete(url);
     }
   }
 

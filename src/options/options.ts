@@ -173,10 +173,23 @@ function isOptimizedProxyUrlValid(host: string): AllowedResult {
       "Proxy URLs cannot contain a protocol (e.g. 'http://'). Reminder: TTV LOL PRO v1 proxies are not compatible",
     ];
   }
+
   try {
     new URL(`http://${host}`);
     if (host.includes("/")) {
       return [false, "Proxy URLs cannot contain a path (e.g. '/path')"];
+    }
+    if (
+      [
+        "eu.luminous.dev",
+        "as.luminous.dev",
+        "lb-eu.perfprod.com",
+        "lb-eu2.perfprod.com",
+        "lb-na.perfprod.com",
+        "lb-as.perfprod.com",
+      ].includes(host.toLowerCase())
+    ) {
+      return [false, "TTV LOL PRO v1 proxies are not compatible"];
     }
     return [true];
   } catch {

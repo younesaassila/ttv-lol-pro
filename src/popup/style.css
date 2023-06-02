@@ -74,12 +74,11 @@ main > * {
 /* Logo */
 
 .logo-wrapper {
-  background-color: var(--background-secondary);
   text-align: center;
 }
 
 .logo-wrapper > img {
-  width: 80%;
+  height: 40px;
 }
 
 /* Stream status */

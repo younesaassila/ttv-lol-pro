@@ -39,7 +39,7 @@ body {
 }
 
 main {
-  margin-left: 1.5rem;
+  margin-left: 1rem;
 }
 
 ::-moz-selection,
@@ -124,18 +124,15 @@ hr {
 }
 
 header {
-  height: var(--header-height);
-}
-
-.logo {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
   height: var(--header-height);
+  gap: 1rem;
 }
 
-.logo > img {
+header > img {
   max-height: 100%;
 }
 
