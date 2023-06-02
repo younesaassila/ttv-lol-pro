@@ -50,7 +50,7 @@ TTV LOL PRO:
   <img
     src="https://github.com/younesaassila/ttv-lol-pro/assets/47226184/45073ec3-c919-4c5e-9f4f-68cb99e0b7b5"
     alt="Popup on Firefox"
-    height="550"
+    max-height="550"
   />
 </div>
 
