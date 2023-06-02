@@ -174,6 +174,7 @@ export async function fetch(
 
     if (
       responseBody.includes("stitched-ad") ||
+      responseBody.includes("twitch-client-ad") ||
       responseBody.includes("twitch-maf-ad")
     ) {
       console.log(
