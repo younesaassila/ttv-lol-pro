@@ -34,9 +34,15 @@ export default async function onProxyRequest(
     (store.state.optimizedProxiesEnabled &&
       isFlaggedRequest(details.requestHeaders)) ||
     !store.state.optimizedProxiesEnabled;
-  const proxies = store.state.optimizedProxiesEnabled
-    ? store.state.optimizedProxies
-    : store.state.normalProxies;
+  const proxies = (
+    store.state.optimizedProxiesEnabled
+      ? store.state.optimizedProxies
+      : store.state.normalProxies
+  ).map(host =>
+    host.includes("@")
+      ? host.slice(host.lastIndexOf("@") + 1, host.length)
+      : host
+  );
   const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
 
   // Twitch webpage requests.

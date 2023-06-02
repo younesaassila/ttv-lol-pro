@@ -31,6 +31,12 @@
     "open_in_tab": true,
     "page": "options/page.html"
   },
-  "permissions": ["declarativeNetRequest", "proxy", "storage"],
+  "permissions": [
+    "declarativeNetRequest",
+    "proxy",
+    "storage",
+    "webRequest",
+    "webRequestAuthProvider"
+  ],
   "host_permissions": ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"]
 }

@@ -7,7 +7,11 @@ import {
 } from "./regexes";
 
 export default function updateProxySettings() {
-  const proxies = store.state.normalProxies;
+  const proxies = store.state.normalProxies.map(host =>
+    host.includes("@")
+      ? host.slice(host.lastIndexOf("@") + 1, host.length)
+      : host
+  );
   const proxyInfo = getProxyInfoFromHosts(proxies);
   const proxyInfoStringified = JSON.stringify(proxyInfo);
 

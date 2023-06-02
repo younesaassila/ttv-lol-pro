@@ -175,7 +175,7 @@ function isOptimizedProxyUrlValid(host: string): AllowedResult {
   }
 
   try {
-    new URL(`http://${host}`);
+    new URL(`http://${host.slice(host.lastIndexOf("@") + 1, host.length)}`);
     if (host.includes("/")) {
       return [false, "Proxy URLs cannot contain a path (e.g. '/path')"];
     }

@@ -2,6 +2,7 @@ import browser from "webextension-polyfill";
 import isChromium from "../common/ts/isChromium";
 import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
+import onAuthRequired from "./handlers/onAuthRequired";
 import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
 import onBeforeUsherRequest from "./handlers/onBeforeUsherRequest";
 import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
@@ -13,6 +14,13 @@ console.info("🚀 Background script loaded.");
 
 // Cleanup the session-related data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);
+
+// Handle proxy authentication.
+browser.webRequest.onAuthRequired.addListener(
+  onAuthRequired,
+  { urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"] },
+  ["blocking"]
+);
 
 if (isChromium) {
   const setProxySettings = () => {
@@ -40,7 +48,7 @@ if (isChromium) {
   browser.proxy.onRequest.addListener(
     onProxyRequest,
     {
-      urls: ["https://*.twitch.tv/*", "https://*.ttvnw.net/*"],
+      urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
     },
     ["requestHeaders"]
   );
@@ -48,7 +56,7 @@ if (isChromium) {
   browser.webRequest.onBeforeSendHeaders.addListener(
     onBeforeSendHeaders,
     {
-      urls: ["https://*.twitch.tv/*", "https://*.ttvnw.net/*"],
+      urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
     },
     ["blocking", "requestHeaders"]
   );
@@ -62,6 +70,6 @@ if (isChromium) {
   );
   // Monitor responses of proxied requests.
   browser.webRequest.onHeadersReceived.addListener(onHeadersReceived, {
-    urls: ["https://*.twitch.tv/*", "https://*.ttvnw.net/*"],
+    urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
   });
 }
