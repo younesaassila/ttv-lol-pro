@@ -16,7 +16,8 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "ttv-lol-pro@ttv-lol-pro"
+      "id": "{76ef94a4-e3d0-4c6f-961a-d38a429a332b}",
+      "strict_min_version": "91.1.0"
     }
   },
   "content_scripts": [
