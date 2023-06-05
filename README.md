@@ -58,6 +58,12 @@ TTV LOL PRO:
 
 > ⚠️ **Please remove any other Twitch-specific ad blocker (this includes the [VAFT](https://github.com/pixeltris/TwitchAdSolutions#scripts) script). [uBlock Origin](https://ublockorigin.com/) is recommended as it is a general-purpose ad blocker. Please clear your browser's cache after installing the beta.**
 
+### Chrome Web Store
+
+https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd
+
+### Manual installation
+
 1. Download the version for your browser under the "Assets" section of the [latest release](https://github.com/younesaassila/ttv-lol-pro/releases).
 
 - **Chrome _(Permanent)_:** Unzip > Go to `chrome://extensions` > Enable developer mode > Load unpacked
