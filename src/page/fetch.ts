@@ -172,11 +172,7 @@ export async function fetch(
   if (host != null && videoWeaverHostRegex.test(host)) {
     const responseBody = await clonedResponse.text();
 
-    if (
-      responseBody.includes("stitched-ad") ||
-      responseBody.includes("twitch-client-ad") ||
-      responseBody.includes("twitch-maf-ad")
-    ) {
+    if (responseBody.includes("stitched-ad")) {
       console.log(
         "[TTV LOL PRO] 🥅 Caught Video Weaver response containing ad."
       );
