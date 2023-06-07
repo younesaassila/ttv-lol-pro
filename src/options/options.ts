@@ -165,13 +165,29 @@ function main() {
 
 function isOptimizedProxyUrlAllowed(url: string): AllowedResult {
   const urlLower = url.toLowerCase();
+
+  // Allow default proxies.
+  if (DEFAULT_STATE.optimizedProxies.includes(urlLower)) {
+    return [true];
+  }
+
+  // Forbid v1 proxies.
   const proxiesV1 = [
+    // *.luminous.dev
     "eu.luminous.dev",
+    "eu2.luminous.dev",
     "as.luminous.dev",
+    "bg.luminous.dev",
+    // *.perfprod.com
     "lb-eu.perfprod.com",
     "lb-eu2.perfprod.com",
     "lb-na.perfprod.com",
     "lb-as.perfprod.com",
+    // *.cdn-perfprod.com
+    "lb-eu.cdn-perfprod.com",
+    "lb-eu2.cdn-perfprod.com",
+    "lb-na.cdn-perfprod.com",
+    "lb-as.cdn-perfprod.com",
   ];
   if (proxiesV1.some(proxy => urlLower.includes(proxy))) {
     return [false, "TTV LOL PRO v1 proxies are not compatible"];
@@ -201,7 +217,7 @@ function isNormalProxyUrlAllowed(url: string): AllowedResult {
   const urlLower = url.toLowerCase();
 
   // Allow default proxies.
-  if (DEFAULT_STATE.normalProxies.includes(url)) {
+  if (DEFAULT_STATE.normalProxies.includes(urlLower)) {
     return [true];
   }
 
