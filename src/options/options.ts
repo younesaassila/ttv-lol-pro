@@ -200,8 +200,8 @@ function isNormalProxyUrlAllowed(url: string): AllowedResult {
 
   const urlLower = url.toLowerCase();
 
-  // Allow default proxies on Chromium.
-  if (isChromium && DEFAULT_STATE.normalProxies.includes(url)) {
+  // Allow default proxies.
+  if (DEFAULT_STATE.normalProxies.includes(url)) {
     return [true];
   }
 
