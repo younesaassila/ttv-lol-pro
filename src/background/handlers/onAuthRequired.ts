@@ -1,4 +1,5 @@
 import { WebRequest } from "webextension-polyfill";
+import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
 import store from "../../store";
 
 const pendingRequests = [];
@@ -8,7 +9,7 @@ export default function onAuthRequired(
 ) {
   if (pendingRequests.includes(details.requestId)) {
     console.error(
-      `🔐 Incorrect credentials provided for proxy ${details.challenger.host}:${details.challenger.port}.`
+      `🔐 Provided invalid credentials for proxy ${details.challenger.host}:${details.challenger.port}.`
     );
     return;
   }
@@ -17,13 +18,23 @@ export default function onAuthRequired(
   const proxies = store.state.optimizedProxiesEnabled
     ? store.state.optimizedProxies
     : store.state.normalProxies;
-  const proxy = proxies.find(proxy =>
-    proxy.includes(`@${details.challenger.host}`)
+  let proxy = proxies.find(proxy =>
+    proxy.endsWith(`@${details.challenger.host}:${details.challenger.port}`)
   );
+  if (!proxy) {
+    // Port number might be implicit? (Depending on the browser?)
+    proxy = proxies.find(proxy =>
+      proxy.includes(`@${details.challenger.host}`)
+    );
+  }
   if (!proxy) return;
-  const [username, password] = proxy
-    .substring(0, proxy.lastIndexOf("@"))
-    .split(":");
-  console.log("Provided credentials for proxy", details.challenger.host);
-  return { authCredentials: { username, password } };
+
+  console.log(`🔑 Providing credentials for proxy ${proxy}.`);
+  const proxyInfo = getProxyInfoFromUrl(proxy);
+  return {
+    authCredentials: {
+      username: proxyInfo.username,
+      password: proxyInfo.password,
+    },
+  };
 }
