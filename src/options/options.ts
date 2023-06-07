@@ -72,7 +72,7 @@ const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 //#endregion
 
-const DEFAULT_STATE_KEYS = Object.freeze(Object.keys(getDefaultState()));
+const DEFAULT_STATE = Object.freeze(getDefaultState());
 const DEFAULT_LIST_OPTIONS = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
@@ -134,8 +134,8 @@ function main() {
       if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
       return "Enter a proxy URL… (Fallback)";
     },
-    isAddAllowed: isOptimizedProxyUrlValid,
-    isEditAllowed: isOptimizedProxyUrlValid,
+    isAddAllowed: isOptimizedProxyUrlAllowed,
+    isEditAllowed: isOptimizedProxyUrlAllowed,
     hidePromptMarker: true,
     insertMode: "both",
   });
@@ -144,8 +144,8 @@ function main() {
       if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
       return "Enter a proxy URL… (Fallback)";
     },
-    isAddAllowed: isNormalProxyUrlValid,
-    isEditAllowed: isNormalProxyUrlValid,
+    isAddAllowed: isNormalProxyUrlAllowed,
+    isEditAllowed: isNormalProxyUrlAllowed,
     onEdit() {
       if (isChromium) updateProxySettings();
     },
@@ -163,47 +163,61 @@ function main() {
   }
 }
 
-function isOptimizedProxyUrlValid(host: string): AllowedResult {
-  if (
-    host.toLowerCase().startsWith("http://") ||
-    host.toLowerCase().startsWith("https://")
-  ) {
-    return [
-      false,
-      "Proxy URLs cannot contain a protocol (e.g. 'http://'). Reminder: TTV LOL PRO v1 proxies are not compatible",
-    ];
+function isOptimizedProxyUrlAllowed(url: string): AllowedResult {
+  const urlLower = url.toLowerCase();
+  const proxiesV1 = [
+    "eu.luminous.dev",
+    "as.luminous.dev",
+    "lb-eu.perfprod.com",
+    "lb-eu2.perfprod.com",
+    "lb-na.perfprod.com",
+    "lb-as.perfprod.com",
+  ];
+  if (proxiesV1.some(proxy => urlLower.includes(proxy))) {
+    return [false, "TTV LOL PRO v1 proxies are not compatible"];
+  }
+
+  if (/^https?:\/\//i.test(url)) {
+    return [false, "Proxy URLs must not contain a protocol (e.g. 'http://')"];
+  }
+
+  if (url.includes("/")) {
+    return [false, "Proxy URLs must not contain a path (e.g. '/path')"];
   }
 
   try {
-    new URL(`http://${host.slice(host.lastIndexOf("@") + 1, host.length)}`);
-    if (host.includes("/")) {
-      return [false, "Proxy URLs cannot contain a path (e.g. '/path')"];
-    }
-    if (
-      [
-        "eu.luminous.dev",
-        "as.luminous.dev",
-        "lb-eu.perfprod.com",
-        "lb-eu2.perfprod.com",
-        "lb-na.perfprod.com",
-        "lb-as.perfprod.com",
-      ].includes(host.toLowerCase())
-    ) {
-      return [false, "TTV LOL PRO v1 proxies are not compatible"];
-    }
+    const host = url.slice(url.lastIndexOf("@") + 1, url.length);
+    new URL(`http://${host}`); // Throws if the host is invalid.
     return [true];
   } catch {
-    return [false, `'${host}' is not a valid proxy URL`];
+    return [false, `'${url}' is not a valid proxy URL`];
   }
 }
 
-function isNormalProxyUrlValid(host: string): AllowedResult {
-  const [allowed, error] = isOptimizedProxyUrlValid(host);
+function isNormalProxyUrlAllowed(url: string): AllowedResult {
+  const [allowed, error] = isOptimizedProxyUrlAllowed(url);
   if (!allowed) return [false, error];
-  if (host.toLowerCase().includes("perfprod.com")) {
-    if (isChromium) return [false, "This proxy can only be used on Firefox"];
-    return [false, "This proxy cannot be used for all requests"];
+
+  const urlLower = url.toLowerCase();
+
+  // Allow default proxies on Chromium.
+  if (isChromium && DEFAULT_STATE.normalProxies.includes(url)) {
+    return [true];
   }
+
+  // Allow donator proxy (password protected).
+  if (urlLower === "restricted.api.cdn-perfprod.com:6691") {
+    return [true];
+  }
+
+  // Forbid other perfprod.com proxies.
+  if (
+    urlLower.includes(".perfprod.com") ||
+    urlLower.includes(".cdn-perfprod.com")
+  ) {
+    return [false, "This proxy is not compatible with 'Proxy all requests'"];
+  }
+
   return [true];
 }
 
@@ -414,24 +428,32 @@ exportButtonElement.addEventListener("click", () => {
 });
 
 importButtonElement.addEventListener("click", async () => {
+  const DEFAULT_STATE_KEYS = Object.keys(DEFAULT_STATE);
+
   try {
     const data = await readFile("application/json;charset=utf-8");
     const state = JSON.parse(data);
-    for (const [key, value] of Object.entries(state)) {
+
+    for (const entry of Object.entries(state)) {
+      const key = entry[0] as keyof State;
+      const value = entry[1];
+
       if (!DEFAULT_STATE_KEYS.includes(key)) {
         console.warn(`Unknown key '${key}' in imported settings`);
         continue;
       }
       let filteredValue = value;
-      if (key !== "optimizedProxies" && Array.isArray(value)) {
+      if (key === "optimizedProxies" && Array.isArray(value)) {
         filteredValue = value.filter(item =>
-          typeof item === "string"
-            ? !item.toLowerCase().includes("perfprod.com")
-            : true
+          item != null ? isOptimizedProxyUrlAllowed(item.toString())[0] : false
         );
       }
-      if (key === "optimizedProxiesEnabled" && isChromium)
-        filteredValue = false;
+      if (key === "normalProxies" && Array.isArray(value)) {
+        filteredValue = value.filter(item =>
+          item != null ? isNormalProxyUrlAllowed(item.toString())[0] : false
+        );
+      }
+      // @ts-ignore
       store.state[key] = filteredValue;
     }
     window.location.reload(); // Reload page to update UI.
