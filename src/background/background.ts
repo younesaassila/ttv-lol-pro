@@ -15,14 +15,14 @@ console.info("🚀 Background script loaded.");
 // Cleanup the session-related data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);
 
-// Handle proxy authentication.
-browser.webRequest.onAuthRequired.addListener(
-  onAuthRequired,
-  { urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"] },
-  ["blocking"]
-);
-
 if (isChromium) {
+  // Handle proxy authentication.
+  browser.webRequest.onAuthRequired.addListener(
+    onAuthRequired,
+    { urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"] },
+    ["blocking"]
+  );
+
   const setProxySettings = () => {
     if (store.readyState !== "complete")
       return store.addEventListener("load", setProxySettings);

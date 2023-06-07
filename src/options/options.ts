@@ -202,7 +202,7 @@ function isOptimizedProxyUrlAllowed(url: string): AllowedResult {
   }
 
   try {
-    const host = url.slice(url.lastIndexOf("@") + 1, url.length);
+    const host = url.substring(url.lastIndexOf("@") + 1, url.length);
     new URL(`http://${host}`); // Throws if the host is invalid.
     return [true];
   } catch {

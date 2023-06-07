@@ -1,4 +1,5 @@
 import store from "../../store";
+import getProxyInfoFromUrl from "./getProxyInfoFromUrl";
 import {
   passportHostRegex,
   twitchGqlHostRegex,
@@ -7,12 +8,10 @@ import {
 } from "./regexes";
 
 export default function updateProxySettings() {
-  const proxies = store.state.normalProxies.map(host =>
-    host.includes("@")
-      ? host.slice(host.lastIndexOf("@") + 1, host.length)
-      : host
-  );
-  const proxyInfo = getProxyInfoFromHosts(proxies);
+  const proxies = store.state.optimizedProxiesEnabled
+    ? store.state.optimizedProxies
+    : store.state.normalProxies;
+  const proxyInfo = getProxyInfoStringFromUrls(proxies);
   const proxyInfoStringified = JSON.stringify(proxyInfo);
 
   const config = {
@@ -20,19 +19,20 @@ export default function updateProxySettings() {
     pacScript: {
       data: `
           function FindProxyForURL(url, host) {
-            // Settings
-            const proxyTwitchWebpage = ${store.state.proxyTwitchWebpage};
-            const proxyUsherRequests = ${store.state.proxyUsherRequests};
             // Regexes
             const twitchGqlHostRegex = ${twitchGqlHostRegex.toString()};
             const passportHostRegex = ${passportHostRegex.toString()};
             const usherHostRegex = ${usherHostRegex.toString()};
             const videoWeaverHostRegex = ${videoWeaverHostRegex.toString()};
 
-            if (proxyTwitchWebpage && (host === "www.twitch.tv" || twitchGqlHostRegex.test(host))) {
+            if (${
+              store.state.proxyTwitchWebpage
+            } && (host === "www.twitch.tv" || twitchGqlHostRegex.test(host))) {
               return ${proxyInfoStringified};
             }
-            if (proxyUsherRequests && (passportHostRegex.test(host) || usherHostRegex.test(host))) {
+            if (${
+              store.state.proxyUsherRequests
+            } && (passportHostRegex.test(host) || usherHostRegex.test(host))) {
               return ${proxyInfoStringified};
             }
             if (videoWeaverHostRegex.test(host)) {
@@ -50,6 +50,12 @@ export default function updateProxySettings() {
   });
 }
 
-function getProxyInfoFromHosts(hosts: string[]): string {
-  return [...hosts.map(host => `PROXY ${host}`), "DIRECT"].join("; ");
+function getProxyInfoStringFromUrls(urls: string[]): string {
+  return [
+    ...urls.map(url => {
+      const proxyInfo = getProxyInfoFromUrl(url);
+      return `PROXY ${proxyInfo.host}:${proxyInfo.port}`;
+    }),
+    "DIRECT",
+  ].join("; ");
 }

@@ -2,6 +2,7 @@ import { Proxy } from "webextension-polyfill";
 import findChannelFromUsherUrl from "../../common/ts/findChannelFromUsherUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
+import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
 import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import isFlaggedRequest from "../../common/ts/isFlaggedRequest";
 import {
@@ -34,16 +35,10 @@ export default async function onProxyRequest(
     (store.state.optimizedProxiesEnabled &&
       isFlaggedRequest(details.requestHeaders)) ||
     !store.state.optimizedProxiesEnabled;
-  const proxies = (
-    store.state.optimizedProxiesEnabled
-      ? store.state.optimizedProxies
-      : store.state.normalProxies
-  ).map(host =>
-    host.includes("@")
-      ? host.slice(host.lastIndexOf("@") + 1, host.length)
-      : host
-  );
-  const proxyInfoArray = getProxyInfoArrayFromHosts(proxies);
+  const proxies = store.state.optimizedProxiesEnabled
+    ? store.state.optimizedProxies
+    : store.state.normalProxies;
+  const proxyInfoArray = getProxyInfoArrayFromUrls(proxies);
 
   // Twitch webpage requests.
   if (store.state.proxyTwitchWebpage && host === "www.twitch.tv") {
@@ -110,16 +105,9 @@ export default async function onProxyRequest(
   return { type: "direct" };
 }
 
-function getProxyInfoArrayFromHosts(hosts: string[]): ProxyInfo[] {
+function getProxyInfoArrayFromUrls(urls: string[]): ProxyInfo[] {
   return [
-    ...hosts.map(host => {
-      const [hostname, port] = host.split(":");
-      return {
-        type: "http",
-        host: hostname,
-        port: Number(port) ?? 3128,
-      } as ProxyInfo;
-    }),
+    ...urls.map(url => getProxyInfoFromUrl(url)),
     { type: "direct" } as ProxyInfo, // Fallback to direct connection if all proxies fail.
   ];
 }
