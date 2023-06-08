@@ -2,7 +2,6 @@ import type { ProxyInfo } from "../../types";
 
 export default function getProxyInfoFromUrl(url: string): ProxyInfo {
   const lastIndexOfAt = url.lastIndexOf("@");
-
   const hostname = url.substring(lastIndexOfAt + 1, url.length);
   const lastIndexOfColon = getLastIndexOfColon(hostname);
 
@@ -18,10 +17,11 @@ export default function getProxyInfoFromUrl(url: string): ProxyInfo {
 
   let username: string | undefined = undefined;
   let password: string | undefined = undefined;
-  if (url.includes("@")) {
-    const credentials = url.substring(0, lastIndexOfAt).split(":");
-    username = credentials[0];
-    password = credentials[1];
+  if (lastIndexOfAt !== -1) {
+    const credentials = url.substring(0, lastIndexOfAt);
+    const indexOfColon = credentials.indexOf(":");
+    username = credentials.substring(0, indexOfColon);
+    password = credentials.substring(indexOfColon + 1, credentials.length);
   }
 
   return {
