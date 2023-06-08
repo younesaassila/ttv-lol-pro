@@ -195,11 +195,3 @@ li.hide-marker::marker {
   height: 80px;
   margin-top: 1rem;
 }
-
-#proxy-twitch-webpage-li {
-  display: none;
-}
-
-#proxy-twitch-webpage-li > label {
-  text-shadow: 0 0 10px;
-}

@@ -32,9 +32,6 @@ type ListOptions = {
 const proxyUsherRequestsCheckboxElement = $(
   "#proxy-usher-requests-checkbox"
 ) as HTMLInputElement;
-const proxyTwitchWebpageLiElement = $(
-  "#proxy-twitch-webpage-li"
-) as HTMLElement;
 const proxyTwitchWebpageCheckboxElement = $(
   "#proxy-twitch-webpage-checkbox"
 ) as HTMLInputElement;
@@ -101,9 +98,6 @@ function main() {
     store.state.proxyTwitchWebpage = proxyTwitchWebpageCheckboxElement.checked;
     if (isChromium) updateProxySettings();
   });
-  if (proxyTwitchWebpageCheckboxElement.checked) {
-    proxyTwitchWebpageLiElement.style.display = "block";
-  }
   // Whitelisted channels
   if (isChromium) {
     whitelistedChannelsSectionElement.style.display = "none";
@@ -486,40 +480,3 @@ resetButtonElement.addEventListener("click", () => {
   store.clear();
   window.location.reload(); // Reload page to update UI.
 });
-
-// From https://stackoverflow.com/a/31627191
-
-const konamiCode = [
-  "ArrowUp",
-  "ArrowUp",
-  "ArrowDown",
-  "ArrowDown",
-  "ArrowLeft",
-  "ArrowRight",
-  "ArrowLeft",
-  "ArrowRight",
-  "b",
-  "a",
-];
-let konamiCodePosition = 0;
-
-document.addEventListener("keydown", function (e) {
-  const key = e.key;
-  const expectedKey = konamiCode[konamiCodePosition];
-
-  if (key == expectedKey) {
-    konamiCodePosition += 1;
-
-    // Complete code entered correctly.
-    if (konamiCodePosition == konamiCode.length) {
-      konamiCodeActivate();
-      konamiCodePosition = 0;
-    }
-  } else {
-    konamiCodePosition = 0;
-  }
-});
-
-function konamiCodeActivate() {
-  proxyTwitchWebpageLiElement.style.display = "block";
-}
