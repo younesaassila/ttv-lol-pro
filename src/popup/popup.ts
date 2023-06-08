@@ -1,6 +1,10 @@
 import Bowser from "bowser";
 import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
+import {
+  anonymizeIpAddress,
+  anonymizeIpAddresses,
+} from "../common/ts/anonymizeIpAddress";
 import isChromium from "../common/ts/isChromium";
 import { twitchChannelNameRegex } from "../common/ts/regexes";
 import store from "../store";
@@ -99,7 +103,7 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
   // Info
   let messages = [];
   if (status.proxyHost) {
-    messages.push(`Proxy: ${status.proxyHost}`);
+    messages.push(`Proxy: ${anonymizeIpAddress(status.proxyHost)}`);
   }
   if (status.proxyCountry) {
     messages.push(`Country: ${status.proxyCountry}`);
@@ -137,7 +141,7 @@ function setWhitelistStatus(channelNameLower: string) {
   });
 }
 
-copyDebugInfoButtonElement.addEventListener("click", async () => {
+copyDebugInfoButtonElement.addEventListener("click", async e => {
   const extensionInfo = await browser.management.getSelf();
   const userAgentParser = Bowser.getParser(window.navigator.userAgent);
 
@@ -149,8 +153,16 @@ copyDebugInfoButtonElement.addEventListener("click", async () => {
     `- Passport enabled: ${store.state.proxyUsherRequests}`,
     `- Is laissez-passer: ${store.state.proxyTwitchWebpage}`,
     `- Optimized proxies enabled: ${store.state.optimizedProxiesEnabled}`,
-    `- Optimized proxies: ${JSON.stringify(store.state.optimizedProxies)}`,
-    `- Normal proxies: ${JSON.stringify(store.state.normalProxies)}`,
+    `- Optimized proxies: ${JSON.stringify(
+      e.shiftKey
+        ? store.state.optimizedProxies
+        : anonymizeIpAddresses(store.state.optimizedProxies)
+    )}`,
+    `- Normal proxies: ${JSON.stringify(
+      e.shiftKey
+        ? store.state.normalProxies
+        : anonymizeIpAddresses(store.state.normalProxies)
+    )}`,
     `- Last ad log entry: ${
       store.state.adLog.length
         ? JSON.stringify({

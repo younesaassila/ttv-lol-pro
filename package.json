@@ -37,16 +37,16 @@
   "license": "GPL-3.0",
   "dependencies": {
     "bowser": "^2.11.0",
-    "semver-compare": "^1.0.0",
-    "xhook": "^1.6.0"
+    "ip": "^1.1.8"
   },
   "devDependencies": {
     "@parcel/config-webextension": "^2.9.1",
     "@types/chrome": "^0.0.237",
-    "@types/semver-compare": "^1.0.1",
+    "@types/ip": "^1.1.0",
     "@types/webextension-polyfill": "^0.10.0",
-    "@types/xhook": "^1.5.0",
+    "buffer": "^6.0.3",
     "cpy-cli": "^4.2.0",
+    "os-browserify": "^0.3.0",
     "parcel": "^2.9.1",
     "postcss": "^8.4.24",
     "prettier": "^2.8.8",
