@@ -27,7 +27,7 @@ window.Worker = class Worker extends window.Worker {
       try {
         importScripts("${params.workerScriptURL}");
       } catch {
-        console.error(\`[TTV LOL PRO] ❌ Failed to load worker script: ${params.workerScriptURL}\`);
+        console.error("[TTV LOL PRO] ❌ Failed to load worker script: ${params.workerScriptURL}");
       }
       ${script}
     `;
