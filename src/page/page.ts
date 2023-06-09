@@ -1,10 +1,10 @@
-import { fetch } from "./fetch";
+import { getFetch } from "./getFetch";
 
 console.info("[TTV LOL PRO] 🚀 Page script running.");
 
 const params = JSON.parse(document.currentScript.dataset.params);
 
-window.fetch = fetch;
+window.fetch = getFetch();
 
 window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
@@ -37,3 +37,5 @@ window.Worker = class Worker extends window.Worker {
     super(newScriptURL, options);
   }
 };
+
+document.currentScript.remove();
