@@ -82,10 +82,13 @@ export function getFetch(options: FetchOptions = {}): typeof fetch {
 
     //#endregion
 
-    const response = await NATIVE_FETCH(input, {
-      ...init,
-      headers: Object.fromEntries(headersMap),
-    });
+    const response = await NATIVE_FETCH(
+      url.startsWith("/") ? `${location.origin}${url}` : input,
+      {
+        ...init,
+        headers: Object.fromEntries(headersMap),
+      }
+    );
     const clonedResponse = response.clone();
 
     // Reading the response body can be expensive, so we only do it if we need to.

@@ -3,6 +3,7 @@ import getProxyInfoFromUrl from "./getProxyInfoFromUrl";
 import {
   passportHostRegex,
   twitchGqlHostRegex,
+  twitchTvHostRegex,
   usherHostRegex,
   videoWeaverHostRegex,
 } from "./regexes";
@@ -11,35 +12,33 @@ export default function updateProxySettings() {
   const proxies = store.state.optimizedProxiesEnabled
     ? store.state.optimizedProxies
     : store.state.normalProxies;
-  const proxyInfo = getProxyInfoStringFromUrls(proxies);
-  const proxyInfoStringified = JSON.stringify(proxyInfo);
+  const proxyInfoString = getProxyInfoStringFromUrls(proxies);
+
+  // TODO: Use flags to determine what to do with current proxy settings.
+  const startFlag = "/* TTV-LOL-PRO START */";
+  const endFlag = "/* TTV-LOL-PRO END */";
+  const { proxyTwitchWebpage, proxyUsherRequests } = store.state;
 
   const config = {
     mode: "pac_script",
     pacScript: {
       data: `
-          function FindProxyForURL(url, host) {
-            // Regexes
-            const twitchGqlHostRegex = ${twitchGqlHostRegex.toString()};
-            const passportHostRegex = ${passportHostRegex.toString()};
-            const usherHostRegex = ${usherHostRegex.toString()};
-            const videoWeaverHostRegex = ${videoWeaverHostRegex.toString()};
-
-            if (${
-              store.state.proxyTwitchWebpage
-            } && (host === "www.twitch.tv" || twitchGqlHostRegex.test(host))) {
-              return ${proxyInfoStringified};
-            }
-            if (${
-              store.state.proxyUsherRequests
-            } && (passportHostRegex.test(host) || usherHostRegex.test(host))) {
-              return ${proxyInfoStringified};
-            }
-            if (videoWeaverHostRegex.test(host)) {
-              return ${proxyInfoStringified};
-            }
-            return "DIRECT";
-          }`,
+        function FindProxyForURL(url, host) {
+          // Twitch webpage & GraphQL requests.
+          if (${proxyTwitchWebpage} && (${twitchTvHostRegex}.test(host) || ${twitchGqlHostRegex}.test(host))) {
+            return "${proxyInfoString}";
+          }
+          // Passport & Usher requests.
+          if (${proxyUsherRequests} && (${passportHostRegex}.test(host) || ${usherHostRegex}.test(host))) {
+            return "${proxyInfoString}";
+          }
+          // Video Weaver requests.
+          if (${videoWeaverHostRegex}.test(host)) {
+            return "${proxyInfoString}";
+          }
+          return "DIRECT";
+        }
+      `,
     },
   };
 

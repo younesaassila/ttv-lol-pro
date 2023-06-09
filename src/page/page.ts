@@ -11,18 +11,13 @@ window.Worker = class Worker extends window.Worker {
     const url = scriptURL.toString();
     let script = "";
     // Firefox Nightly errors out when trying to import a blob URL directly.
-    if (url.startsWith("blob:")) {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url, false);
-      xhr.send();
-      if (!(200 <= xhr.status && xhr.status < 300)) {
-        throw new Error(`Failed to fetch script: ${xhr.statusText}`);
-      }
-      script = xhr.responseText;
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", url, false);
+    xhr.send();
+    if (!(200 <= xhr.status && xhr.status < 300)) {
+      throw new Error(`Failed to fetch script: ${xhr.statusText}`);
     }
-    if (!script) {
-      script = `importScripts("${scriptURL}");`;
-    }
+    script = xhr.responseText;
     const newScript = `
       try {
         importScripts("${params.workerScriptURL}");

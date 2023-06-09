@@ -8,6 +8,7 @@ import isFlaggedRequest from "../../common/ts/isFlaggedRequest";
 import {
   passportHostRegex,
   twitchGqlHostRegex,
+  twitchTvHostRegex,
   usherHostRegex,
   videoWeaverHostRegex,
 } from "../../common/ts/regexes";
@@ -41,7 +42,7 @@ export default async function onProxyRequest(
   const proxyInfoArray = getProxyInfoArrayFromUrls(proxies);
 
   // Twitch webpage requests.
-  if (store.state.proxyTwitchWebpage && host === "www.twitch.tv") {
+  if (store.state.proxyTwitchWebpage && twitchTvHostRegex.test(host)) {
     console.log(`⌛ Proxying ${details.url} through one of: <empty>`);
     return proxyInfoArray;
   }
@@ -86,7 +87,7 @@ export default async function onProxyRequest(
     return proxyInfoArray;
   }
 
-  // Video-weaver requests.
+  // Video Weaver requests.
   if (videoWeaverHostRegex.test(host) && isFlagged) {
     // Don't proxy whitelisted channels.
     const channelName = findChannelFromVideoWeaverUrl(details.url);
