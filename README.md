@@ -50,13 +50,14 @@ TTV LOL PRO:
   <img
     src="https://github.com/younesaassila/ttv-lol-pro/assets/47226184/45073ec3-c919-4c5e-9f4f-68cb99e0b7b5"
     alt="Popup on Firefox"
-    max-height="550"
+    width="436"
+    height="550"
   />
 </div>
 
 ## Installation
 
-> ⚠️ **Please remove any other Twitch-specific ad blocker (this includes the [VAFT](https://github.com/pixeltris/TwitchAdSolutions#scripts) script). [uBlock Origin](https://ublockorigin.com/) is recommended as it is a general-purpose ad blocker. Please clear your browser's cache after installing the beta.**
+> ⚠️ **Please remove any other Twitch-specific ad blocker (this includes the [VAFT](https://github.com/pixeltris/TwitchAdSolutions#scripts) script). [uBlock Origin](https://ublockorigin.com/) is recommended as it is a general-purpose ad blocker. Please clear your browser's cache after installing the extension.**
 
 ### Chrome Web Store
 
