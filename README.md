@@ -73,4 +73,5 @@ https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcd
 ## Credits
 
 Extension maintained by [Younes Aassila (@younesaassila)](https://github.com/younesaassila) [ [GitHub Sponsors](https://github.com/sponsors/younesaassila) ]
+
 Proxies maintained by [Marc Gómez (@zGato)](https://github.com/zGato) [ [PayPal](https://paypal.me/gatogameryt) | [GitHub Sponsors](https://github.com/sponsors/zGato) ]
