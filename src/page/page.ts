@@ -8,7 +8,6 @@ window.fetch = fetch;
 
 window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
-    console.log("SCRIPT URL", scriptURL);
     const url = scriptURL.toString();
     let script = "";
     // Firefox Nightly errors out when trying to import a blob URL directly.
