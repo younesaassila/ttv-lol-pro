@@ -11,7 +11,7 @@ const NATIVE_FETCH = self.fetch;
 export interface FetchOptions {}
 
 export function getFetch(options: FetchOptions = {}): typeof fetch {
-  const knownVideoWeaverUrls = new Set<string>(); // Known Video Weaver URLs.
+  const knownVideoWeaverUrls = new Set<string>();
   const videoWeaverUrlsToFlag = new Map<string, number>(); // Video Weaver URLs to flag -> number of times flagged.
   const videoWeaverUrlsToIgnore = new Set<string>(); // No response check.
 
