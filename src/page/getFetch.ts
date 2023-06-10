@@ -100,12 +100,12 @@ export function getFetch(options: FetchOptions = {}): typeof fetch {
       ...init,
       headers: Object.fromEntries(headersMap),
     });
-    const clonedResponse = response.clone();
 
     // Reading the response body can be expensive, so we only do it if we need to.
     let responseBody: string | undefined = undefined;
     const readResponseBody = async () => {
       if (responseBody != null) return;
+      const clonedResponse = response.clone();
       responseBody = await clonedResponse.text();
     };
 

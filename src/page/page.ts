@@ -10,8 +10,8 @@ window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
     const url = scriptURL.toString();
     let script = "";
-    // Fetch the script content synchronously, since Firefox Nightly errors out
-    // when trying to import a blob URL directly.
+    // Fetch the script content, since Firefox Nightly errors out when trying
+    // to import a blob URL directly.
     const xhr = new XMLHttpRequest();
     xhr.open("GET", url, false);
     xhr.send();
