@@ -20,14 +20,28 @@ export function getFetch(options: FetchOptions = {}): typeof fetch {
     init?: RequestInit
   ): Promise<Response> {
     const url = input instanceof Request ? input.url : input.toString();
+    // Firefox doesn't support relative URLs in content scripts (workers too!).
+    // See https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Chrome_incompatibilities#content_script_https_requests
+    if (url.startsWith("/")) {
+      const newUrl = `${location.origin}${url}`;
+      if (input instanceof Request) input = new Request(newUrl, input);
+      else input = newUrl;
+    }
     const host = getHostFromUrl(url);
-    const headersMap = getHeadersMap(init?.headers);
-    const requestBody = await getRequestBodyText(init?.body);
+    const headersMap = getHeadersMap(input, init);
+
+    // Reading the request body can be expensive, so we only do it if we need to.
+    let requestBody: string | undefined = undefined;
+    const readRequestBody = async () => {
+      if (requestBody != null) return;
+      requestBody = await getRequestBodyText(input, init);
+    };
 
     //#region Requests
 
     // Twitch GraphQL requests.
     if (host != null && twitchGqlHostRegex.test(host)) {
+      await readRequestBody();
       // Integrity requests.
       if (url === "https://gql.twitch.tv/integrity") {
         console.debug(
@@ -82,13 +96,10 @@ export function getFetch(options: FetchOptions = {}): typeof fetch {
 
     //#endregion
 
-    const response = await NATIVE_FETCH(
-      url.startsWith("/") ? `${location.origin}${url}` : input,
-      {
-        ...init,
-        headers: Object.fromEntries(headersMap),
-      }
-    );
+    const response = await NATIVE_FETCH(input, {
+      ...init,
+      headers: Object.fromEntries(headersMap),
+    });
     const clonedResponse = response.clone();
 
     // Reading the response body can be expensive, so we only do it if we need to.
@@ -160,8 +171,10 @@ export function getFetch(options: FetchOptions = {}): typeof fetch {
  * @returns
  */
 function getHeadersMap(
-  headers: Headers | HeadersInit | undefined
+  input: RequestInfo | URL,
+  init?: RequestInit
 ): Map<string, string> {
+  const headers = input instanceof Request ? input.headers : init?.headers;
   if (!headers) return new Map();
   if (headers instanceof Headers) {
     return new Map(headers.entries());
@@ -178,9 +191,15 @@ function getHeadersMap(
  * @returns
  */
 async function getRequestBodyText(
-  body: BodyInit | null | undefined
+  input: RequestInfo | URL,
+  init?: RequestInit
 ): Promise<string | null> {
-  if (!body) return null;
+  if (input instanceof Request) {
+    const clonedRequest = input.clone();
+    return clonedRequest.text();
+  }
+  const body = init?.body;
+  if (body == null) return null;
   if (body instanceof Blob) {
     return body.text();
   }
