@@ -15,14 +15,14 @@ console.info("🚀 Background script loaded.");
 // Cleanup the session-related data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);
 
-if (isChromium) {
-  // Handle proxy authentication.
-  browser.webRequest.onAuthRequired.addListener(
-    onAuthRequired,
-    { urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"] },
-    ["blocking"]
-  );
+// Handle proxy authentication.
+browser.webRequest.onAuthRequired.addListener(
+  onAuthRequired,
+  { urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"] },
+  ["blocking"]
+);
 
+if (isChromium) {
   const setProxySettings = () => {
     if (store.readyState !== "complete")
       return store.addEventListener("load", setProxySettings);
@@ -36,7 +36,8 @@ if (isChromium) {
     { urls: ["https://*.twitch.tv/r/*"] },
     ["blocking"]
   );
-  // Map channel names to video-weaver URLs.
+
+  // Map channel names to Video Weaver URLs.
   browser.webRequest.onBeforeRequest.addListener(
     onBeforeUsherRequest,
     {
@@ -44,6 +45,7 @@ if (isChromium) {
     },
     ["blocking"]
   );
+
   // Proxy requests.
   browser.proxy.onRequest.addListener(
     onProxyRequest,
@@ -52,7 +54,8 @@ if (isChromium) {
     },
     ["requestHeaders"]
   );
-  // Remove the Accept flag from requests.
+
+  // Remove the Accept flag from flagged requests.
   browser.webRequest.onBeforeSendHeaders.addListener(
     onBeforeSendHeaders,
     {
@@ -60,7 +63,8 @@ if (isChromium) {
     },
     ["blocking", "requestHeaders"]
   );
-  // Check for ads in video-weaver responses.
+
+  // Check for ads in Video Weaver responses.
   browser.webRequest.onBeforeRequest.addListener(
     onBeforeVideoWeaverRequest,
     {
@@ -68,6 +72,7 @@ if (isChromium) {
     },
     ["blocking"]
   );
+
   // Monitor responses of proxied requests.
   browser.webRequest.onHeadersReceived.addListener(onHeadersReceived, {
     urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],

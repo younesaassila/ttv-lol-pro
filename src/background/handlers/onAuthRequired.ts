@@ -7,10 +7,13 @@ const pendingRequests = [];
 export default function onAuthRequired(
   details: WebRequest.OnAuthRequiredDetailsType
 ): void | WebRequest.BlockingResponseOrPromise {
+  if (!details.isProxy) return;
+
   if (pendingRequests.includes(details.requestId)) {
     console.error(
       `🔐 Provided invalid credentials for proxy ${details.challenger.host}:${details.challenger.port}.`
     );
+    // TODO: Remove the proxy from the list of online proxies.
     return;
   }
   pendingRequests.push(details.requestId);
