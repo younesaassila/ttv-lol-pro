@@ -6,7 +6,7 @@ export default function getDefaultState() {
     adLog: [],
     adLogEnabled: true,
     adLogLastSent: 0,
-    normalProxies: isChromium ? ["chrome.api.cdn-perfprod.com:6969"] : [],
+    normalProxies: isChromium ? ["chrome.api.cdn-perfprod.com:4023"] : [],
     optimizedProxies: isChromium ? [] : ["firefox.api.cdn-perfprod.com:2023"],
     optimizedProxiesEnabled: !isChromium,
     proxyTwitchWebpage: false,
