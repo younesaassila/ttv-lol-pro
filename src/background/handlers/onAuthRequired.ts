@@ -6,7 +6,7 @@ const pendingRequests = [];
 
 export default function onAuthRequired(
   details: WebRequest.OnAuthRequiredDetailsType
-) {
+): void | WebRequest.BlockingResponseOrPromise {
   if (pendingRequests.includes(details.requestId)) {
     console.error(
       `🔐 Provided invalid credentials for proxy ${details.challenger.host}:${details.challenger.port}.`
