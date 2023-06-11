@@ -18,17 +18,17 @@
   },
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
-    "predev:firefox": "npm run clean; shx cp src/manifest.firefox.json src/manifest.json",
-    "predev:chromium": "npm run clean; shx cp src/manifest.chromium.json src/manifest.json",
+    "predev:firefox": "npm run clean && shx cp src/manifest.firefox.json src/manifest.json",
+    "predev:chromium": "npm run clean && shx cp src/manifest.chromium.json src/manifest.json",
     "dev:firefox": "parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
     "dev:chromium": "parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
     "lint": "prettier --check ./src",
     "lint:fix": "prettier --write ./src",
-    "prebuild:firefox": "npm run clean; shx cp src/manifest.firefox.json src/manifest.json",
-    "prebuild:chromium": "npm run clean; shx cp src/manifest.chromium.json src/manifest.json",
+    "prebuild:firefox": "npm run clean && shx cp src/manifest.firefox.json src/manifest.json",
+    "prebuild:chromium": "npm run clean && shx cp src/manifest.chromium.json src/manifest.json",
     "build:firefox": "parcel build src/manifest.json --target webext-prod --no-source-maps",
     "build:chromium": "parcel build src/manifest.json --target webext-prod --no-source-maps",
-    "clean": "shx rm -rf .parcel-cache; shx rm -rf dist; shx --silent rm src/manifest.json"
+    "clean": "shx rm -rf .parcel-cache ; shx rm -rf dist ; shx --silent rm src/manifest.json ; exit 0"
   },
   "keywords": [
     "twitch",
