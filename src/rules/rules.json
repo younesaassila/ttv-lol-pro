@@ -6,15 +6,19 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "*.twitch.tv/r/*",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "script",
-        "image",
-        "xmlhttprequest",
-        "other"
-      ]
+      "urlFilter": "*.twitch.tv/r/s/*",
+      "resourceTypes": ["script"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*.twitch.tv/r/c/*",
+      "resourceTypes": ["image"]
     }
   }
 ]
