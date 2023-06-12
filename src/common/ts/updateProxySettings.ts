@@ -9,15 +9,12 @@ import {
 } from "./regexes";
 
 export default function updateProxySettings() {
+  const { proxyTwitchWebpage, proxyUsherRequests } = store.state;
+
   const proxies = store.state.optimizedProxiesEnabled
     ? store.state.optimizedProxies
     : store.state.normalProxies;
   const proxyInfoString = getProxyInfoStringFromUrls(proxies);
-
-  // TODO: Use flags to determine what to do with current proxy settings.
-  const startFlag = "/* TTV-LOL-PRO START */";
-  const endFlag = "/* TTV-LOL-PRO END */";
-  const { proxyTwitchWebpage, proxyUsherRequests } = store.state;
 
   const config = {
     mode: "pac_script",
