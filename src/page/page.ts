@@ -18,7 +18,7 @@ window.Worker = class Worker extends window.Worker {
     if (200 <= xhr.status && xhr.status < 300) {
       script = xhr.responseText;
     } else {
-      console.error(
+      console.warn(
         `[TTV LOL PRO] ❌ Failed to fetch script: ${xhr.statusText}`
       );
       script = `importScripts("${url}");`; // Will fail on Firefox Nightly.
