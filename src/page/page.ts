@@ -6,12 +6,14 @@ const params = JSON.parse(document.currentScript.dataset.params);
 
 window.fetch = getFetch();
 
+// Inject custom worker script to intercept fetch requests made from workers and
+// decide whether to proxy them or not.
 window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
     const url = scriptURL.toString();
     let script = "";
-    // Fetch the script content, since Firefox Nightly errors out when trying
-    // to import a blob URL directly.
+    // Fetch Twitch's script, since Firefox Nightly errors out when trying to
+    // import a blob URL directly.
     const xhr = new XMLHttpRequest();
     xhr.open("GET", url, false);
     xhr.send();
