@@ -1,34 +1,35 @@
-import { fetch } from "./fetch";
+import { getFetch } from "./getFetch";
 
 console.info("[TTV LOL PRO] 🚀 Page script running.");
 
 const params = JSON.parse(document.currentScript.dataset.params);
 
-window.fetch = fetch;
+window.fetch = getFetch();
 
+// Inject custom worker script to intercept fetch requests made from workers and
+// decide whether to proxy them or not.
 window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
-    console.log("SCRIPT URL", scriptURL);
     const url = scriptURL.toString();
     let script = "";
-    // Firefox Nightly errors out when trying to import a blob URL directly.
-    if (url.startsWith("blob:")) {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url, false);
-      xhr.send();
-      if (!(200 <= xhr.status && xhr.status < 300)) {
-        throw new Error(`Failed to fetch script: ${xhr.statusText}`);
-      }
+    // Fetch Twitch's script, since Firefox Nightly errors out when trying to
+    // import a blob URL directly.
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", url, false);
+    xhr.send();
+    if (200 <= xhr.status && xhr.status < 300) {
       script = xhr.responseText;
-    }
-    if (!script) {
-      script = `importScripts("${scriptURL}");`;
+    } else {
+      console.warn(
+        `[TTV LOL PRO] ❌ Failed to fetch script: ${xhr.statusText}`
+      );
+      script = `importScripts("${url}");`; // Will fail on Firefox Nightly.
     }
     const newScript = `
       try {
         importScripts("${params.workerScriptURL}");
       } catch {
-        console.error(\`[TTV LOL PRO] ❌ Failed to load worker script: ${params.workerScriptURL}\`);
+        console.error("[TTV LOL PRO] ❌ Failed to load worker script: ${params.workerScriptURL}");
       }
       ${script}
     `;
@@ -38,3 +39,5 @@ window.Worker = class Worker extends window.Worker {
     super(newScriptURL, options);
   }
 };
+
+document.currentScript.remove();

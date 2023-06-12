@@ -4,6 +4,7 @@ import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import {
   passportHostRegex,
   twitchGqlHostRegex,
+  twitchTvHostRegex,
   usherHostRegex,
   videoWeaverHostRegex,
 } from "../../common/ts/regexes";
@@ -21,7 +22,7 @@ export default function onHeadersReceived(
   const proxy = getProxyFromDetails(details);
 
   // Twitch webpage requests.
-  if (store.state.proxyTwitchWebpage && host === "www.twitch.tv") {
+  if (store.state.proxyTwitchWebpage && twitchTvHostRegex.test(host)) {
     if (!proxy) return console.log(`❌ Did not proxy ${details.url}`);
     console.log(`✅ Proxied ${details.url} through ${proxy}`);
   }

@@ -60,6 +60,7 @@ fieldset {
 a,
 a:visited {
   color: var(--link);
+  text-decoration: none;
   transition: color 100ms ease-in-out;
 }
 
@@ -194,12 +195,4 @@ li.hide-marker::marker {
 #passport-container > img {
   height: 80px;
   margin-top: 1rem;
-}
-
-#proxy-twitch-webpage-li {
-  display: none;
-}
-
-#proxy-twitch-webpage-li > label {
-  text-shadow: 0 0 10px;
 }

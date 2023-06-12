@@ -33,32 +33,42 @@
               </label>
               <br />
               <small>
-                Browse Twitch as a TTV LOL PRO citizen. This option enables
-                advanced proxying to prevent ads.
+                Browse Twitch as a TTV LOL PRO citizen! This option enables
+                proxying of <code>passport.twitch.tv</code> and
+                <code>usher.ttvnw.net</code> requests.
               </small>
               <br />
               <small>
                 This option is not an on/off switch. TTV LOL PRO will still
-                proxy some requests even if this option is disabled.
+                proxy <code>video-weaver.*.hls.ttvnw.net</code> requests even if
+                this option is disabled.
               </small>
             </li>
-            <li id="proxy-twitch-webpage-li">
+            <li>
               <input
                 type="checkbox"
                 name="proxy-twitch-webpage-checkbox"
                 id="proxy-twitch-webpage-checkbox"
               />
               <label for="proxy-twitch-webpage-checkbox">
-                Make the passport a laissez-passer
-              </label>
-              <br />
-              <small>
-                Learn more about laissez-passers
+                Make the passport a
                 <a
                   href="https://en.wikipedia.org/wiki/Laissez-passer"
                   target="_blank"
-                  >here</a
-                >.
+                  >laissez-passer</a
+                >
+              </label>
+              <br />
+              <small>
+                This option enables proxying of <code>www.twitch.tv</code> and
+                <code>gql.twitch.tv</code> requests.
+              </small>
+              <br />
+              <small>
+                <b>
+                  Only enable this option if you are experiencing issues with
+                  TTV LOL PRO's passport!
+                </b>
               </small>
             </li>
             <small><b>Expiration date:</b> 2038-01-19T03:14:07.000Z</small>
@@ -75,16 +85,18 @@
         <ul id="whitelisted-channels-list" class="store-list"></ul>
       </section>
 
-      <!-- Video Weaver proxies -->
+      <!-- Proxies -->
       <section class="section">
         <h2>Proxies</h2>
         <small>
           Proxies listed below must be HTTP proxies in the format
-          <code>hostname:port</code>.
+          <code>hostname:port</code>. To provide authentication credentials, use
+          the format <code>username:password@hostname:port</code>.
         </small>
         <br />
-        <small class="font-weight-bold">
-          Proxies for TTV LOL PRO v1 are not compatible.
+        <small>
+          IPv6 addresses must be enclosed in square brackets, for example
+          <code>[::1]:8080</code>.
         </small>
         <br />
         <fieldset>

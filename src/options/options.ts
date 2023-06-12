@@ -32,9 +32,6 @@ type ListOptions = {
 const proxyUsherRequestsCheckboxElement = $(
   "#proxy-usher-requests-checkbox"
 ) as HTMLInputElement;
-const proxyTwitchWebpageLiElement = $(
-  "#proxy-twitch-webpage-li"
-) as HTMLElement;
 const proxyTwitchWebpageCheckboxElement = $(
   "#proxy-twitch-webpage-checkbox"
 ) as HTMLInputElement;
@@ -72,7 +69,7 @@ const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 //#endregion
 
-const DEFAULT_STATE_KEYS = Object.freeze(Object.keys(getDefaultState()));
+const DEFAULT_STATE = Object.freeze(getDefaultState());
 const DEFAULT_LIST_OPTIONS = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
@@ -101,9 +98,6 @@ function main() {
     store.state.proxyTwitchWebpage = proxyTwitchWebpageCheckboxElement.checked;
     if (isChromium) updateProxySettings();
   });
-  if (proxyTwitchWebpageCheckboxElement.checked) {
-    proxyTwitchWebpageLiElement.style.display = "block";
-  }
   // Whitelisted channels
   if (isChromium) {
     whitelistedChannelsSectionElement.style.display = "none";
@@ -134,8 +128,8 @@ function main() {
       if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
       return "Enter a proxy URL… (Fallback)";
     },
-    isAddAllowed: isOptimizedProxyUrlValid,
-    isEditAllowed: isOptimizedProxyUrlValid,
+    isAddAllowed: isOptimizedProxyUrlAllowed,
+    isEditAllowed: isOptimizedProxyUrlAllowed,
     hidePromptMarker: true,
     insertMode: "both",
   });
@@ -144,8 +138,8 @@ function main() {
       if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
       return "Enter a proxy URL… (Fallback)";
     },
-    isAddAllowed: isNormalProxyUrlValid,
-    isEditAllowed: isNormalProxyUrlValid,
+    isAddAllowed: isNormalProxyUrlAllowed,
+    isEditAllowed: isNormalProxyUrlAllowed,
     onEdit() {
       if (isChromium) updateProxySettings();
     },
@@ -163,47 +157,77 @@ function main() {
   }
 }
 
-function isOptimizedProxyUrlValid(host: string): AllowedResult {
-  if (
-    host.toLowerCase().startsWith("http://") ||
-    host.toLowerCase().startsWith("https://")
-  ) {
-    return [
-      false,
-      "Proxy URLs cannot contain a protocol (e.g. 'http://'). Reminder: TTV LOL PRO v1 proxies are not compatible",
-    ];
+function isOptimizedProxyUrlAllowed(url: string): AllowedResult {
+  const urlLower = url.toLowerCase();
+
+  // Allow default proxies.
+  if (DEFAULT_STATE.optimizedProxies.includes(urlLower)) {
+    return [true];
+  }
+
+  // Forbid v1 proxies.
+  const proxiesV1 = [
+    // *.luminous.dev
+    "eu.luminous.dev",
+    "eu2.luminous.dev",
+    "as.luminous.dev",
+    "bg.luminous.dev",
+    // *.perfprod.com
+    "lb-eu.perfprod.com",
+    "lb-eu2.perfprod.com",
+    "lb-na.perfprod.com",
+    "lb-as.perfprod.com",
+    // *.cdn-perfprod.com
+    "lb-eu.cdn-perfprod.com",
+    "lb-eu2.cdn-perfprod.com",
+    "lb-na.cdn-perfprod.com",
+    "lb-as.cdn-perfprod.com",
+  ];
+  if (proxiesV1.some(proxy => urlLower.includes(proxy))) {
+    return [false, "TTV LOL PRO v1 proxies are not compatible"];
+  }
+
+  if (/^https?:\/\//i.test(url)) {
+    return [false, "Proxy URLs must not contain a protocol (e.g. 'http://')"];
+  }
+
+  if (url.includes("/")) {
+    return [false, "Proxy URLs must not contain a path (e.g. '/path')"];
   }
 
   try {
-    new URL(`http://${host.slice(host.lastIndexOf("@") + 1, host.length)}`);
-    if (host.includes("/")) {
-      return [false, "Proxy URLs cannot contain a path (e.g. '/path')"];
-    }
-    if (
-      [
-        "eu.luminous.dev",
-        "as.luminous.dev",
-        "lb-eu.perfprod.com",
-        "lb-eu2.perfprod.com",
-        "lb-na.perfprod.com",
-        "lb-as.perfprod.com",
-      ].includes(host.toLowerCase())
-    ) {
-      return [false, "TTV LOL PRO v1 proxies are not compatible"];
-    }
+    const host = url.substring(url.lastIndexOf("@") + 1, url.length);
+    new URL(`http://${host}`); // Throws if the host is invalid.
     return [true];
   } catch {
-    return [false, `'${host}' is not a valid proxy URL`];
+    return [false, `'${url}' is not a valid proxy URL`];
   }
 }
 
-function isNormalProxyUrlValid(host: string): AllowedResult {
-  const [allowed, error] = isOptimizedProxyUrlValid(host);
+function isNormalProxyUrlAllowed(url: string): AllowedResult {
+  const [allowed, error] = isOptimizedProxyUrlAllowed(url);
   if (!allowed) return [false, error];
-  if (host.toLowerCase().includes("perfprod.com")) {
-    if (isChromium) return [false, "This proxy can only be used on Firefox"];
-    return [false, "This proxy cannot be used for all requests"];
+
+  const urlLower = url.toLowerCase();
+
+  // Allow default proxies.
+  if (DEFAULT_STATE.normalProxies.includes(urlLower)) {
+    return [true];
   }
+
+  // Allow donator proxy (password protected).
+  if (urlLower === "restricted.api.cdn-perfprod.com:6691") {
+    return [true];
+  }
+
+  // Forbid other perfprod.com proxies.
+  if (
+    urlLower.includes(".perfprod.com") ||
+    urlLower.includes(".cdn-perfprod.com")
+  ) {
+    return [false, "This proxy is not compatible with 'Proxy all requests'"];
+  }
+
   return [true];
 }
 
@@ -414,24 +438,32 @@ exportButtonElement.addEventListener("click", () => {
 });
 
 importButtonElement.addEventListener("click", async () => {
+  const DEFAULT_STATE_KEYS = Object.keys(DEFAULT_STATE);
+
   try {
     const data = await readFile("application/json;charset=utf-8");
     const state = JSON.parse(data);
-    for (const [key, value] of Object.entries(state)) {
+
+    for (const entry of Object.entries(state)) {
+      const key = entry[0] as keyof State;
+      const value = entry[1];
+
       if (!DEFAULT_STATE_KEYS.includes(key)) {
         console.warn(`Unknown key '${key}' in imported settings`);
         continue;
       }
       let filteredValue = value;
-      if (key !== "optimizedProxies" && Array.isArray(value)) {
+      if (key === "optimizedProxies" && Array.isArray(value)) {
         filteredValue = value.filter(item =>
-          typeof item === "string"
-            ? !item.toLowerCase().includes("perfprod.com")
-            : true
+          item != null ? isOptimizedProxyUrlAllowed(item.toString())[0] : false
         );
       }
-      if (key === "optimizedProxiesEnabled" && isChromium)
-        filteredValue = false;
+      if (key === "normalProxies" && Array.isArray(value)) {
+        filteredValue = value.filter(item =>
+          item != null ? isNormalProxyUrlAllowed(item.toString())[0] : false
+        );
+      }
+      // @ts-ignore
       store.state[key] = filteredValue;
     }
     window.location.reload(); // Reload page to update UI.
@@ -448,40 +480,3 @@ resetButtonElement.addEventListener("click", () => {
   store.clear();
   window.location.reload(); // Reload page to update UI.
 });
-
-// From https://stackoverflow.com/a/31627191
-
-const konamiCode = [
-  "ArrowUp",
-  "ArrowUp",
-  "ArrowDown",
-  "ArrowDown",
-  "ArrowLeft",
-  "ArrowRight",
-  "ArrowLeft",
-  "ArrowRight",
-  "b",
-  "a",
-];
-let konamiCodePosition = 0;
-
-document.addEventListener("keydown", function (e) {
-  const key = e.key;
-  const expectedKey = konamiCode[konamiCodePosition];
-
-  if (key == expectedKey) {
-    konamiCodePosition += 1;
-
-    // Complete code entered correctly.
-    if (konamiCodePosition == konamiCode.length) {
-      konamiCodeActivate();
-      konamiCodePosition = 0;
-    }
-  } else {
-    konamiCodePosition = 0;
-  }
-});
-
-function konamiCodeActivate() {
-  proxyTwitchWebpageLiElement.style.display = "block";
-}

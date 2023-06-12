@@ -1,6 +1,6 @@
 {
   "name": "ttv-lol-pro",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "TTV LOL PRO removes most livestream ads from Twitch.",
   "@parcel/bundler-default": {
     "minBundles": 10000000,
@@ -18,12 +18,17 @@
   },
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
-    "dev:firefox": "cpy src/manifest.firefox.json . --rename=manifest.json && parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
-    "dev:chromium": "cpy src/manifest.chromium.json . --rename=manifest.json && parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
+    "predev:firefox": "npm run clean && shx cp src/manifest.firefox.json src/manifest.json",
+    "predev:chromium": "npm run clean && shx cp src/manifest.chromium.json src/manifest.json",
+    "dev:firefox": "parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
+    "dev:chromium": "parcel src/manifest.json --host localhost --target webext-dev --no-hmr",
     "lint": "prettier --check ./src",
     "lint:fix": "prettier --write ./src",
-    "build:firefox": "cpy src/manifest.firefox.json . --rename=manifest.json && parcel build src/manifest.json --target webext-prod --no-source-maps",
-    "build:chromium": "cpy src/manifest.chromium.json . --rename=manifest.json && parcel build src/manifest.json --target webext-prod --no-source-maps"
+    "prebuild:firefox": "npm run clean && shx cp src/manifest.firefox.json src/manifest.json",
+    "prebuild:chromium": "npm run clean && shx cp src/manifest.chromium.json src/manifest.json",
+    "build:firefox": "parcel build src/manifest.json --target webext-prod --no-source-maps",
+    "build:chromium": "parcel build src/manifest.json --target webext-prod --no-source-maps",
+    "clean": "shx rm -rf .parcel-cache ; shx rm -rf dist ; shx --silent rm src/manifest.json ; exit 0"
   },
   "keywords": [
     "twitch",
@@ -37,21 +42,21 @@
   "license": "GPL-3.0",
   "dependencies": {
     "bowser": "^2.11.0",
-    "semver-compare": "^1.0.0",
-    "xhook": "^1.6.0"
+    "ip": "^1.1.8"
   },
   "devDependencies": {
-    "@parcel/config-webextension": "^2.9.1",
+    "@parcel/config-webextension": "^2.9.2",
     "@types/chrome": "^0.0.237",
-    "@types/semver-compare": "^1.0.1",
+    "@types/ip": "^1.1.0",
     "@types/webextension-polyfill": "^0.10.0",
-    "@types/xhook": "^1.5.0",
-    "cpy-cli": "^4.2.0",
-    "parcel": "^2.9.1",
+    "buffer": "^6.0.3",
+    "os-browserify": "^0.3.0",
+    "parcel": "^2.9.2",
     "postcss": "^8.4.24",
     "prettier": "^2.8.8",
-    "prettier-plugin-css-order": "^1.3.0",
+    "prettier-plugin-css-order": "^1.3.1",
     "prettier-plugin-organize-imports": "^3.2.2",
+    "shx": "^0.3.4",
     "typescript": "^4.9.5",
     "webextension-polyfill": "^0.10.0"
   },
