@@ -1,4 +1,5 @@
 import $ from "../common/ts/$";
+import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
 import isChromium from "../common/ts/isChromium";
 import readFile from "../common/ts/readFile";
 import saveFile from "../common/ts/saveFile";
@@ -216,7 +217,8 @@ function isNormalProxyUrlAllowed(url: string): AllowedResult {
   }
 
   // Allow donator proxy (password protected).
-  if (urlLower === "restricted.api.cdn-perfprod.com:6691") {
+  const proxyInfo = getProxyInfoFromUrl(urlLower);
+  if (proxyInfo.host === "restricted.api.cdn-perfprod.com") {
     return [true];
   }
 
