@@ -22,7 +22,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*.twitch.tv/*"],
+      "matches": ["https://www.twitch.tv/*", "https://m.twitch.tv/*"],
       "js": ["content/content.ts"],
       "run_at": "document_start"
     }
