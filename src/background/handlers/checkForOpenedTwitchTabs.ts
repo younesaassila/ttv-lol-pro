@@ -7,16 +7,18 @@ export default function checkForOpenedTwitchTabs() {
   if (store.readyState !== "complete")
     return store.addEventListener("load", checkForOpenedTwitchTabs);
 
-  browser.tabs.query({ url: ["https://*.twitch.tv/*"] }).then(tabs => {
-    if (tabs.length === 0) return;
-    console.log(
-      `🔍 Found ${tabs.length} opened Twitch tabs: ${tabs
-        .map(tab => tab.id)
-        .join(", ")}`
-    );
-    if (isChromium) {
-      updateProxySettings();
-    }
-    tabs.forEach(tab => store.state.openedTwitchTabs.push(tab.id));
-  });
+  browser.tabs
+    .query({ url: ["https://www.twitch.tv/*", "https://m.twitch.tv/*"] })
+    .then(tabs => {
+      if (tabs.length === 0) return;
+      console.log(
+        `🔍 Found ${tabs.length} opened Twitch tabs: ${tabs
+          .map(tab => tab.id)
+          .join(", ")}`
+      );
+      if (isChromium) {
+        updateProxySettings();
+      }
+      tabs.forEach(tab => store.state.openedTwitchTabs.push(tab.id));
+    });
 }
