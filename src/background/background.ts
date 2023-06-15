@@ -1,7 +1,5 @@
 import browser from "webextension-polyfill";
 import isChromium from "../common/ts/isChromium";
-import updateProxySettings from "../common/ts/updateProxySettings";
-import store from "../store";
 import onAuthRequired from "./handlers/onAuthRequired";
 import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
 import onBeforeUsherRequest from "./handlers/onBeforeUsherRequest";
@@ -9,6 +7,9 @@ import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
 import onHeadersReceived from "./handlers/onHeadersReceived";
 import onProxyRequest from "./handlers/onProxyRequest";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
+import onTabCreated from "./handlers/onTabCreated";
+import onTabRemoved from "./handlers/onTabRemoved";
+import onTabUpdated from "./handlers/onTabUpdated";
 
 console.info("🚀 Background script loaded.");
 
@@ -23,12 +24,10 @@ browser.webRequest.onAuthRequired.addListener(
 );
 
 if (isChromium) {
-  const setProxySettings = () => {
-    if (store.readyState !== "complete")
-      return store.addEventListener("load", setProxySettings);
-    updateProxySettings();
-  };
-  setProxySettings();
+  // Keep track of opened Twitch tabs to enable/disable the PAC script.
+  browser.tabs.onCreated.addListener(onTabCreated);
+  browser.tabs.onUpdated.addListener(onTabUpdated);
+  browser.tabs.onRemoved.addListener(onTabRemoved);
 } else {
   // Block tracking pixels.
   browser.webRequest.onBeforeRequest.addListener(
