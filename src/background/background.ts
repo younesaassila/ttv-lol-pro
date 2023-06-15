@@ -1,5 +1,6 @@
 import browser from "webextension-polyfill";
 import isChromium from "../common/ts/isChromium";
+import checkForOpenedTwitchTabs from "./handlers/checkForOpenedTwitchTabs";
 import onAuthRequired from "./handlers/onAuthRequired";
 import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
 import onBeforeUsherRequest from "./handlers/onBeforeUsherRequest";
@@ -24,6 +25,8 @@ browser.webRequest.onAuthRequired.addListener(
 );
 
 if (isChromium) {
+  // Check if there are any opened Twitch tabs on startup.
+  checkForOpenedTwitchTabs();
   // Keep track of opened Twitch tabs to enable/disable the PAC script.
   browser.tabs.onCreated.addListener(onTabCreated);
   browser.tabs.onUpdated.addListener(onTabUpdated);
