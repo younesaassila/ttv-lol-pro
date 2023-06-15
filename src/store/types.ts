@@ -9,6 +9,7 @@ export interface State {
   adLogEnabled: boolean;
   adLogLastSent: number;
   normalProxies: string[];
+  openedTwitchTabs: number[];
   optimizedProxies: string[];
   optimizedProxiesEnabled: boolean;
   proxyTwitchWebpage: boolean;

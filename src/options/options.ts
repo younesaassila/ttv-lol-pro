@@ -92,12 +92,16 @@ function main() {
   proxyUsherRequestsCheckboxElement.addEventListener("change", () => {
     const checked = proxyUsherRequestsCheckboxElement.checked;
     store.state.proxyUsherRequests = checked;
-    if (isChromium) updateProxySettings();
+    if (isChromium && store.state.openedTwitchTabs.length > 0) {
+      updateProxySettings();
+    }
   });
   proxyTwitchWebpageCheckboxElement.checked = store.state.proxyTwitchWebpage;
   proxyTwitchWebpageCheckboxElement.addEventListener("change", () => {
     store.state.proxyTwitchWebpage = proxyTwitchWebpageCheckboxElement.checked;
-    if (isChromium) updateProxySettings();
+    if (isChromium && store.state.openedTwitchTabs.length > 0) {
+      updateProxySettings();
+    }
   });
   // Whitelisted channels
   if (isChromium) {
@@ -142,7 +146,9 @@ function main() {
     isAddAllowed: isNormalProxyUrlAllowed,
     isEditAllowed: isNormalProxyUrlAllowed,
     onEdit() {
-      if (isChromium) updateProxySettings();
+      if (isChromium && store.state.openedTwitchTabs.length > 0) {
+        updateProxySettings();
+      }
     },
     hidePromptMarker: true,
     insertMode: "both",

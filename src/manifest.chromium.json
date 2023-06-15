@@ -35,6 +35,7 @@
     "declarativeNetRequest",
     "proxy",
     "storage",
+    "tabs",
     "webRequest",
     "webRequestAuthProvider"
   ],
