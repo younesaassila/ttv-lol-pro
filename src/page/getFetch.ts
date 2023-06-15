@@ -22,7 +22,13 @@ export function getFetch(options: FetchOptions = {}): typeof fetch {
     const url = input instanceof Request ? input.url : input.toString();
     // Firefox doesn't support relative URLs in content scripts (workers too!).
     // See https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Chrome_incompatibilities#content_script_https_requests
-    if (url.startsWith("/")) {
+    if (url.startsWith("//")) {
+      // Missing protocol.
+      const newUrl = `${location.protocol}${url}`;
+      if (input instanceof Request) input = new Request(newUrl, input);
+      else input = newUrl;
+    } else if (url.startsWith("/")) {
+      // Missing origin.
       const newUrl = `${location.origin}${url}`;
       if (input instanceof Request) input = new Request(newUrl, input);
       else input = newUrl;
