@@ -4,7 +4,7 @@ console.info("[TTV LOL PRO] 🚀 Page script running.");
 
 const params = JSON.parse(document.currentScript.dataset.params);
 
-window.fetch = getFetch();
+window.fetch = getFetch({ scope: "page" });
 
 // Inject custom worker script to intercept fetch requests made from workers and
 // decide whether to proxy them or not.
@@ -37,6 +37,11 @@ window.Worker = class Worker extends window.Worker {
       new Blob([newScript], { type: "text/javascript" })
     );
     super(newScriptURL, options);
+    this.addEventListener("message", event => {
+      if (event.data?.type === "ContentScriptMessage") {
+        window.postMessage(event.data.message);
+      }
+    });
   }
 };
 

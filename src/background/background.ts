@@ -3,7 +3,6 @@ import isChromium from "../common/ts/isChromium";
 import checkForOpenedTwitchTabs from "./handlers/checkForOpenedTwitchTabs";
 import onAuthRequired from "./handlers/onAuthRequired";
 import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
-import onBeforeUsherRequest from "./handlers/onBeforeUsherRequest";
 import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
 import onProxyRequest from "./handlers/onProxyRequest";
 import onResponseStarted from "./handlers/onResponseStarted";
@@ -15,7 +14,7 @@ import onTabUpdated from "./handlers/onTabUpdated";
 console.info("🚀 Background script loaded.");
 
 // Cleanup the session-related data in the store on startup.
-onStartupStoreCleanup();
+onStartupStoreCleanup(); // FIXME: Might be cleared every time background script is reloaded.
 
 // Handle proxy authentication.
 browser.webRequest.onAuthRequired.addListener(
@@ -42,15 +41,6 @@ if (isChromium) {
   browser.webRequest.onBeforeRequest.addListener(
     () => ({ cancel: true }),
     { urls: ["https://*.twitch.tv/r/s/*", "https://*.twitch.tv/r/c/*"] },
-    ["blocking"]
-  );
-
-  // Map channel names to Video Weaver URLs.
-  browser.webRequest.onBeforeRequest.addListener(
-    onBeforeUsherRequest,
-    {
-      urls: ["https://usher.ttvnw.net/api/channel/hls/*"],
-    },
     ["blocking"]
   );
 

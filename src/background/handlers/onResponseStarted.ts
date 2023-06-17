@@ -10,8 +10,9 @@ import {
   usherHostRegex,
   videoWeaverHostRegex,
 } from "../../common/ts/regexes";
+import { getStreamStatus, setStreamStatus } from "../../common/ts/streamStatus";
 import store from "../../store";
-import type { ProxyInfo, StreamStatus } from "../../types";
+import type { ProxyInfo } from "../../types";
 
 export default function onResponseStarted(
   details: WebRequest.OnResponseStartedDetailsType & {
@@ -106,18 +107,4 @@ function getProxyFromDetails(
     if (!proxyInfo || proxyInfo.type === "direct") return null;
     return `${proxyInfo.host}:${proxyInfo.port}`;
   }
-}
-
-function getStreamStatus(channelName: string | null): StreamStatus | null {
-  if (!channelName) return null;
-  return store.state.streamStatuses[channelName] ?? null;
-}
-
-function setStreamStatus(
-  channelName: string | null,
-  streamStatus: StreamStatus
-): boolean {
-  if (!channelName) return false;
-  store.state.streamStatuses[channelName] = streamStatus;
-  return true;
 }

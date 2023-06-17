@@ -1,6 +1,7 @@
 import pageScript from "url:../page/page.ts";
 import workerScript from "url:../page/worker.ts";
 import { twitchChannelNameRegex } from "../common/ts/regexes";
+import { getStreamStatus, setStreamStatus } from "../common/ts/streamStatus";
 import store from "../store";
 
 console.info("[TTV LOL PRO] 🚀 Content script running.");
@@ -43,5 +44,22 @@ function clearStats() {
       proxied: 0,
       notProxied: 0,
     };
+  }
+}
+
+window.addEventListener("message", onMessage);
+
+function onMessage(event: MessageEvent) {
+  if (event.source !== window) return;
+  if (event.data?.type === "UsherResponse") {
+    const { channel, videoWeaverUrls, proxyCountry } = event.data;
+    // Update Video Weaver URLs.
+    store.state.videoWeaverUrlsByChannel[channel] = videoWeaverUrls;
+    // Update proxy country.
+    const streamStatus = getStreamStatus(channel);
+    setStreamStatus(channel, {
+      ...(streamStatus ?? { proxied: false, reason: "" }),
+      proxyCountry,
+    });
   }
 }

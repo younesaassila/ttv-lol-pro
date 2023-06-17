@@ -67,6 +67,9 @@ function setStreamStatusElement(channelName: string) {
     setProxyStatus(channelNameLower, status);
     setWhitelistStatus(channelNameLower);
     streamStatusElement.style.display = "flex";
+    if (isChromium) {
+      whitelistStatusElement.style.display = "none";
+    }
   } else {
     streamStatusElement.style.display = "none";
   }
