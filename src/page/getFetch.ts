@@ -1,5 +1,5 @@
 import acceptFlag from "../common/ts/acceptFlag";
-import { findChannelFromUsherUrl } from "../common/ts/findChannel";
+import findChannelFromUsherUrl from "../common/ts/findChannelFromUsherUrl";
 import getHostFromUrl from "../common/ts/getHostFromUrl";
 import {
   twitchGqlHostRegex,
@@ -130,18 +130,13 @@ export function getFetch(options: FetchOptions): typeof fetch {
         .split("\n")
         .filter(line => videoWeaverUrlRegex.test(line));
       // Send Video Weaver URLs to content script.
-      sendMessageToContentScript(
-        options.scope,
-        JSON.parse(
-          JSON.stringify({
-            type: "UsherResponse",
-            channel: findChannelFromUsherUrl(url),
-            videoWeaverUrls,
-            proxyCountry:
-              /USER-COUNTRY="([A-Z]+)"/i.exec(responseBody)?.[1] ?? null,
-          })
-        )
-      );
+      sendMessageToContentScript(options.scope, {
+        type: "UsherResponse",
+        channel: findChannelFromUsherUrl(url),
+        videoWeaverUrls,
+        proxyCountry:
+          /USER-COUNTRY="([A-Z]+)"/i.exec(responseBody)?.[1] || null,
+      });
       // Remove all Video Weaver URLs from known URLs.
       videoWeaverUrls.forEach(url => knownVideoWeaverUrls.delete(url));
     }

@@ -1,5 +1,5 @@
 import { WebRequest } from "webextension-polyfill";
-import { findChannelFromVideoWeaverUrl } from "../../common/ts/findChannel";
+import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
 import isChromium from "../../common/ts/isChromium";

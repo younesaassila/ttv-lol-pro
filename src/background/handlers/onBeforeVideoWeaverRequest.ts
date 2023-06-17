@@ -1,6 +1,6 @@
 import { WebRequest } from "webextension-polyfill";
 import filterResponseDataWrapper from "../../common/ts/filterResponseDataWrapper";
-import { findChannelFromVideoWeaverUrl } from "../../common/ts/findChannel";
+import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import { videoWeaverHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
