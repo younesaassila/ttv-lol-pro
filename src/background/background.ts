@@ -14,7 +14,7 @@ import onTabUpdated from "./handlers/onTabUpdated";
 console.info("🚀 Background script loaded.");
 
 // Cleanup the session-related data in the store on startup.
-onStartupStoreCleanup(); // FIXME: Might be cleared every time background script is reloaded.
+browser.runtime.onStartup.addListener(onStartupStoreCleanup);
 
 // Handle proxy authentication.
 browser.webRequest.onAuthRequired.addListener(

@@ -83,6 +83,7 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
     proxiedElement.classList.add("success");
   } else if (
     !status.proxied &&
+    status.proxyHost &&
     store.state.optimizedProxiesEnabled &&
     store.state.optimizedProxies.length > 0
   ) {
