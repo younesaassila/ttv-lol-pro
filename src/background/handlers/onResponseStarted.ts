@@ -1,6 +1,8 @@
 import { WebRequest } from "webextension-polyfill";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
+import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
+import isChromium from "../../common/ts/isChromium";
 import {
   passportHostRegex,
   twitchGqlHostRegex,
@@ -11,11 +13,11 @@ import {
 import store from "../../store";
 import type { ProxyInfo, StreamStatus } from "../../types";
 
-export default function onHeadersReceived(
-  details: WebRequest.OnHeadersReceivedDetailsType & {
+export default function onResponseStarted(
+  details: WebRequest.OnResponseStartedDetailsType & {
     proxyInfo?: ProxyInfo;
   }
-): void | WebRequest.BlockingResponseOrPromise {
+): void {
   const host = getHostFromUrl(details.url);
   if (!host) return;
 
@@ -77,13 +79,33 @@ export default function onHeadersReceived(
 }
 
 function getProxyFromDetails(
-  details: WebRequest.OnHeadersReceivedDetailsType & {
+  details: WebRequest.OnResponseStartedDetailsType & {
     proxyInfo?: ProxyInfo;
   }
 ): string | null {
-  const proxyInfo = details.proxyInfo; // Firefox only.
-  if (!proxyInfo || proxyInfo.type === "direct") return null;
-  return `${proxyInfo.host}:${proxyInfo.port}`;
+  if (isChromium) {
+    const ip = details.ip;
+    if (!ip) return null;
+    const dnsResponse = store.state.dnsResponses.find(
+      dnsResponse => dnsResponse.ips.indexOf(ip) !== -1
+    );
+    if (!dnsResponse) return null;
+    const proxies = [
+      ...store.state.optimizedProxies,
+      ...store.state.normalProxies,
+    ];
+    const proxyInfoArray = proxies.map(getProxyInfoFromUrl);
+    const possibleProxies = proxyInfoArray.filter(
+      proxy => proxy.host === dnsResponse.host
+    );
+    if (possibleProxies.length === 1)
+      return `${possibleProxies[0].host}:${possibleProxies[0].port}`;
+    return dnsResponse.host;
+  } else {
+    const proxyInfo = details.proxyInfo; // Firefox only.
+    if (!proxyInfo || proxyInfo.type === "direct") return null;
+    return `${proxyInfo.host}:${proxyInfo.port}`;
+  }
 }
 
 function getStreamStatus(channelName: string | null): StreamStatus | null {

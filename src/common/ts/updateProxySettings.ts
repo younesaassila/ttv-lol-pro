@@ -7,6 +7,7 @@ import {
   usherHostRegex,
   videoWeaverHostRegex,
 } from "./regexes";
+import updateDnsResponses from "./updateDnsResponses";
 
 export default function updateProxySettings() {
   const { proxyTwitchWebpage, proxyUsherRequests } = store.state;
@@ -43,6 +44,7 @@ export default function updateProxySettings() {
     console.log(
       `⚙️ Proxying requests through one of: ${proxies.toString() || "<empty>"}`
     );
+    updateDnsResponses();
   });
 }
 

@@ -5,8 +5,8 @@ import onAuthRequired from "./handlers/onAuthRequired";
 import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
 import onBeforeUsherRequest from "./handlers/onBeforeUsherRequest";
 import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
-import onHeadersReceived from "./handlers/onHeadersReceived";
 import onProxyRequest from "./handlers/onProxyRequest";
+import onResponseStarted from "./handlers/onResponseStarted";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
 import onTabCreated from "./handlers/onTabCreated";
 import onTabRemoved from "./handlers/onTabRemoved";
@@ -23,6 +23,11 @@ browser.webRequest.onAuthRequired.addListener(
   { urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"] },
   ["blocking"]
 );
+
+// Monitor proxied status of requests.
+browser.webRequest.onResponseStarted.addListener(onResponseStarted, {
+  urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
+});
 
 if (isChromium) {
   // Check if there are any opened Twitch tabs on startup.
@@ -74,9 +79,4 @@ if (isChromium) {
     },
     ["blocking"]
   );
-
-  // Monitor responses of proxied requests.
-  browser.webRequest.onHeadersReceived.addListener(onHeadersReceived, {
-    urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
-  });
 }
