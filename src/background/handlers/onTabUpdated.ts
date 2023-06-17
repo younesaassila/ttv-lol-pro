@@ -1,9 +1,11 @@
 import { Tabs } from "webextension-polyfill";
-import clearProxySettings from "../../common/ts/clearProxySettings";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import isChromium from "../../common/ts/isChromium";
+import {
+  clearProxySettings,
+  updateProxySettings,
+} from "../../common/ts/proxySettings";
 import { twitchTvHostRegex } from "../../common/ts/regexes";
-import updateProxySettings from "../../common/ts/updateProxySettings";
 import store from "../../store";
 
 export default function onTabUpdated(

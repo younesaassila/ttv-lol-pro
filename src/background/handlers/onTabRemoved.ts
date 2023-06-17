@@ -1,5 +1,5 @@
-import clearProxySettings from "../../common/ts/clearProxySettings";
 import isChromium from "../../common/ts/isChromium";
+import { clearProxySettings } from "../../common/ts/proxySettings";
 import store from "../../store";
 
 export default function onTabRemoved(tabId: number): void {

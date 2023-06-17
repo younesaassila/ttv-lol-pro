@@ -9,7 +9,7 @@ import {
 } from "./regexes";
 import updateDnsResponses from "./updateDnsResponses";
 
-export default function updateProxySettings() {
+export function updateProxySettings() {
   const { proxyTwitchWebpage, proxyUsherRequests } = store.state;
 
   const proxies = store.state.optimizedProxiesEnabled
@@ -56,4 +56,10 @@ function getProxyInfoStringFromUrls(urls: string[]): string {
     }),
     "DIRECT",
   ].join("; ");
+}
+
+export function clearProxySettings() {
+  chrome.proxy.settings.clear({ scope: "regular" }, function () {
+    console.log("⚙️ Proxy settings cleared");
+  });
 }

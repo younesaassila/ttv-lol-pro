@@ -1,10 +1,9 @@
 import $ from "../common/ts/$";
+import { readFile, saveFile } from "../common/ts/file";
 import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
 import isChromium from "../common/ts/isChromium";
-import readFile from "../common/ts/readFile";
-import saveFile from "../common/ts/saveFile";
+import { updateProxySettings } from "../common/ts/proxySettings";
 import sendAdLog from "../common/ts/sendAdLog";
-import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
 import getDefaultState from "../store/getDefaultState";
 import type { State } from "../store/types";

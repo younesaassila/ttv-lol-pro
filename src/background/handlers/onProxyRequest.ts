@@ -1,6 +1,8 @@
 import { Proxy } from "webextension-polyfill";
-import findChannelFromUsherUrl from "../../common/ts/findChannelFromUsherUrl";
-import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
+import {
+  findChannelFromUsherUrl,
+  findChannelFromVideoWeaverUrl,
+} from "../../common/ts/findChannel";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
 import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";

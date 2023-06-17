@@ -1,5 +1,5 @@
 import acceptFlag from "../common/ts/acceptFlag";
-import findChannelFromUsherUrl from "../common/ts/findChannelFromUsherUrl";
+import { findChannelFromUsherUrl } from "../common/ts/findChannel";
 import getHostFromUrl from "../common/ts/getHostFromUrl";
 import {
   twitchGqlHostRegex,

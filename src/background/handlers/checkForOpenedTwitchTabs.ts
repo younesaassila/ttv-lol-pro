@@ -1,7 +1,9 @@
 import browser from "webextension-polyfill";
-import clearProxySettings from "../../common/ts/clearProxySettings";
 import isChromium from "../../common/ts/isChromium";
-import updateProxySettings from "../../common/ts/updateProxySettings";
+import {
+  clearProxySettings,
+  updateProxySettings,
+} from "../../common/ts/proxySettings";
 import store from "../../store";
 
 export default function checkForOpenedTwitchTabs() {
