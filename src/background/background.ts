@@ -15,7 +15,7 @@ import onTabUpdated from "./handlers/onTabUpdated";
 console.info("🚀 Background script loaded.");
 
 // Cleanup the session-related data in the store on startup.
-browser.runtime.onStartup.addListener(onStartupStoreCleanup);
+onStartupStoreCleanup();
 
 // Handle proxy authentication.
 browser.webRequest.onAuthRequired.addListener(
@@ -32,6 +32,7 @@ browser.webRequest.onResponseStarted.addListener(onResponseStarted, {
 if (isChromium) {
   // Check if there are any opened Twitch tabs on startup.
   checkForOpenedTwitchTabs();
+
   // Keep track of opened Twitch tabs to enable/disable the PAC script.
   browser.tabs.onCreated.addListener(onTabCreated);
   browser.tabs.onUpdated.addListener(onTabUpdated);

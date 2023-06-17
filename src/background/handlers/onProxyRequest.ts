@@ -108,7 +108,7 @@ export default async function onProxyRequest(
 
 function getProxyInfoArrayFromUrls(urls: string[]): ProxyInfo[] {
   return [
-    ...urls.map(url => getProxyInfoFromUrl(url)),
+    ...urls.map(getProxyInfoFromUrl),
     { type: "direct" } as ProxyInfo, // Fallback to direct connection if all proxies fail.
   ];
 }
