@@ -1,10 +1,15 @@
-# Contributing to the project
+# Contributing
 
-TTV LOL PRO is a web extension coded in TypeScript and using the `webextension-polyfill` npm package. The build process is handled by Parcel using the `@parcel/config-webextension` plugin.
+Thank you for your interest in contributing to TTV LOL PRO! This web extension is coded in TypeScript and utilizes the [`webextension-polyfill`](https://www.npmjs.com/package/webextension-polyfill) npm package. The build process is handled by [Parcel](https://parceljs.org/), and we use the [`@parcel/config-webextension`](https://www.npmjs.com/package/@parcel/config-webextension) plugin.
 
-## Install dependencies
+## Requirements
 
-To install the project, you need to have `node` and `npm` installed on your machine. Then, you can run the following command:
+- [Node.js](https://nodejs.org/en)
+- [npm](https://www.npmjs.com/)
+
+## Installation
+
+To install the dependencies, run the following command:
 
 ```sh
 npm install
@@ -12,28 +17,54 @@ npm install
 
 ## Development
 
-To start the file watcher, run the following command:
+To start the development server, run the following command:
+
+- For Firefox:
 
 ```sh
-npm run dev
+npm run dev:firefox
 ```
+
+- For Chromium-based browsers:
+
+```sh
+npm run dev:chromium
+```
+
+This will start a server on `localhost:1234` and will watch for changes in the `src` folder.
 
 ## Build
 
 To build the extension, run the following command:
 
+- For Firefox:
+
 ```sh
-npm run build
+npm run build:firefox
+```
+
+- For Chromium-based browsers:
+
+```sh
+npm run build:chromium
 ```
 
 ## Lint
 
-To lint the code, run the following command:
+To check for linting errors, run the following command:
 
 ```sh
 npm run lint
 ```
 
+To fix linting errors, run the following command:
+
+```sh
+npm run lint:fix
+```
+
 ## Pull requests
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+We appreciate pull requests! If you plan to make significant changes, we recommend opening an issue first to discuss your proposed modifications.
+
+We welcome contributions from developers of all skill levels, so don't hesitate to get involved. If you have any questions or need assistance, please feel free to reach out to us. Happy coding!
