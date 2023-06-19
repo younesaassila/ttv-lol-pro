@@ -24,8 +24,8 @@ function injectPageScript() {
   // ---------------------------------------
   // 🦊 Attention Firefox Addon Reviewer 🦊
   // ---------------------------------------
-  // Please note that this does NOT involve remote code execution. The injected script is bundled
-  // with the extension. The `url:` imports above are used to load the respective scripts by the Parcel bundler.
+  // Please note that this does NOT involve remote code execution. The injected scripts are bundled
+  // with the extension. The `url:` imports above are used to get the runtime URLs of the respective scripts.
   // Additionally, there is no custom Content Security Policy (CSP) in use.
   (document.head || document.documentElement).append(script); // Note: Despite what the TS types say, `document.head` can be `null`.
 }
