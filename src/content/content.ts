@@ -16,9 +16,9 @@ window.addEventListener("message", onMessage);
 function injectPageScript() {
   // From https://stackoverflow.com/a/9517879
   const script = document.createElement("script");
-  script.src = pageScriptURL; // (src/page/page.ts)
+  script.src = pageScriptURL; // src/page/page.ts
   script.dataset.params = JSON.stringify({
-    workerScriptURL: workerScriptURL, // (src/page/worker.ts)
+    workerScriptURL: workerScriptURL, // src/page/worker.ts
   });
   script.onload = () => script.remove();
   // ---------------------------------------

@@ -6,8 +6,6 @@ const params = JSON.parse(document.currentScript.dataset.params);
 
 window.fetch = getFetch({ scope: "page" });
 
-// Inject custom worker script to intercept fetch requests made from workers and
-// decide whether to proxy them or not.
 window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
     const url = scriptURL.toString();
@@ -25,6 +23,11 @@ window.Worker = class Worker extends window.Worker {
       );
       script = `importScripts("${url}");`; // Will fail on Firefox Nightly.
     }
+    // ---------------------------------------
+    // 🦊 Attention Firefox Addon Reviewer 🦊
+    // ---------------------------------------
+    // Please note that this does NOT involve remote code execution. The injected script is bundled
+    // with the extension. Additionally, there is no custom Content Security Policy (CSP) in use.
     const newScript = `
       try {
         importScripts("${params.workerScriptURL}");
