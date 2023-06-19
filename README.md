@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="src/images/brand/icon.png" height="100" width="100" alt="Icon" />
+  <img alt="Icon" src="src/images/brand/icon.png" height="100" width="100" />
   <br />
   TTV LOL PRO
   <br />
@@ -18,41 +18,81 @@
       src="https://img.shields.io/github/stars/younesaassila/ttv-lol-pro"
     />
   </a>
-  <a href="https://github.com/younesaassila/ttv-lol-pro/releases">
+  <a
+    href="https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd"
+  >
     <img
-      alt="GitHub all releases"
-      src="https://img.shields.io/github/downloads/younesaassila/ttv-lol-pro/total"
+      alt="Chrome Web Store"
+      src="https://img.shields.io/chrome-web-store/users/bpaoeijjlplfjbagceilcgbkcdjbomjd"
+    />
+  </a>
+  <a href="https://addons.mozilla.org/addon/ttv-lol-pro/">
+    <img alt="Mozilla Add-on" src="https://img.shields.io/amo/dw/ttv-lol-pro" />
+  </a>
+</div>
+
+<br />
+
+<div align="center">
+  <a
+    href="https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd"
+  >
+    <img
+      alt="Chrome Web Store"
+      src="src/images/badges/chrome_web_store.png"
+      height="50"
+    />
+  </a>
+  <a href="https://addons.mozilla.org/addon/ttv-lol-pro/">
+    <img
+      alt="Firefox Add-ons"
+      src="src/images/badges/firefox_addons.png"
+      height="50"
     />
   </a>
 </div>
 
 <br />
 
-TTV LOL PRO removes most livestream ads from Twitch. This is free, don't expect it to be perfect. Issues? Complain to Twitch
+TTV LOL PRO removes _most_ livestream ads from Twitch. This is free, don't expect it to be perfect. Issues? Complain to Twitch
 
-TTV LOL PRO:
+**TTV LOL PRO:**
 
 - removes _most_ livestream ads from Twitch,
 - lets you whitelist channels (Firefox only),
-- improves TTV LOL's popup by showing stream status and "Whitelist" button (Firefox only),
+- improves TTV LOL's popup by showing stream status,
 - lets you add custom primary/fallback proxies.
 
-**Recommendations:**
+**Recommended:**
 
 - [uBlock Origin](https://ublockorigin.com/)
 
   - removes banner ads,
   - removes ads on VODs.
 
-## Screenshot
+## Screenshots
 
-<div align="center">
-  <img
-    src="https://github.com/younesaassila/ttv-lol-pro/assets/47226184/45073ec3-c919-4c5e-9f4f-68cb99e0b7b5"
-    alt="Popup on Firefox"
-    height="550"
-  />
-</div>
+<details>
+  <summary>Popup (Firefox)</summary>
+  <div align="center">
+    <img
+      alt="Popup (Firefox)"
+      src="https://github.com/younesaassila/ttv-lol-pro/assets/47226184/45073ec3-c919-4c5e-9f4f-68cb99e0b7b5"
+      height="550"
+    />
+  </div>
+</details>
+
+<details>
+  <summary>Options page (Firefox)</summary>
+  <div align="center">
+    <img
+      alt="Options page (Firefox)"
+      src="https://github.com/younesaassila/ttv-lol-pro/assets/47226184/289f8d7d-49be-4948-a086-fc63ee839500"
+      height="550"
+    />
+  </div>
+</details>
 
 ## Installation
 
@@ -60,7 +100,11 @@ TTV LOL PRO:
 
 ### Chrome Web Store
 
-https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd
+Download the extension from the [Chrome Web Store](https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd).
+
+### Firefox Add-ons
+
+Download the extension from [Firefox Add-ons](https://addons.mozilla.org/addon/ttv-lol-pro/).
 
 ### Manual installation
 
@@ -69,6 +113,10 @@ https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcd
 1. - **Chrome _(Permanent)_:** Unzip > Go to `chrome://extensions` > Enable developer mode > Load unpacked
    - **Firefox all editions _(Temporary)_:** Go to `about:debugging#/runtime/this-firefox` > Load Temporary Add-on
    - **[Firefox Developer Edition](https://www.mozilla.org/en-US/firefox/developer/) _(Permanent)_:** Go to `about:config` > Set `xpinstall.signatures.required` to `false` > Extensions page > Gear > Install Add-on From File
+
+## Contributing
+
+Contributions are welcome! Please read the [contributing guidelines](CONTRIBUTING.md).
 
 ## Credits
 
