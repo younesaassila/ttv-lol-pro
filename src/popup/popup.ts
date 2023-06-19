@@ -67,6 +67,9 @@ function setStreamStatusElement(channelName: string) {
     setProxyStatus(channelNameLower, status);
     setWhitelistStatus(channelNameLower);
     streamStatusElement.style.display = "flex";
+    if (isChromium) {
+      whitelistStatusElement.style.display = "none";
+    }
   } else {
     streamStatusElement.style.display = "none";
   }
@@ -80,6 +83,7 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
     proxiedElement.classList.add("success");
   } else if (
     !status.proxied &&
+    status.proxyHost &&
     store.state.optimizedProxiesEnabled &&
     store.state.optimizedProxies.length > 0
   ) {

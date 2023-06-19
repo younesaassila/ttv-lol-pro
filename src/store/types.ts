@@ -1,4 +1,4 @@
-import type { AdLogEntry, StreamStatus } from "../types";
+import type { AdLogEntry, DnsResponse, StreamStatus } from "../types";
 
 export type EventType = "load" | "change";
 export type ReadyState = "loading" | "complete";
@@ -8,7 +8,9 @@ export interface State {
   adLog: AdLogEntry[];
   adLogEnabled: boolean;
   adLogLastSent: number;
+  dnsResponses: DnsResponse[];
   normalProxies: string[];
+  openedTwitchTabs: number[];
   optimizedProxies: string[];
   optimizedProxiesEnabled: boolean;
   proxyTwitchWebpage: boolean;

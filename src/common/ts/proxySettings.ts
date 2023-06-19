@@ -7,8 +7,9 @@ import {
   usherHostRegex,
   videoWeaverHostRegex,
 } from "./regexes";
+import updateDnsResponses from "./updateDnsResponses";
 
-export default function updateProxySettings() {
+export function updateProxySettings() {
   const { proxyTwitchWebpage, proxyUsherRequests } = store.state;
 
   const proxies = store.state.optimizedProxiesEnabled
@@ -43,6 +44,7 @@ export default function updateProxySettings() {
     console.log(
       `⚙️ Proxying requests through one of: ${proxies.toString() || "<empty>"}`
     );
+    updateDnsResponses();
   });
 }
 
@@ -54,4 +56,10 @@ function getProxyInfoStringFromUrls(urls: string[]): string {
     }),
     "DIRECT",
   ].join("; ");
+}
+
+export function clearProxySettings() {
+  chrome.proxy.settings.clear({ scope: "regular" }, function () {
+    console.log("⚙️ Proxy settings cleared");
+  });
 }

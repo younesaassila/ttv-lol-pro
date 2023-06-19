@@ -1,16 +1,21 @@
 import acceptFlag from "../common/ts/acceptFlag";
+import findChannelFromUsherUrl from "../common/ts/findChannelFromUsherUrl";
 import getHostFromUrl from "../common/ts/getHostFromUrl";
 import {
   twitchGqlHostRegex,
   usherHostRegex,
   videoWeaverHostRegex,
+  videoWeaverUrlRegex,
 } from "../common/ts/regexes";
 
 const NATIVE_FETCH = self.fetch;
+const IS_CHROMIUM = !!self.chrome;
 
-export interface FetchOptions {}
+export interface FetchOptions {
+  scope: "page" | "worker";
+}
 
-export function getFetch(options: FetchOptions = {}): typeof fetch {
+export function getFetch(options: FetchOptions): typeof fetch {
   const knownVideoWeaverUrls = new Set<string>();
   const videoWeaverUrlsToFlag = new Map<string, number>(); // Video Weaver URLs to flag -> number of times flagged.
   const videoWeaverUrlsToIgnore = new Set<string>(); // No response check.
@@ -22,7 +27,13 @@ export function getFetch(options: FetchOptions = {}): typeof fetch {
     const url = input instanceof Request ? input.url : input.toString();
     // Firefox doesn't support relative URLs in content scripts (workers too!).
     // See https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Chrome_incompatibilities#content_script_https_requests
-    if (url.startsWith("/")) {
+    if (url.startsWith("//")) {
+      // Missing protocol.
+      const newUrl = `${location.protocol}${url}`;
+      if (input instanceof Request) input = new Request(newUrl, input);
+      else input = newUrl;
+    } else if (url.startsWith("/")) {
+      // Missing origin.
       const newUrl = `${location.origin}${url}`;
       if (input instanceof Request) input = new Request(newUrl, input);
       else input = newUrl;
@@ -115,12 +126,19 @@ export function getFetch(options: FetchOptions = {}): typeof fetch {
     if (host != null && usherHostRegex.test(host)) {
       await readResponseBody();
       console.debug("[TTV LOL PRO] 🥅 Caught Usher response.");
-      // Remove all Video Weaver URLs from known URLs.
-      responseBody.split("\n").forEach(line => {
-        if (line.includes("video-weaver.")) {
-          knownVideoWeaverUrls.delete(line.trim());
-        }
+      const videoWeaverUrls = responseBody
+        .split("\n")
+        .filter(line => videoWeaverUrlRegex.test(line));
+      // Send Video Weaver URLs to content script.
+      sendMessageToContentScript(options.scope, {
+        type: "UsherResponse",
+        channel: findChannelFromUsherUrl(url),
+        videoWeaverUrls,
+        proxyCountry:
+          /USER-COUNTRY="([A-Z]+)"/i.exec(responseBody)?.[1] || null,
       });
+      // Remove all Video Weaver URLs from known URLs.
+      videoWeaverUrls.forEach(url => knownVideoWeaverUrls.delete(url));
     }
 
     // Video Weaver responses.
@@ -246,7 +264,24 @@ function removeHeaderFromMap(headersMap: Map<string, string>, name: string) {
   }
 }
 
+function sendMessageToContentScript(scope: "page" | "worker", message: any) {
+  if (scope === "page") {
+    self.postMessage(message);
+  } else {
+    self.postMessage({
+      type: "ContentScriptMessage",
+      message,
+    });
+  }
+}
+
 function flagRequest(headersMap: Map<string, string>) {
+  if (IS_CHROMIUM) {
+    console.debug(
+      "[TTV LOL PRO] 🚩 Request flagging is not supported on Chromium. Ignoring…"
+    );
+    return;
+  }
   const accept = getHeaderFromMap(headersMap, "Accept");
   setHeaderToMap(headersMap, "Accept", `${accept || ""}${acceptFlag}`);
 }

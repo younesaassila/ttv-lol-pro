@@ -1,14 +1,15 @@
 import browser from "webextension-polyfill";
 import isChromium from "../common/ts/isChromium";
-import updateProxySettings from "../common/ts/updateProxySettings";
-import store from "../store";
+import checkForOpenedTwitchTabs from "./handlers/checkForOpenedTwitchTabs";
 import onAuthRequired from "./handlers/onAuthRequired";
 import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
-import onBeforeUsherRequest from "./handlers/onBeforeUsherRequest";
 import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
-import onHeadersReceived from "./handlers/onHeadersReceived";
 import onProxyRequest from "./handlers/onProxyRequest";
+import onResponseStarted from "./handlers/onResponseStarted";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
+import onTabCreated from "./handlers/onTabCreated";
+import onTabRemoved from "./handlers/onTabRemoved";
+import onTabUpdated from "./handlers/onTabUpdated";
 
 console.info("🚀 Background script loaded.");
 
@@ -22,27 +23,24 @@ browser.webRequest.onAuthRequired.addListener(
   ["blocking"]
 );
 
+// Monitor proxied status of requests.
+browser.webRequest.onResponseStarted.addListener(onResponseStarted, {
+  urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
+});
+
 if (isChromium) {
-  const setProxySettings = () => {
-    if (store.readyState !== "complete")
-      return store.addEventListener("load", setProxySettings);
-    updateProxySettings();
-  };
-  setProxySettings();
+  // Check if there are any opened Twitch tabs on startup.
+  checkForOpenedTwitchTabs();
+
+  // Keep track of opened Twitch tabs to enable/disable the PAC script.
+  browser.tabs.onCreated.addListener(onTabCreated);
+  browser.tabs.onUpdated.addListener(onTabUpdated);
+  browser.tabs.onRemoved.addListener(onTabRemoved);
 } else {
   // Block tracking pixels.
   browser.webRequest.onBeforeRequest.addListener(
     () => ({ cancel: true }),
     { urls: ["https://*.twitch.tv/r/s/*", "https://*.twitch.tv/r/c/*"] },
-    ["blocking"]
-  );
-
-  // Map channel names to Video Weaver URLs.
-  browser.webRequest.onBeforeRequest.addListener(
-    onBeforeUsherRequest,
-    {
-      urls: ["https://usher.ttvnw.net/api/channel/hls/*"],
-    },
     ["blocking"]
   );
 
@@ -72,9 +70,4 @@ if (isChromium) {
     },
     ["blocking"]
   );
-
-  // Monitor responses of proxied requests.
-  browser.webRequest.onHeadersReceived.addListener(onHeadersReceived, {
-    urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
-  });
 }

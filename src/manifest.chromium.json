@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "TTV LOL PRO",
   "description": "TTV LOL PRO removes most livestream ads from Twitch.",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "background": {
     "service_worker": "background/background.ts",
     "type": "module"
@@ -10,9 +10,9 @@
   "declarative_net_request": {
     "rule_resources": [
       {
-        "id": "rules",
+        "id": "ruleset",
         "enabled": true,
-        "path": "rules/rules.json"
+        "path": "rulesets/ruleset.json"
       }
     ]
   },
@@ -23,6 +23,13 @@
     "default_title": "TTV LOL PRO",
     "default_popup": "popup/menu.html"
   },
+  "content_scripts": [
+    {
+      "matches": ["https://www.twitch.tv/*", "https://m.twitch.tv/*"],
+      "js": ["content/content.ts"],
+      "run_at": "document_start"
+    }
+  ],
   "icons": {
     "128": "images/brand/icon.png"
   },
@@ -35,6 +42,7 @@
     "declarativeNetRequest",
     "proxy",
     "storage",
+    "tabs",
     "webRequest",
     "webRequestAuthProvider"
   ],

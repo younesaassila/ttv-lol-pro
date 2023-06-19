@@ -12,6 +12,8 @@ export default function onStartupStoreCleanup(): void {
   if (store.readyState !== "complete")
     return store.addEventListener("load", onStartupStoreCleanup);
 
+  store.state.dnsResponses = [];
+  store.state.openedTwitchTabs = [];
   store.state.streamStatuses = {};
   store.state.videoWeaverUrlsByChannel = {};
 }

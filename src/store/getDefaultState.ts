@@ -2,11 +2,13 @@ import isChromium from "../common/ts/isChromium";
 import type { State } from "./types";
 
 export default function getDefaultState() {
-  return {
+  const state: State = {
     adLog: [],
     adLogEnabled: true,
     adLogLastSent: 0,
+    dnsResponses: [],
     normalProxies: isChromium ? ["chrome.api.cdn-perfprod.com:4023"] : [],
+    openedTwitchTabs: [],
     optimizedProxies: isChromium ? [] : ["firefox.api.cdn-perfprod.com:2023"],
     optimizedProxiesEnabled: !isChromium,
     proxyTwitchWebpage: false,
@@ -14,5 +16,6 @@ export default function getDefaultState() {
     streamStatuses: {},
     videoWeaverUrlsByChannel: {},
     whitelistedChannels: [],
-  } as State;
+  };
+  return state;
 }

@@ -1,10 +1,9 @@
 import $ from "../common/ts/$";
+import { readFile, saveFile } from "../common/ts/file";
 import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
 import isChromium from "../common/ts/isChromium";
-import readFile from "../common/ts/readFile";
-import saveFile from "../common/ts/saveFile";
+import { updateProxySettings } from "../common/ts/proxySettings";
 import sendAdLog from "../common/ts/sendAdLog";
-import updateProxySettings from "../common/ts/updateProxySettings";
 import store from "../store";
 import getDefaultState from "../store/getDefaultState";
 import type { State } from "../store/types";
@@ -92,12 +91,16 @@ function main() {
   proxyUsherRequestsCheckboxElement.addEventListener("change", () => {
     const checked = proxyUsherRequestsCheckboxElement.checked;
     store.state.proxyUsherRequests = checked;
-    if (isChromium) updateProxySettings();
+    if (isChromium && store.state.openedTwitchTabs.length > 0) {
+      updateProxySettings();
+    }
   });
   proxyTwitchWebpageCheckboxElement.checked = store.state.proxyTwitchWebpage;
   proxyTwitchWebpageCheckboxElement.addEventListener("change", () => {
     store.state.proxyTwitchWebpage = proxyTwitchWebpageCheckboxElement.checked;
-    if (isChromium) updateProxySettings();
+    if (isChromium && store.state.openedTwitchTabs.length > 0) {
+      updateProxySettings();
+    }
   });
   // Whitelisted channels
   if (isChromium) {
@@ -142,7 +145,9 @@ function main() {
     isAddAllowed: isNormalProxyUrlAllowed,
     isEditAllowed: isNormalProxyUrlAllowed,
     onEdit() {
-      if (isChromium) updateProxySettings();
+      if (isChromium && store.state.openedTwitchTabs.length > 0) {
+        updateProxySettings();
+      }
     },
     hidePromptMarker: true,
     insertMode: "both",

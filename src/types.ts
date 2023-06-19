@@ -43,3 +43,10 @@ export interface StreamStatus {
     notProxied: number;
   };
 }
+
+export interface DnsResponse {
+  host: string;
+  ips: string[];
+  timestamp: number;
+  ttl: number;
+}
