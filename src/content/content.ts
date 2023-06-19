@@ -1,5 +1,5 @@
-import pageScript from "url:../page/page.ts";
-import workerScript from "url:../page/worker.ts";
+import pageScriptURL from "url:../page/page.ts";
+import workerScriptURL from "url:../page/worker.ts";
 import { twitchChannelNameRegex } from "../common/ts/regexes";
 import { getStreamStatus, setStreamStatus } from "../common/ts/streamStatus";
 import store from "../store";
@@ -16,9 +16,9 @@ window.addEventListener("message", onMessage);
 function injectPageScript() {
   // From https://stackoverflow.com/a/9517879
   const script = document.createElement("script");
-  script.src = pageScript; // src/page/page.ts
+  script.src = pageScriptURL; // (src/page/page.ts)
   script.dataset.params = JSON.stringify({
-    workerScriptURL: workerScript, // src/page/worker.ts
+    workerScriptURL: workerScriptURL, // (src/page/worker.ts)
   });
   script.onload = () => script.remove();
   // ---------------------------------------
