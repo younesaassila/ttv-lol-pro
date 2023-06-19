@@ -54,6 +54,8 @@
 
 <br />
 
+> ℹ️ Looking for TTV LOL PRO v1? [Click here](https://github.com/younesaassila/ttv-lol-pro/tree/v1).
+
 TTV LOL PRO removes _most_ livestream ads from Twitch. This is free, don't expect it to be perfect. Issues? Complain to Twitch
 
 **TTV LOL PRO:**
@@ -96,7 +98,7 @@ TTV LOL PRO removes _most_ livestream ads from Twitch. This is free, don't expec
 
 ## Installation
 
-> ⚠️ **Please remove any other Twitch-specific ad blocker (this includes the [VAFT](https://github.com/pixeltris/TwitchAdSolutions#scripts) script). [uBlock Origin](https://ublockorigin.com/) is recommended as it is a general-purpose ad blocker. Please clear your browser's cache after installing the extension.**
+> ⚠️ Please remove any other Twitch-specific ad blocker (this includes the [VAFT](https://github.com/pixeltris/TwitchAdSolutions#scripts) script). [uBlock Origin](https://ublockorigin.com/) is recommended as it is a general-purpose ad blocker. Please clear your browser's cache after installing the extension.
 
 ### Chrome Web Store
 
