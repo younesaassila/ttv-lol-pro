@@ -1,6 +1,6 @@
 {
   "name": "ttv-lol-pro",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "TTV LOL PRO removes most livestream ads from Twitch.",
   "@parcel/bundler-default": {
     "minBundles": 10000000,
@@ -45,13 +45,13 @@
     "ip": "^1.1.8"
   },
   "devDependencies": {
-    "@parcel/config-webextension": "^2.9.2",
-    "@types/chrome": "^0.0.237",
+    "@parcel/config-webextension": "^2.9.3",
+    "@types/chrome": "^0.0.239",
     "@types/ip": "^1.1.0",
-    "@types/webextension-polyfill": "^0.10.0",
+    "@types/webextension-polyfill": "^0.10.1",
     "buffer": "^6.0.3",
     "os-browserify": "^0.3.0",
-    "parcel": "^2.9.2",
+    "parcel": "^2.9.3",
     "postcss": "^8.4.24",
     "prettier": "^2.8.8",
     "prettier-plugin-css-order": "^1.3.1",
