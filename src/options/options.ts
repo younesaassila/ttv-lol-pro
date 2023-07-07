@@ -173,6 +173,8 @@ function isOptimizedProxyUrlAllowed(url: string): AllowedResult {
 
   // Forbid v1 proxies.
   const proxiesV1 = [
+    // *.ttv.lol
+    "api.ttv.lol",
     // *.luminous.dev
     "eu.luminous.dev",
     "eu2.luminous.dev",
@@ -188,8 +190,6 @@ function isOptimizedProxyUrlAllowed(url: string): AllowedResult {
     "lb-eu2.cdn-perfprod.com",
     "lb-na.cdn-perfprod.com",
     "lb-as.cdn-perfprod.com",
-    // *.ttv.lol
-    "api.ttv.lol",
   ];
   if (proxiesV1.some(proxy => urlLower.includes(proxy))) {
     return [false, "TTV LOL PRO v1 proxies are not compatible"];
@@ -224,16 +224,13 @@ function isNormalProxyUrlAllowed(url: string): AllowedResult {
   }
 
   // Allow donator proxy (password protected).
+  const restrictedProxyHosts = [
+    "eu.restricted.api.cdn-perfprod.com",
+    "na.restricted.api.cdn-perfprod.com",
+    "restricted.api.cdn-perfprod.com",
+  ];
   const proxyInfo = getProxyInfoFromUrl(urlLower);
-  if (proxyInfo.host === "eu.restricted.api.cdn-perfprod.com") {
-    return [true];
-  }
-  // Allow donator proxy (password protected).
-  if (proxyInfo.host === "na.restricted.api.cdn-perfprod.com") {
-    return [true];
-  }
-  // Allow donator proxy (password protected).
-  if (proxyInfo.host === "restricted.api.cdn-perfprod.com") {
+  if (restrictedProxyHosts.includes(proxyInfo.host)) {
     return [true];
   }
 
