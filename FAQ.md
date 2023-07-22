@@ -29,8 +29,8 @@ A) We require a very specific permission for the V2 system to work, `proxy`, as 
 
 You can take a look at the extension's source code. We only proxy the following domains related to Twitch for the system to work:
 - `video-weaver.*.hls.ttvnw.net` (Required)
-- `passport.twitch.tv` (Optional ,Setting = ON by default)
-- `usher.ttvnw.net` (Optional ,Setting = ON by default)
+- `passport.twitch.tv` (Optional. Setting = ON by default)
+- `usher.ttvnw.net` (Optional. Setting = ON by default)
 - `gql.twitch.tv` (Optional. Setting = OFF by default)
 - `www.twitch.tv`(Optional. Setting = OFF by default)
 
