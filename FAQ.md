@@ -32,7 +32,7 @@ By default we proxy `video-weaver.*.hls.ttvnw.net`, `passport.twitch.tv` and `us
 #### Q) Wow, you proxy a lot of my Twitch traffic, can my account be hijacked from this?
 A) Twitch has been using the HTTPS protocol for years now, such as basically every website on the planet. This means that the traffic is encrypted between you and Twitch's servers. The proxy server can't see anything based on your traffic. The only information that a proxy could obtain is that your public IP address is accessing `www.twitch.tv` (for example) at 3AM, there's no more information, as the proxy only acts as a "forwarding" server. 
 
-The default provided proxies only stores logs of connections for 24h, after that they're all purged. This is done to improve the proxy performance as we can see usage stats based on that. If you don't like this, we suggest creating your own proxy server using the guide posted [here]([url](https://github.com/younesaassila/ttv-lol-pro/discussions/151)https://github.com/younesaassila/ttv-lol-pro/discussions/151)
+The default provided proxies only stores logs of connections for 24h, after that they're all purged. This is done to improve the proxy performance as we can see usage stats based on that. If you don't like this, we suggest creating your own proxy server using the guide posted [here]([url](https://github.com/younesaassila/ttv-lol-pro/discussions/151))
 
 Keep in mind that all ISPs and providers can still see your IP address and domains you access, that information is not encrypted.
 
