@@ -17,10 +17,22 @@ Outdated builds can give unexpected results, please update to the latest version
 #### Q) When I click the Options menu on the extension I still have V1 proxies on them.
 A) There's been some reports from users having this strange behavior. Please uninstall any other Twitch AdBlock extension before installing TTV LOL PRO. If you're installing TTV LOL PRO V2, please uninstall TTV LOL PRO V1 before installing it. 
 
+Alternatively, you can reset your settings to default provided on the Extension's Options Page. 
+
 #### Q) The V2 branch seems more updated, should I go for it?
 A) Twitch does some really weird update rollouts. The V2 branch was created due to some users getting hit by ads using the V1 method.
 
 We strongly recommend you trying out the V1 branch and only update to V2 if needed. V1 system is more reliable and works better than V2 using default proxies.
+
+#### Q) Why does the Chrome extension need the permissions to read traffic on all websites?
+A) We require a very specific permission for the V2 system to work, `proxy`, as specified [here](src/manifest.chromium.json). Chrome does a really aggresive naming to that permission, as if it's used in a malicious manner, an extension could forward all the requests to a proxy server of his choice. 
+
+You can take a look at the extension's source code. We only proxy the following domains related to Twitch for the system to work:
+- `video-weaver.*.hls.ttvnw.net` (Required)
+- `passport.twitch.tv` (Optional ,Setting = ON by default)
+- `usher.ttvnw.net` (Optional ,Setting = ON by default)
+- `gql.twitch.tv` (Optional. Setting = OFF by default)
+- `www.twitch.tv`(Optional. Setting = OFF by default)
 
 ## Options Page
 
