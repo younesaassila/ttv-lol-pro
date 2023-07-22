@@ -71,6 +71,9 @@ TTV LOL PRO removes _most_ livestream ads from Twitch. This is free, don't expec
 
   - removes banner ads,
   - removes ads on VODs.
+ 
+**Frequent Asked Questions (FAQ):** 
+- [Click here](FAQ.md)
 
 ## Screenshots
 
