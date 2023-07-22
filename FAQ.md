@@ -6,7 +6,7 @@
 A) The V1 and V2 branches use different proxying systems, so we won't push any auto-updates to anyone if the V1 branch still works for them. We've also released the extension on Chrome Web Store and Firefox Addons Store to recieve auto-updates from there. 
 
 #### Q) Do you recommend me installing the extension from the stores or manually install it?
-A) We strongly encourage users to install the extension through the stores as they can deliever automatic updates to improve the overall experience. 
+A) We strongly encourage users to install the extension through the stores as they can deliver automatic updates to improve the overall experience. 
 
 Chrome Web Store: https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd
 
