@@ -54,7 +54,7 @@ function onMessage(event: MessageEvent) {
     const { channel, videoWeaverUrls, proxyCountry } = event.data;
     // Update Video Weaver URLs.
     if (store.state.videoWeaverUrlsByChannel.hasOwnProperty(channel)) {
-      store.state.videoWeaverUrlsByChannel.push(videoWeaverUrls);
+      store.state.videoWeaverUrlsByChannel[channel].push(videoWeaverUrls);
     } else {
       store.state.videoWeaverUrlsByChannel[channel] = videoWeaverUrls;
     }
