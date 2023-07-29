@@ -35,6 +35,7 @@ function injectPageScript() {
  * @returns
  */
 function clearStats() {
+  // TODO: Clear stats on navigation.
   const match = twitchChannelNameRegex.exec(location.href);
   if (!match) return;
   const [, streamId] = match;
