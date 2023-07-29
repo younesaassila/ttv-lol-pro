@@ -53,11 +53,10 @@ function onMessage(event: MessageEvent) {
   if (event.data?.type === "UsherResponse") {
     const { channel, videoWeaverUrls, proxyCountry } = event.data;
     // Update Video Weaver URLs.
-    if (store.state.videoWeaverUrlsByChannel.hasOwnProperty(channel)) {
-      store.state.videoWeaverUrlsByChannel[channel].push(videoWeaverUrls);
-    } else {
-      store.state.videoWeaverUrlsByChannel[channel] = videoWeaverUrls;
-    }
+    store.state.videoWeaverUrlsByChannel[channel] = [
+      ...(store.state.videoWeaverUrlsByChannel[channel] ?? []),
+      ...videoWeaverUrls,
+    ];
     // Update proxy country.
     const streamStatus = getStreamStatus(channel);
     setStreamStatus(channel, {
