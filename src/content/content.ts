@@ -35,6 +35,7 @@ function injectPageScript() {
  * @returns
  */
 function clearStats() {
+  // TODO: Clear stats on navigation.
   const match = twitchChannelNameRegex.exec(location.href);
   if (!match) return;
   const [, streamId] = match;
@@ -53,7 +54,10 @@ function onMessage(event: MessageEvent) {
   if (event.data?.type === "UsherResponse") {
     const { channel, videoWeaverUrls, proxyCountry } = event.data;
     // Update Video Weaver URLs.
-    store.state.videoWeaverUrlsByChannel[channel] = videoWeaverUrls;
+    store.state.videoWeaverUrlsByChannel[channel] = [
+      ...(store.state.videoWeaverUrlsByChannel[channel] ?? []),
+      ...videoWeaverUrls,
+    ];
     // Update proxy country.
     const streamStatus = getStreamStatus(channel);
     setStreamStatus(channel, {

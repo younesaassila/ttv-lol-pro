@@ -16,6 +16,7 @@ export interface FetchOptions {
 }
 
 export function getFetch(options: FetchOptions): typeof fetch {
+  // TODO: Clear variables on navigation.
   const knownVideoWeaverUrls = new Set<string>();
   const videoWeaverUrlsToFlag = new Map<string, number>(); // Video Weaver URLs to flag -> number of times flagged.
   const videoWeaverUrlsToIgnore = new Set<string>(); // No response check.
