@@ -227,6 +227,8 @@ function isNormalProxyUrlAllowed(url: string): AllowedResult {
   const restrictedProxyHosts = [
     "eu.restricted.api.cdn-perfprod.com",
     "na.restricted.api.cdn-perfprod.com",
+    "beta.eu.restricted.api.cdn-perfprod.com",
+    "beta.na.restricted.api.cdn-perfprod.com",
     "restricted.api.cdn-perfprod.com",
   ];
   const proxyInfo = getProxyInfoFromUrl(urlLower);
