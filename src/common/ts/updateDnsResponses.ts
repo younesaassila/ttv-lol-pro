@@ -50,7 +50,7 @@ export default async function updateDnsResponses() {
       }
       const ips = Answer.map((answer: any) => answer.data);
       const ttl =
-        Number(response.headers.get("Cache-Control").split("=")[1]) || 0;
+        Number(response.headers.get("Cache-Control")?.split("=")[1]) || 0;
       if (dnsResponseIndex !== -1) {
         store.state.dnsResponses.splice(dnsResponseIndex, 1);
       }

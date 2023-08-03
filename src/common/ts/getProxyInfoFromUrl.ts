@@ -1,6 +1,8 @@
 import type { ProxyInfo } from "../../types";
 
-export default function getProxyInfoFromUrl(url: string): ProxyInfo {
+export default function getProxyInfoFromUrl(
+  url: string
+): ProxyInfo & { type: "http"; host: string; port: number } {
   const lastIndexOfAt = url.lastIndexOf("@");
   const hostname = url.substring(lastIndexOfAt + 1, url.length);
   const lastIndexOfColon = getLastIndexOfColon(hostname);
