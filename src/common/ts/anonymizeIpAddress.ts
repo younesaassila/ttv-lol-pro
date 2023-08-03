@@ -11,6 +11,7 @@ export function anonymizeIpAddress(url: string): string {
   const proxyInfo = getProxyInfoFromUrl(url);
 
   let proxyHost = proxyInfo.host;
+  if (!proxyHost) return url;
   const withinBrackets = /^\[.*\]$/.test(proxyHost);
   if (withinBrackets) proxyHost = proxyHost.slice(1, -1);
 
@@ -29,7 +30,7 @@ export function anonymizeIpAddress(url: string): string {
 
   if (withinBrackets) proxyHost = `[${proxyHost}]`;
 
-  return `${proxyHost}:${proxyInfo.port}`;
+  return `${proxyHost}${proxyInfo.port ? `:${proxyInfo.port}` : ""}`;
 }
 
 /**
