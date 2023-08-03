@@ -43,17 +43,17 @@ export function getFetch(options: FetchOptions): typeof fetch {
     const headersMap = getHeadersMap(input, init);
 
     // Reading the request body can be expensive, so we only do it if we need to.
-    let requestBody: string | undefined = undefined;
-    const readRequestBody = async () => {
-      if (requestBody != null) return;
-      requestBody = await getRequestBodyText(input, init);
+    let requestBody: string | null | undefined = undefined;
+    const readRequestBody = async (): Promise<string | null> => {
+      if (requestBody !== undefined) return requestBody;
+      return getRequestBodyText(input, init);
     };
 
     //#region Requests
 
     // Twitch GraphQL requests.
     if (host != null && twitchGqlHostRegex.test(host)) {
-      await readRequestBody();
+      requestBody = await readRequestBody();
       // Integrity requests.
       if (url === "https://gql.twitch.tv/integrity") {
         console.debug(
@@ -115,17 +115,17 @@ export function getFetch(options: FetchOptions): typeof fetch {
 
     // Reading the response body can be expensive, so we only do it if we need to.
     let responseBody: string | undefined = undefined;
-    const readResponseBody = async () => {
-      if (responseBody != null) return;
+    const readResponseBody = async (): Promise<string> => {
+      if (responseBody !== undefined) return responseBody;
       const clonedResponse = response.clone();
-      responseBody = await clonedResponse.text();
+      return clonedResponse.text();
     };
 
     //#region Responses
 
     // Usher responses.
     if (host != null && usherHostRegex.test(host)) {
-      await readResponseBody();
+      responseBody = await readResponseBody();
       console.debug("[TTV LOL PRO] 🥅 Caught Usher response.");
       const videoWeaverUrls = responseBody
         .split("\n")
@@ -144,7 +144,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
 
     // Video Weaver responses.
     if (host != null && videoWeaverHostRegex.test(host)) {
-      await readResponseBody();
+      responseBody = await readResponseBody();
       // Check if response contains ad.
       if (responseBody.includes("stitched-ad")) {
         console.log(
@@ -161,7 +161,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
         // 1: Second attempt, proxied, cancelled.
         // 2: Third attempt, proxied, last attempt by Twitch client.
         // If the third attempt contains an ad, we have to let it through.
-        const isCancellable = videoWeaverUrlsToFlag.get(url) < 2;
+        const isCancellable = videoWeaverUrlsToFlag.get(url)! < 2;
         if (isCancellable) {
           cancelRequest();
         } else {

@@ -2,7 +2,7 @@ import { getFetch } from "./getFetch";
 
 console.info("[TTV LOL PRO] 🚀 Page script running.");
 
-const params = JSON.parse(document.currentScript.dataset.params);
+const params = JSON.parse(document.currentScript!.dataset.params!);
 
 window.fetch = getFetch({ scope: "page" });
 
@@ -48,4 +48,4 @@ window.Worker = class Worker extends window.Worker {
   }
 };
 
-document.currentScript.remove();
+document.currentScript!.remove();

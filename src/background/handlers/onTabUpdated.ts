@@ -18,8 +18,9 @@ export default function onTabUpdated(
   if (!(changeInfo.url || changeInfo.status === "complete")) return;
 
   const url = changeInfo.url || tab.url;
+  if (!url) return;
   const host = getHostFromUrl(url);
-  const isTwitchTab = twitchTvHostRegex.test(host);
+  const isTwitchTab = host != null && twitchTvHostRegex.test(host);
   const wasTwitchTab = store.state.openedTwitchTabs.includes(tabId);
 
   if (isTwitchTab && !wasTwitchTab) {

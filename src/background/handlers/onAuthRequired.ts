@@ -2,7 +2,7 @@ import { WebRequest } from "webextension-polyfill";
 import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
 import store from "../../store";
 
-const pendingRequests = [];
+const pendingRequests: string[] = [];
 
 export default function onAuthRequired(
   details: WebRequest.OnAuthRequiredDetailsType
@@ -41,6 +41,7 @@ export default function onAuthRequired(
 
   console.log(`🔑 Providing credentials for proxy ${proxy}.`);
   const proxyInfo = getProxyInfoFromUrl(proxy);
+  if (proxyInfo.username == null || proxyInfo.password == null) return;
   return {
     authCredentials: {
       username: proxyInfo.username,

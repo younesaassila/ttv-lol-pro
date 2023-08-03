@@ -6,16 +6,21 @@ import type { EventType, ReadyState, State, StorageAreaName } from "./types";
 /**
  * A synchronous wrapper around the `browser.storage` API.
  */
-class Store {
+class Store<T extends Record<string | symbol, any>> {
   private readonly _areaName: StorageAreaName;
-  private _state: State = getDefaultState();
+  private readonly _getDefaultState: () => T;
+  private _state: T; // Raw state
   private _listenersByEvent: Record<string, Function[]> = {};
 
   readyState: ReadyState = "loading";
-  state: State; // Proxy
+  state: T; // Proxy state
 
-  constructor(areaName: StorageAreaName) {
+  constructor(areaName: StorageAreaName, getDefaultState: () => T) {
     this._areaName = areaName;
+    this._getDefaultState = getDefaultState;
+    // Temporary state until init() is called to satisfy TypeScript.
+    this._state = this._getDefaultState();
+    this.state = this._state;
     this._init().then(() => {
       this.readyState = "complete";
       this.dispatchEvent("load");
@@ -24,7 +29,7 @@ class Store {
       if (area !== this._areaName) return;
       for (const [key, { newValue }] of Object.entries(changes)) {
         if (newValue === undefined) continue; // Ignore deletions.
-        this._state[key] = newValue;
+        this._state[key as keyof T] = newValue;
       }
       this.dispatchEvent("change");
     });
@@ -35,9 +40,9 @@ class Store {
     // From https://stackoverflow.com/questions/18150774/get-all-keys-from-chrome-storage
     const storage = await browser.storage[this._areaName].get(null);
 
-    this._state = getDefaultState();
+    this._state = this._getDefaultState();
     for (const [key, value] of Object.entries(storage)) {
-      this._state[key] = value;
+      this._state[key as keyof T] = value;
     }
     const stateHandler = getStateHandler(this._areaName, this._state);
     const stateProxy = new Proxy(this._state, stateHandler);
@@ -45,9 +50,9 @@ class Store {
   }
 
   async clear() {
-    const defaultState = getDefaultState();
+    const defaultState = this._getDefaultState();
     for (const [key, value] of Object.entries(defaultState)) {
-      this.state[key] = value;
+      this.state[key as keyof T] = value;
     }
     await browser.storage[this._areaName].clear();
   }
@@ -69,6 +74,6 @@ class Store {
   }
 }
 
-const store = new Store("local");
+const store = new Store<State>("local", getDefaultState);
 
 export default store;
