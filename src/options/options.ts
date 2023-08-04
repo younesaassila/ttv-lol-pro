@@ -227,7 +227,7 @@ function isNormalProxyUrlAllowed(url: string): AllowedResult {
   const proxyInfo = getProxyInfoFromUrl(urlLower);
   if (
     proxyInfo.host === "restricted.api.cdn-perfprod.com" ||
-    proxyInfo.host?.startsWith(".restricted.api.cdn-perfprod.com")
+    proxyInfo.host.startsWith(".restricted.api.cdn-perfprod.com")
   ) {
     return [true];
   }
