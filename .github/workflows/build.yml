@@ -1,0 +1,22 @@
+name: Build and Test
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm install
+      - name: Run linter
+        run: npm run lint
+      - name: Run type checker
+        run: npx tsc --noEmit
+      # - name: Run tests
+      #   run: npm run test
+      - name: Build for Firefox
+        run: npm run build:firefox
+      - name: Clean up
+        run: npm run clean
+      - name: Build for Chromium
+        run: npm run build:chromium

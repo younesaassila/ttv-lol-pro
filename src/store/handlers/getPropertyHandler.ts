@@ -2,7 +2,9 @@ import browser from "webextension-polyfill";
 import { ProxyFlags, StorageAreaName } from "../types";
 import { toRaw } from "../utils";
 
-export default function getPropertyHandler<T extends object>(
+export default function getPropertyHandler<
+  T extends Record<string | symbol, any>
+>(
   areaName: StorageAreaName,
   state: T,
   property: string | symbol

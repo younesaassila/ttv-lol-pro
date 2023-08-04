@@ -3,12 +3,12 @@ import { ProxyFlags, StorageAreaName } from "../types";
 import { toRaw } from "../utils";
 import getPropertyHandler from "./getPropertyHandler";
 
-export default function getStateHandler<T extends object>(
+export default function getStateHandler<T extends Record<string | symbol, any>>(
   areaName: StorageAreaName,
   state: T
 ): ProxyHandler<T> {
   const stateHandler: ProxyHandler<T> = {
-    defineProperty: (target, key, descriptor) => {
+    defineProperty: (target, key: keyof T, descriptor) => {
       const rawDescriptor = toRaw(descriptor);
       target[key] = rawDescriptor;
       browser.storage[areaName]
@@ -31,7 +31,7 @@ export default function getStateHandler<T extends object>(
         return new Proxy(target[property], propertyHandler);
       } else return target[property];
     },
-    set: (target, property, value) => {
+    set: (target, property: keyof T, value) => {
       const rawValue = toRaw(value);
       target[property] = rawValue;
       browser.storage[areaName]
