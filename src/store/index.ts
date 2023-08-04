@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import getDefaultState from "./getDefaultState";
 import getStateHandler from "./handlers/getStateHandler";
-import type { EventType, ReadyState, State, StorageAreaName } from "./types";
+import type { EventType, ReadyState, StorageAreaName } from "./types";
 
 /**
  * A synchronous wrapper around the `browser.storage` API.
@@ -74,6 +74,6 @@ class Store<T extends Record<string | symbol, any>> {
   }
 }
 
-const store = new Store<State>("local", getDefaultState);
+const store = new Store("local", getDefaultState);
 
 export default store;
