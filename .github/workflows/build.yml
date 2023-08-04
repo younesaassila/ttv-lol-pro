@@ -1,4 +1,4 @@
-name: Build extension
+name: Build and Test
 on: [push, pull_request]
 
 jobs:
