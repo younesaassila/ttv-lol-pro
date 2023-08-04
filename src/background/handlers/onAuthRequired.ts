@@ -11,7 +11,7 @@ export default function onAuthRequired(
 
   if (pendingRequests.includes(details.requestId)) {
     console.error(
-      `🔒 Provided credentials for proxy ${details.challenger.host}:${details.challenger.port} are invalid.`
+      `🔒 Provided invalid credentials for proxy ${details.challenger.host}:${details.challenger.port}.`
     );
     // TODO: Remove proxy from list of available proxies (for fallback system).
     return;
