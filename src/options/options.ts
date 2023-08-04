@@ -225,9 +225,10 @@ function isNormalProxyUrlAllowed(url: string): AllowedResult {
 
   // Allow donator proxy (password protected).
   const proxyInfo = getProxyInfoFromUrl(urlLower);
+  const restrictedProxyHost = "restricted.api.cdn-perfprod.com";
   if (
-    proxyInfo.host === "restricted.api.cdn-perfprod.com" ||
-    proxyInfo.host.endsWith(".restricted.api.cdn-perfprod.com")
+    proxyInfo.host === restrictedProxyHost ||
+    proxyInfo.host.endsWith(`.${restrictedProxyHost}`)
   ) {
     return [true];
   }
