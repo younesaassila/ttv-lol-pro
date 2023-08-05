@@ -31,6 +31,15 @@
   </a>
 </div>
 
+<div align="center">
+  <a href="https://discord.gg/AmtFTPwsyH">
+    <img
+      alt="Discord server"
+      src="https://dcbadge.vercel.app/api/server/AmtFTPwsyH"
+    />
+  </a>
+</div>
+
 <br />
 
 <div align="center">
