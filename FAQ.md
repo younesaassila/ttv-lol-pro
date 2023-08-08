@@ -1,4 +1,4 @@
-# Frequent Asked Questions (FAQ)
+# Frequently Asked Questions (FAQ)
 
 ## Installation
 
@@ -70,11 +70,19 @@ A) Firefox's Extension has some techniques to optimize your requests to the prox
 
 Proxying all requests will overload more the default proxy servers, thus we only recommend this as last resort.
 
+#### Q) My non-proxied count keeps going up, is this normal?
+
+A) On Firefox, by default, you have the option "Proxy ad requests" selected. If that's the case, this is completely normal and you shouldn't worry about anything. Your ads will be blocked only when Twitch's server triggers it to you. This reduces significantly the load on the servers and bandwidth consumption. 
+
 ### Chrome
 
 #### Q) I do still get ads after installing it, what should I do)
 
 A) This is easily fixed by enabling `laissez-passer`. Please read the disclaimer on the extension's Options Page
+
+#### Q) My non-proxied count keeps going up, is this normal?
+
+A) On Chrome, all your weavers (Proxied) requests should be being proxied for the blocker to be working correctly. If you're using the public proxies, refer to [here](#q-i-have-constant-buffering-streams-appear-as-offline-). If you're self-hosting, make sure your connections to your server are being successful.
 
 ### All platforms
 
@@ -95,3 +103,13 @@ Support the proxies costs: https://github.com/sponsors/zGato
 Please take a look at Marc's Sponsors page for the perks: https://github.com/sponsors/zGato. You can make the donation to either Younes or Marc, the perks will be the same.
 
 Thank you for your support.
+
+## Others
+
+#### Q) I can't login back to Twitch with the extension enabled
+
+A) **TLDR:** Disable the extension to login, after doing so you can enable it back and you'll not be prompted to login for a long time again.
+
+This has been answered before [here](https://github.com/younesaassila/ttv-lol-pro/issues/198). If you're using your own self-hosted proxy you shouldn't have this issue, but if you're using the public proxies or you have multiple self-hosted proxies and you have them behind a round robin loadbalancer you may experience this issue. 
+
+To fix it, make sure all your requests are being proxied through the same server, and not proxied through different ones at the same time. You can use IP hash algorithms for this for example.
