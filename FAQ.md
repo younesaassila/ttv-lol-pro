@@ -72,7 +72,7 @@ Proxying all requests will overload more the default proxy servers, thus we only
 
 #### Q) My non-proxied count keeps going up, is this normal?
 
-A) On Firefox, by default, you have the option "Proxy ad requests" selected. If that's the case, this is completely normal and you shouldn't worry about anything. Your ads will be blocked only when Twitch's server triggers it to you. This reduces significantly the load on the servers and bandwidth consumption. 
+A) On Firefox, by default, you have the option "Proxy ad requests" selected. If that's the case, this is completely normal and you shouldn't worry about anything. Your ads will be blocked only when Twitch's server triggers it to you. This reduces significantly the load on the servers and bandwidth consumption.
 
 ### Chrome
 
@@ -110,6 +110,6 @@ Thank you for your support.
 
 A) **TLDR:** Disable the extension to login, after doing so you can enable it back and you'll not be prompted to login for a long time again.
 
-This has been answered before [here](https://github.com/younesaassila/ttv-lol-pro/issues/198). If you're using your own self-hosted proxy you shouldn't have this issue, but if you're using the public proxies or you have multiple self-hosted proxies and you have them behind a round robin loadbalancer you may experience this issue. 
+This has been answered before [here](https://github.com/younesaassila/ttv-lol-pro/issues/198). If you're using your own self-hosted proxy you shouldn't have this issue, but if you're using the public proxies or you have multiple self-hosted proxies and you have them behind a round robin loadbalancer you may experience this issue.
 
 To fix it, make sure all your requests are being proxied through the same server, and not proxied through different ones at the same time. You can use IP hash algorithms for this for example.
