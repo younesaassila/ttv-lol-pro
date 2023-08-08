@@ -1,4 +1,4 @@
-# Frequent Asked Questions (FAQ)
+# Frequently Asked Questions (FAQ)
 
 ## Installation
 
