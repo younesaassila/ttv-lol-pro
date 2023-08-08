@@ -108,7 +108,8 @@ Thank you for your support.
 
 #### Q) I can't login back to Twitch with the extension enabled
 
-A) TL:DR. Disable the extension to login, after doing so you can enable it back and you'll not be prompted to login for a long time again.
+A) **TLDR:** Disable the extension to login, after doing so you can enable it back and you'll not be prompted to login for a long time again.
+
 This has been answered before [here](https://github.com/younesaassila/ttv-lol-pro/issues/198). If you're using your own self-hosted proxy you shouldn't have this issue, but if you're using the public proxies or you have multiple self-hosted proxies and you have them behind a round robin loadbalancer you may experience this issue. 
 
 To fix it, make sure all your requests are being proxied through the same server, and not proxied through different ones at the same time. You can use IP hash algorithms for this for example.
