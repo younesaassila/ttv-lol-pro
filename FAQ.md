@@ -94,7 +94,7 @@ We're sorry for this, but the V2 system is very bandwidth/CPU intensive thus mak
 
 You have the option to host your own proxy server using the following [guide](https://github.com/younesaassila/ttv-lol-pro/discussions/151), thus keep in mind that you're on your own.
 
-If you feel like supporting the project and getting some sweet benefits, please consider sponsoring Younes or Marc. We do offer private proxies hosted in the EU and the US:
+If you feel like supporting the project and getting some sweet benefits, please consider sponsoring Younes or Marc. We do offer private proxies hosted in EU, NA and AS:
 
 Support the extension development: https://github.com/sponsors/younesaassila
 
