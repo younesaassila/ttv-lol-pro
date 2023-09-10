@@ -1,11 +1,10 @@
-import { FetchOptions, getFetch } from "./getFetch";
+import { getFetch } from "./getFetch";
 
 console.info("[TTV LOL PRO] 🚀 Page script running.");
 
 const params = JSON.parse(document.currentScript!.dataset.params!);
-const fetchOptions: FetchOptions = { scope: "page" };
 
-window.fetch = getFetch(fetchOptions);
+window.fetch = getFetch({ scope: "page" });
 
 window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {

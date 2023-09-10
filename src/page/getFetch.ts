@@ -29,20 +29,21 @@ export function getFetch(options: FetchOptions): typeof fetch {
     shouldWaitForStore = false;
   }, 3000);
 
-  if (options.scope === "page") {
-    window.addEventListener("message", event => {
-      if (event.data?.type === "PageScriptMessage") {
-        const message = event.data.message;
-        if (message.type === "StoreReady") {
-          console.info(
-            "[TTV LOL PRO] 📦 Received store state from content script."
-          );
-          options.state = message.state;
-          shouldWaitForStore = false;
-        }
+  self.addEventListener("message", event => {
+    if (
+      (event.data?.type === "PageScriptMessage" && options.scope === "page") ||
+      (event.data?.type === "WorkerScriptMessage" && options.scope === "worker")
+    ) {
+      const message = event.data.message;
+      if (message.type === "StoreReady") {
+        console.log(
+          "[TTV LOL PRO] 📦 Received store state from content script."
+        );
+        options.state = message.state;
+        shouldWaitForStore = false;
       }
-    });
-  }
+    }
+  });
 
   return async function fetch(
     input: RequestInfo | URL,
@@ -102,7 +103,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
         );
         while (shouldWaitForStore) await sleep(100);
         if (options.state?.anonymousMode) {
-          console.debug("[TTV LOL PRO] ❓ Acting as anonymous user");
+          console.log("[TTV LOL PRO] ❓ Acting as anonymous user");
           setHeaderToMap(headersMap, "Authorization", "undefined");
           removeHeaderFromMap(headersMap, "Client-Session-Id");
           removeHeaderFromMap(headersMap, "Client-Version");
