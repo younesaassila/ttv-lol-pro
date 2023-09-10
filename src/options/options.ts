@@ -35,6 +35,7 @@ const proxyUsherRequestsCheckboxElement = $(
 const proxyTwitchWebpageCheckboxElement = $(
   "#proxy-twitch-webpage-checkbox"
 ) as HTMLInputElement;
+const anonymousModeLiElement = $("#anonymous-mode-li") as HTMLLIElement;
 const anonymousModeCheckboxElement = $(
   "#anonymous-mode-checkbox"
 ) as HTMLInputElement;
@@ -105,10 +106,15 @@ function main() {
       updateProxySettings();
     }
   });
-  anonymousModeCheckboxElement.checked = store.state.anonymousMode;
-  anonymousModeCheckboxElement.addEventListener("change", () => {
-    store.state.anonymousMode = anonymousModeCheckboxElement.checked;
-  });
+  // TODO: Figure out why this feature doesn't work in Chromium.
+  if (isChromium) {
+    anonymousModeLiElement.style.display = "none";
+  } else {
+    anonymousModeCheckboxElement.checked = store.state.anonymousMode;
+    anonymousModeCheckboxElement.addEventListener("change", () => {
+      store.state.anonymousMode = anonymousModeCheckboxElement.checked;
+    });
+  }
   // Whitelisted channels
   if (isChromium) {
     whitelistedChannelsSectionElement.style.display = "none";
