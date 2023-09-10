@@ -8,6 +8,7 @@ export interface State {
   adLog: AdLogEntry[];
   adLogEnabled: boolean;
   adLogLastSent: number;
+  anonymousMode: boolean;
   dnsResponses: DnsResponse[];
   normalProxies: string[];
   openedTwitchTabs: number[];

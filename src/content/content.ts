@@ -8,8 +8,8 @@ console.info("[TTV LOL PRO] 🚀 Content script running.");
 
 injectPageScript();
 
-if (store.readyState === "complete") clearStats();
-else store.addEventListener("load", clearStats);
+if (store.readyState === "complete") onStoreReady();
+else store.addEventListener("load", onStoreReady);
 
 window.addEventListener("message", onMessage);
 
@@ -28,6 +28,20 @@ function injectPageScript() {
   // with the extension. The `url:` imports above are used to get the runtime URLs of the respective scripts.
   // Additionally, there is no custom Content Security Policy (CSP) in use.
   (document.head || document.documentElement).append(script); // Note: Despite what the TS types say, `document.head` can be `null`.
+}
+
+function onStoreReady() {
+  // Send store state to page script.
+  const message = {
+    type: "StoreReady",
+    state: JSON.parse(JSON.stringify(store.state)),
+  };
+  window.postMessage({
+    type: "PageScriptMessage",
+    message: message,
+  });
+  // Clear stats for stream on page load/reload.
+  clearStats();
 }
 
 /**

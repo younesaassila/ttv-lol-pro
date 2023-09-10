@@ -1,5 +1,6 @@
 import acceptFlag from "../common/ts/acceptFlag";
 import findChannelFromUsherUrl from "../common/ts/findChannelFromUsherUrl";
+import generateRandomString from "../common/ts/generateRandomString";
 import getHostFromUrl from "../common/ts/getHostFromUrl";
 import {
   twitchGqlHostRegex,
@@ -7,12 +8,14 @@ import {
   videoWeaverHostRegex,
   videoWeaverUrlRegex,
 } from "../common/ts/regexes";
+import { State } from "../store/types";
 
 const NATIVE_FETCH = self.fetch;
 const IS_CHROMIUM = !!self.chrome;
 
 export interface FetchOptions {
   scope: "page" | "worker";
+  state?: State;
 }
 
 export function getFetch(options: FetchOptions): typeof fetch {
@@ -20,6 +23,26 @@ export function getFetch(options: FetchOptions): typeof fetch {
   const knownVideoWeaverUrls = new Set<string>();
   const videoWeaverUrlsToFlag = new Map<string, number>(); // Video Weaver URLs to flag -> number of times flagged.
   const videoWeaverUrlsToIgnore = new Set<string>(); // No response check.
+
+  let shouldWaitForStore = true;
+  setTimeout(() => {
+    shouldWaitForStore = false;
+  }, 3000);
+
+  if (options.scope === "page") {
+    window.addEventListener("message", event => {
+      if (event.data?.type === "PageScriptMessage") {
+        const message = event.data.message;
+        if (message.type === "StoreReady") {
+          console.info(
+            "[TTV LOL PRO] 📦 Received store state from content script."
+          );
+          options.state = message.state;
+          shouldWaitForStore = false;
+        }
+      }
+    });
+  }
 
   return async function fetch(
     input: RequestInfo | URL,
@@ -70,7 +93,28 @@ export function getFetch(options: FetchOptions): typeof fetch {
         flagRequest(headersMap);
       }
       // PlaybackAccessToken requests.
-      if (requestBody != null && requestBody.includes("PlaybackAccessToken")) {
+      if (
+        requestBody != null &&
+        requestBody.includes("PlaybackAccessToken_Template")
+      ) {
+        console.debug(
+          "[TTV LOL PRO] 🥅 Caught GraphQL PlaybackAccessToken_Template request. Flagging…"
+        );
+        while (shouldWaitForStore) await sleep(100);
+        if (options.state?.anonymousMode) {
+          console.debug("[TTV LOL PRO] ❓ Acting as anonymous user");
+          setHeaderToMap(headersMap, "Authorization", "undefined");
+          removeHeaderFromMap(headersMap, "Client-Session-Id");
+          removeHeaderFromMap(headersMap, "Client-Version");
+          setHeaderToMap(headersMap, "Device-ID", generateRandomString(32));
+          removeHeaderFromMap(headersMap, "Sec-GPC");
+          removeHeaderFromMap(headersMap, "X-Device-Id");
+        }
+        flagRequest(headersMap);
+      } else if (
+        requestBody != null &&
+        requestBody.includes("PlaybackAccessToken")
+      ) {
         console.debug(
           "[TTV LOL PRO] 🥅 Caught GraphQL PlaybackAccessToken request. Flagging…"
         );
@@ -289,4 +333,8 @@ function flagRequest(headersMap: Map<string, string>) {
 
 function cancelRequest(): never {
   throw new Error();
+}
+
+async function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

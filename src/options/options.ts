@@ -35,6 +35,9 @@ const proxyUsherRequestsCheckboxElement = $(
 const proxyTwitchWebpageCheckboxElement = $(
   "#proxy-twitch-webpage-checkbox"
 ) as HTMLInputElement;
+const anonymousModeCheckboxElement = $(
+  "#anonymous-mode-checkbox"
+) as HTMLInputElement;
 // Whitelisted channels
 const whitelistedChannelsSectionElement = $(
   "#whitelisted-channels-section"
@@ -101,6 +104,10 @@ function main() {
     if (isChromium && store.state.openedTwitchTabs.length > 0) {
       updateProxySettings();
     }
+  });
+  anonymousModeCheckboxElement.checked = store.state.anonymousMode;
+  anonymousModeCheckboxElement.addEventListener("change", () => {
+    store.state.anonymousMode = anonymousModeCheckboxElement.checked;
   });
   // Whitelisted channels
   if (isChromium) {

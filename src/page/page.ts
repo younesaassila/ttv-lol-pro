@@ -1,10 +1,11 @@
-import { getFetch } from "./getFetch";
+import { FetchOptions, getFetch } from "./getFetch";
 
 console.info("[TTV LOL PRO] 🚀 Page script running.");
 
 const params = JSON.parse(document.currentScript!.dataset.params!);
+const fetchOptions: FetchOptions = { scope: "page" };
 
-window.fetch = getFetch({ scope: "page" });
+window.fetch = getFetch(fetchOptions);
 
 window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
@@ -41,8 +42,16 @@ window.Worker = class Worker extends window.Worker {
     );
     super(newScriptURL, options);
     this.addEventListener("message", event => {
-      if (event.data?.type === "ContentScriptMessage") {
+      if (
+        event.data?.type === "ContentScriptMessage" ||
+        event.data?.type === "PageScriptMessage"
+      ) {
         window.postMessage(event.data.message);
+      }
+    });
+    window.addEventListener("message", event => {
+      if (event.data?.type === "WorkerScriptMessage") {
+        this.postMessage(event.data.message);
       }
     });
   }
