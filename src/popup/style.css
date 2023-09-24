@@ -48,7 +48,7 @@ main > * {
 
 /* Warning banner */
 
-#warning-banner {
+.warning-banner {
   display: none;
   margin: 3px 3px 0 3px;
   padding: 15px;
@@ -59,20 +59,20 @@ main > * {
   font-size: 9pt;
 }
 
-#warning-banner .warning-banner-title {
+.warning-banner .warning-banner-title {
   margin: 0 0 2px 0;
   font-weight: bold;
   font-size: 11pt;
 }
 
-#warning-banner .warning-banner-link,
-#warning-banner .warning-banner-link:visited {
+.warning-banner .warning-banner-link,
+.warning-banner .warning-banner-link:visited {
   color: currentColor;
   transition: opacity 100ms ease-in-out;
 }
 
-#warning-banner .warning-banner-link:hover,
-#warning-banner .warning-banner-link:hover:visited {
+.warning-banner .warning-banner-link:hover,
+.warning-banner .warning-banner-link:hover:visited {
   color: currentColor;
   opacity: 0.8;
 }

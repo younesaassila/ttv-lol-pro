@@ -5,13 +5,21 @@ import {
   anonymizeIpAddress,
   anonymizeIpAddresses,
 } from "../common/ts/anonymizeIpAddress";
+import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
 import isChromium from "../common/ts/isChromium";
 import { twitchChannelNameRegex } from "../common/ts/regexes";
 import store from "../store";
 import type { StreamStatus } from "../types";
 
+type WarningBannerType = "noProxies" | "limitedProxy";
+
 //#region HTML Elements
-const warningBannerElement = $("#warning-banner") as HTMLDivElement;
+const warningBannerNoProxiesElement = $(
+  "#warning-banner-no-proxies"
+) as HTMLDivElement;
+const warningBannerLimitedProxyElement = $(
+  "#warning-banner-limited-proxy"
+) as HTMLDivElement;
 const streamStatusElement = $("#stream-status") as HTMLDivElement;
 const proxiedElement = $("#proxied") as HTMLDivElement;
 const channelNameElement = $("#channel-name") as HTMLHeadingElement;
@@ -31,20 +39,21 @@ if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 
 async function main() {
-  if (isChromium && store.state.normalProxies.length === 0) {
-    warningBannerElement.style.display = "block";
-  } else if (
-    !isChromium &&
-    store.state.optimizedProxiesEnabled &&
-    store.state.optimizedProxies.length === 0
-  ) {
-    warningBannerElement.style.display = "block";
-  } else if (
-    !isChromium &&
-    !store.state.optimizedProxiesEnabled &&
-    store.state.normalProxies.length === 0
-  ) {
-    warningBannerElement.style.display = "block";
+  let proxies: string[];
+  if (isChromium) {
+    proxies = store.state.normalProxies;
+  } else {
+    proxies = store.state.optimizedProxiesEnabled
+      ? store.state.optimizedProxies
+      : store.state.normalProxies;
+  }
+  const isLimitedProxy =
+    proxies.length > 0 &&
+    getProxyInfoFromUrl(proxies[0]).host === "chrome.api.cdn-perfprod.com";
+  if (proxies.length === 0) {
+    setWarningBanner("noProxies");
+  } else if (isLimitedProxy) {
+    setWarningBanner("limitedProxy");
   }
 
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
@@ -58,6 +67,16 @@ async function main() {
 
   setStreamStatusElement(channelName);
   store.addEventListener("change", () => setStreamStatusElement(channelName));
+}
+
+function setWarningBanner(type: WarningBannerType) {
+  if (type === "noProxies") {
+    warningBannerNoProxiesElement.style.display = "block";
+    warningBannerLimitedProxyElement.style.display = "none";
+  } else if (type === "limitedProxy") {
+    warningBannerNoProxiesElement.style.display = "none";
+    warningBannerLimitedProxyElement.style.display = "block";
+  }
 }
 
 function setStreamStatusElement(channelName: string) {
