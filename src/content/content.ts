@@ -38,7 +38,7 @@ function onStoreReady() {
   };
   window.postMessage({
     type: "PageScriptMessage",
-    message: message,
+    message,
   });
   // Clear stats for stream on page load/reload.
   clearStats();

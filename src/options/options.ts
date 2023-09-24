@@ -28,7 +28,7 @@ type ListOptions = {
 //#endregion
 
 //#region HTML Elements
-// Proxy Usher requests
+// Proxy settings
 const proxyUsherRequestsCheckboxElement = $(
   "#proxy-usher-requests-checkbox"
 ) as HTMLInputElement;
@@ -90,7 +90,7 @@ if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 
 function main() {
-  // Proxy Usher requests
+  // Proxy settings
   proxyUsherRequestsCheckboxElement.checked = store.state.proxyUsherRequests;
   proxyUsherRequestsCheckboxElement.addEventListener("change", () => {
     const checked = proxyUsherRequestsCheckboxElement.checked;
