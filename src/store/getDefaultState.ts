@@ -6,6 +6,7 @@ export default function getDefaultState() {
     adLog: [],
     adLogEnabled: true,
     adLogLastSent: 0,
+    chromiumProxyActive: false,
     dnsResponses: [],
     normalProxies: ["chrome.api.cdn-perfprod.com:4023"],
     openedTwitchTabs: [],
