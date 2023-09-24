@@ -1,13 +1,12 @@
-import browser from "webextension-polyfill";
-import { Tabs } from "webextension-polyfill";
+import browser, { Tabs } from "webextension-polyfill";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
+import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import isChromium from "../../common/ts/isChromium";
 import {
   clearProxySettings,
   updateProxySettings,
 } from "../../common/ts/proxySettings";
 import { twitchTvHostRegex } from "../../common/ts/regexes";
-import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import store from "../../store";
 
 export default function onTabUpdated(
@@ -31,7 +30,9 @@ export default function onTabUpdated(
       var isNonWhitelistedPage = true;
       const urlObj = new URL(url);
       if (urlObj.pathname && urlObj.pathname.length > 0) {
-        isNonWhitelistedPage = !isChannelWhitelisted(urlObj.pathname.substring(1));
+        isNonWhitelistedPage = !isChannelWhitelisted(
+          urlObj.pathname.substring(1)
+        );
       }
       if (isNonWhitelistedPage) updateProxySettings();
     }
@@ -47,15 +48,20 @@ export default function onTabUpdated(
           clearProxySettings();
           return;
         }
-  
-        Promise.all(store.state.openedTwitchTabs.map(tabId => {
-          return browser.tabs.get(tabId).then(tab => {
-            if (!tab.url) return false;
-            const url = new URL(tab.url);
-            if (!url.pathname || url.pathname == '/') return false;
-            return isChannelWhitelisted(url.pathname.substring(1));
-          }).catch(() => false);
-        })).then(res => {
+
+        Promise.all(
+          store.state.openedTwitchTabs.map(tabId => {
+            return browser.tabs
+              .get(tabId)
+              .then(tab => {
+                if (!tab.url) return false;
+                const url = new URL(tab.url);
+                if (!url.pathname || url.pathname == "/") return false;
+                return isChannelWhitelisted(url.pathname.substring(1));
+              })
+              .catch(() => false);
+          })
+        ).then(res => {
           if (!res.includes(false) && store.state.chromiumProxyActive) {
             clearProxySettings();
           }
@@ -66,14 +72,19 @@ export default function onTabUpdated(
   if (isTwitchTab && wasTwitchTab) {
     console.log(`Changed Twitch tab: ${tabId}`);
     if (isChromium) {
-      Promise.all(store.state.openedTwitchTabs.map(tabId => {
-        return browser.tabs.get(tabId).then(tab => {
-          if (!tab.url) return false;
-          const url = new URL(tab.url);
-          if (!url.pathname || url.pathname == '/') return false;
-          return isChannelWhitelisted(url.pathname.substring(1));
-        }).catch(() => false);
-      })).then(res => {
+      Promise.all(
+        store.state.openedTwitchTabs.map(tabId => {
+          return browser.tabs
+            .get(tabId)
+            .then(tab => {
+              if (!tab.url) return false;
+              const url = new URL(tab.url);
+              if (!url.pathname || url.pathname == "/") return false;
+              return isChannelWhitelisted(url.pathname.substring(1));
+            })
+            .catch(() => false);
+        })
+      ).then(res => {
         if (!res.includes(false) && store.state.chromiumProxyActive) {
           clearProxySettings();
         } else if (res.includes(false) && !store.state.chromiumProxyActive) {

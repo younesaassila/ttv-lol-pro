@@ -1,9 +1,9 @@
 import { Tabs } from "webextension-polyfill";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
+import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import isChromium from "../../common/ts/isChromium";
 import { updateProxySettings } from "../../common/ts/proxySettings";
 import { twitchTvHostRegex } from "../../common/ts/regexes";
-import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import store from "../../store";
 
 export default function onTabCreated(tab: Tabs.Tab): void {
@@ -15,9 +15,12 @@ export default function onTabCreated(tab: Tabs.Tab): void {
       var isNonWhitelistedChannel = true;
       const url = new URL(tab.url);
       if (url.pathname && url.pathname.length > 0) {
-        isNonWhitelistedChannel = !isChannelWhitelisted(url.pathname.substring(1));
+        isNonWhitelistedChannel = !isChannelWhitelisted(
+          url.pathname.substring(1)
+        );
       }
-      if (isNonWhitelistedChannel && !store.state.chromiumProxyActive) updateProxySettings();
+      if (isNonWhitelistedChannel && !store.state.chromiumProxyActive)
+        updateProxySettings();
     }
     store.state.openedTwitchTabs.push(tab.id);
   }

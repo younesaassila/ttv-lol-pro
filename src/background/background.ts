@@ -5,12 +5,12 @@ import onAuthRequired from "./handlers/onAuthRequired";
 import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
 import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
 import onProxyRequest from "./handlers/onProxyRequest";
+import onProxySettingsChange from "./handlers/onProxySettingsChanged";
 import onResponseStarted from "./handlers/onResponseStarted";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
 import onTabCreated from "./handlers/onTabCreated";
 import onTabRemoved from "./handlers/onTabRemoved";
 import onTabUpdated from "./handlers/onTabUpdated";
-import onProxySettingsChange from "./handlers/onProxySettingsChanged";
 
 console.info("🚀 Background script loaded.");
 
