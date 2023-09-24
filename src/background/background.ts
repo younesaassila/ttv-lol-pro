@@ -10,6 +10,7 @@ import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
 import onTabCreated from "./handlers/onTabCreated";
 import onTabRemoved from "./handlers/onTabRemoved";
 import onTabUpdated from "./handlers/onTabUpdated";
+import onProxySettingsChange from "./handlers/onProxySettingsChanged";
 
 console.info("🚀 Background script loaded.");
 
@@ -36,6 +37,9 @@ if (isChromium) {
   browser.tabs.onCreated.addListener(onTabCreated);
   browser.tabs.onUpdated.addListener(onTabUpdated);
   browser.tabs.onRemoved.addListener(onTabRemoved);
+
+  // Listen to whether proxy is set or not
+  chrome.proxy.settings.onChange.addListener(onProxySettingsChange);
 } else {
   // Block tracking pixels.
   browser.webRequest.onBeforeRequest.addListener(
