@@ -9,6 +9,7 @@ export interface State {
   adLogEnabled: boolean;
   adLogLastSent: number;
   anonymousMode: boolean;
+  chromiumProxyActive: boolean;
   dnsResponses: DnsResponse[];
   normalProxies: string[];
   openedTwitchTabs: number[];

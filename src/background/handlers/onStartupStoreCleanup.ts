@@ -16,4 +16,5 @@ export default function onStartupStoreCleanup(): void {
   store.state.openedTwitchTabs = [];
   store.state.streamStatuses = {};
   store.state.videoWeaverUrlsByChannel = {};
+  store.state.chromiumProxyActive = false;
 }
