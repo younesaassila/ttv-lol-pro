@@ -15,6 +15,7 @@ const IS_CHROMIUM = !!self.chrome;
 
 export interface FetchOptions {
   scope: "page" | "worker";
+  shouldWaitForStore: boolean;
   state?: State;
 }
 
@@ -24,26 +25,11 @@ export function getFetch(options: FetchOptions): typeof fetch {
   const videoWeaverUrlsToFlag = new Map<string, number>(); // Video Weaver URLs to flag -> number of times flagged.
   const videoWeaverUrlsToIgnore = new Set<string>(); // No response check.
 
-  let shouldWaitForStore = true;
-  setTimeout(() => {
-    shouldWaitForStore = false;
-  }, 3000);
-
-  self.addEventListener("message", event => {
-    if (
-      (event.data?.type === "PageScriptMessage" && options.scope === "page") ||
-      (event.data?.type === "WorkerScriptMessage" && options.scope === "worker")
-    ) {
-      const message = event.data.message;
-      if (message.type === "StoreReady") {
-        console.log(
-          "[TTV LOL PRO] 📦 Received store state from content script."
-        );
-        options.state = message.state;
-        shouldWaitForStore = false;
-      }
-    }
-  });
+  if (options.shouldWaitForStore) {
+    setTimeout(() => {
+      options.shouldWaitForStore = false;
+    }, 3000);
+  }
 
   return async function fetch(
     input: RequestInfo | URL,
@@ -101,7 +87,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
         console.debug(
           "[TTV LOL PRO] 🥅 Caught GraphQL PlaybackAccessToken_Template request. Flagging…"
         );
-        while (shouldWaitForStore) await sleep(100);
+        while (options.shouldWaitForStore) await sleep(100);
         if (options.state?.anonymousMode) {
           console.log("[TTV LOL PRO] ❓ Acting as anonymous user");
           setHeaderToMap(headersMap, "Authorization", "undefined");

@@ -1,5 +1,6 @@
 import pageScriptURL from "url:../page/page.ts";
 import workerScriptURL from "url:../page/worker.ts";
+import isChromium from "../common/ts/isChromium";
 import { twitchChannelNameRegex } from "../common/ts/regexes";
 import { getStreamStatus, setStreamStatus } from "../common/ts/streamStatus";
 import store from "../store";
@@ -18,7 +19,8 @@ function injectPageScript() {
   const script = document.createElement("script");
   script.src = pageScriptURL; // src/page/page.ts
   script.dataset.params = JSON.stringify({
-    workerScriptURL: workerScriptURL, // src/page/worker.ts
+    isChromium,
+    workerScriptURL, // src/page/worker.ts
   });
   script.onload = () => script.remove();
   // ---------------------------------------

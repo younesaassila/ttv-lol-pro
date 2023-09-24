@@ -1,10 +1,14 @@
-import { getFetch } from "./getFetch";
+import { FetchOptions, getFetch } from "./getFetch";
 
 console.info("[TTV LOL PRO] 🚀 Page script running.");
 
 const params = JSON.parse(document.currentScript!.dataset.params!);
+const options: FetchOptions = {
+  scope: "page",
+  shouldWaitForStore: params.isChromium === false,
+};
 
-window.fetch = getFetch({ scope: "page" });
+window.fetch = getFetch(options);
 
 window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
@@ -48,12 +52,21 @@ window.Worker = class Worker extends window.Worker {
         window.postMessage(event.data.message);
       }
     });
-    window.addEventListener("message", event => {
-      if (event.data?.type === "WorkerScriptMessage") {
-        this.postMessage(event.data.message);
-      }
-    });
   }
 };
+
+window.addEventListener("message", event => {
+  if (event.data?.type === "PageScriptMessage") {
+    const message = event.data.message;
+    if (message.type === "StoreReady") {
+      console.log(
+        "[TTV LOL PRO] 📦 Page received store state from content script."
+      );
+      // Mutate the options object.
+      options.state = message.state;
+      options.shouldWaitForStore = false;
+    }
+  }
+});
 
 document.currentScript!.remove();
