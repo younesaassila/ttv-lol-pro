@@ -2,7 +2,10 @@ import { WebRequest } from "webextension-polyfill";
 import filterResponseDataWrapper from "../../common/ts/filterResponseDataWrapper";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
-import { videoWeaverHostRegex } from "../../common/ts/regexes";
+import {
+  twitchChannelNameRegex,
+  videoWeaverHostRegex,
+} from "../../common/ts/regexes";
 import store from "../../store";
 import { AdType, ProxyInfo } from "../../types";
 
@@ -26,7 +29,11 @@ export default function onBeforeVideoWeaverRequest(
 
     if (isAd || isMidroll) {
       const adType: AdType = isMidroll ? AdType.MIDROLL : AdType.PREROLL;
-      const channel = findChannelFromVideoWeaverUrl(details.url);
+      let channel = findChannelFromVideoWeaverUrl(details.url);
+      if (!channel && details.documentUrl) {
+        const match = twitchChannelNameRegex.exec(details.documentUrl);
+        if (match) channel = match[1];
+      }
       const isPurpleScreen = textLower.includes(
         "https://help.twitch.tv/s/article/ad-experience-on-twitch"
       );

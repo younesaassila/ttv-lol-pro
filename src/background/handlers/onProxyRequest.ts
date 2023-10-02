@@ -7,6 +7,7 @@ import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import isFlaggedRequest from "../../common/ts/isFlaggedRequest";
 import {
   passportHostRegex,
+  twitchChannelNameRegex,
   twitchGqlHostRegex,
   twitchTvHostRegex,
   usherHostRegex,
@@ -90,7 +91,11 @@ export default async function onProxyRequest(
   // Video Weaver requests.
   if (videoWeaverHostRegex.test(host) && isFlagged) {
     // Don't proxy whitelisted channels.
-    const channelName = findChannelFromVideoWeaverUrl(details.url);
+    let channelName = findChannelFromVideoWeaverUrl(details.url);
+    if (!channelName && details.documentUrl) {
+      const match = twitchChannelNameRegex.exec(details.documentUrl);
+      if (match) channelName = match[1];
+    }
     if (isChannelWhitelisted(channelName)) {
       console.log(`✋ Channel '${channelName}' is whitelisted.`);
       return { type: "direct" };

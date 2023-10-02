@@ -5,6 +5,7 @@ import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
 import isChromium from "../../common/ts/isChromium";
 import {
   passportHostRegex,
+  twitchChannelNameRegex,
   twitchGqlHostRegex,
   twitchTvHostRegex,
   usherHostRegex,
@@ -48,7 +49,11 @@ export default function onResponseStarted(
 
   // Video-weaver requests.
   if (videoWeaverHostRegex.test(host)) {
-    const channelName = findChannelFromVideoWeaverUrl(details.url);
+    let channelName = findChannelFromVideoWeaverUrl(details.url);
+    if (!channelName && details.documentUrl) {
+      const match = twitchChannelNameRegex.exec(details.documentUrl);
+      if (match) channelName = match[1];
+    }
     const streamStatus = getStreamStatus(channelName);
     const stats = streamStatus?.stats ?? { proxied: 0, notProxied: 0 };
     if (!proxy) {
