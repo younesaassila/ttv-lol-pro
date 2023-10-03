@@ -75,12 +75,13 @@ export default async function onProxyRequest(
   const documentHost = details.documentUrl
     ? getHostFromUrl(details.documentUrl)
     : null;
-  const isTwitchTvHost = documentHost && twitchTvHostRegex.test(documentHost);
+  const isFromTwitchTvHost =
+    documentHost && twitchTvHostRegex.test(documentHost);
 
   // Usher requests.
   if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
     // Don't proxy Usher requests from non-supported hosts.
-    if (!isTwitchTvHost) {
+    if (!isFromTwitchTvHost) {
       console.log(
         `✋ '${details.url}' from host '${documentHost}' is not supported.`
       );
@@ -103,7 +104,7 @@ export default async function onProxyRequest(
   // Video Weaver requests.
   if (videoWeaverHostRegex.test(host) && isFlagged) {
     // Don't proxy Video Weaver requests from non-supported hosts.
-    if (!isTwitchTvHost) {
+    if (!isFromTwitchTvHost) {
       console.log(
         `✋ '${details.url}' from host '${documentHost}' is not supported.`
       );
