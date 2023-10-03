@@ -75,14 +75,17 @@ export default async function onProxyRequest(
   const documentHost = details.documentUrl
     ? getHostFromUrl(details.documentUrl)
     : null;
-  if (documentHost && !twitchTvHostRegex.test(documentHost)) {
-    // Don't proxy Usher and Video Weaver requests from non-supported websites.
-    console.log(`✋ '${documentHost}' is not supported.`);
-    return { type: "direct" };
-  }
+  const isTwitchTvHost = documentHost && twitchTvHostRegex.test(documentHost);
 
   // Usher requests.
   if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
+    // Don't proxy Usher requests from non-supported hosts.
+    if (!isTwitchTvHost) {
+      console.log(
+        `✋ '${details.url}' from host '${documentHost}' is not supported.`
+      );
+      return { type: "direct" };
+    }
     // Don't proxy whitelisted channels.
     const channelName = findChannelFromUsherUrl(details.url);
     if (isChannelWhitelisted(channelName)) {
@@ -99,6 +102,13 @@ export default async function onProxyRequest(
 
   // Video Weaver requests.
   if (videoWeaverHostRegex.test(host) && isFlagged) {
+    // Don't proxy Video Weaver requests from non-supported hosts.
+    if (!isTwitchTvHost) {
+      console.log(
+        `✋ '${details.url}' from host '${documentHost}' is not supported.`
+      );
+      return { type: "direct" };
+    }
     // Don't proxy whitelisted channels.
     const channelName =
       findChannelFromVideoWeaverUrl(details.url) ??
