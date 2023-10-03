@@ -5,9 +5,9 @@ import {
   anonymizeIpAddress,
   anonymizeIpAddresses,
 } from "../common/ts/anonymizeIpAddress";
+import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
 import isChromium from "../common/ts/isChromium";
-import { twitchChannelNameRegex } from "../common/ts/regexes";
 import store from "../store";
 import type { StreamStatus } from "../types";
 
@@ -60,9 +60,7 @@ async function main() {
   const activeTab = tabs[0];
   if (!activeTab || !activeTab.url) return;
 
-  const match = twitchChannelNameRegex.exec(activeTab.url);
-  if (!match) return;
-  const [, channelName] = match;
+  const channelName = findChannelFromTwitchTvUrl(activeTab.url);
   if (!channelName) return;
 
   setStreamStatusElement(channelName);

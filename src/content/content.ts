@@ -1,7 +1,7 @@
 import pageScriptURL from "url:../page/page.ts";
 import workerScriptURL from "url:../page/worker.ts";
+import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import isChromium from "../common/ts/isChromium";
-import { twitchChannelNameRegex } from "../common/ts/regexes";
 import { getStreamStatus, setStreamStatus } from "../common/ts/streamStatus";
 import store from "../store";
 
@@ -52,13 +52,11 @@ function onStoreReady() {
  */
 function clearStats() {
   // TODO: Clear stats on navigation.
-  const match = twitchChannelNameRegex.exec(location.href);
-  if (!match) return;
-  const [, streamId] = match;
-  if (!streamId) return;
+  const channelName = findChannelFromTwitchTvUrl(location.href);
+  if (!channelName) return;
 
-  if (store.state.streamStatuses.hasOwnProperty(streamId)) {
-    store.state.streamStatuses[streamId].stats = {
+  if (store.state.streamStatuses.hasOwnProperty(channelName)) {
+    store.state.streamStatuses[channelName].stats = {
       proxied: 0,
       notProxied: 0,
     };

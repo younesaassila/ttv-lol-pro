@@ -1,4 +1,5 @@
 import { Proxy } from "webextension-polyfill";
+import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
 import findChannelFromUsherUrl from "../../common/ts/findChannelFromUsherUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
@@ -7,7 +8,6 @@ import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import isFlaggedRequest from "../../common/ts/isFlaggedRequest";
 import {
   passportHostRegex,
-  twitchChannelNameRegex,
   twitchGqlHostRegex,
   twitchTvHostRegex,
   usherHostRegex,
@@ -72,6 +72,15 @@ export default async function onProxyRequest(
     return proxyInfoArray;
   }
 
+  const documentHost = details.documentUrl
+    ? getHostFromUrl(details.documentUrl)
+    : null;
+  if (documentHost && !twitchTvHostRegex.test(documentHost)) {
+    // Don't proxy Usher and Video Weaver requests from non-supported websites.
+    console.log(`✋ '${documentHost}' is not supported.`);
+    return { type: "direct" };
+  }
+
   // Usher requests.
   if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
     // Don't proxy whitelisted channels.
@@ -91,11 +100,9 @@ export default async function onProxyRequest(
   // Video Weaver requests.
   if (videoWeaverHostRegex.test(host) && isFlagged) {
     // Don't proxy whitelisted channels.
-    let channelName = findChannelFromVideoWeaverUrl(details.url);
-    if (!channelName && details.documentUrl) {
-      const match = twitchChannelNameRegex.exec(details.documentUrl);
-      if (match) channelName = match[1];
-    }
+    const channelName =
+      findChannelFromVideoWeaverUrl(details.url) ??
+      findChannelFromTwitchTvUrl(details.documentUrl);
     if (isChannelWhitelisted(channelName)) {
       console.log(`✋ Channel '${channelName}' is whitelisted.`);
       return { type: "direct" };
