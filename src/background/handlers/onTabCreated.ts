@@ -12,11 +12,11 @@ export default function onTabCreated(tab: Tabs.Tab): void {
   if (host != null && twitchTvHostRegex.test(host)) {
     console.log(`➕ Opened Twitch tab: ${tab.id}`);
     if (isChromium) {
-      var isNonWhitelistedChannel = true;
-      const url = new URL(tab.url);
-      if (url.pathname && url.pathname.length > 0) {
+      let isNonWhitelistedChannel = true;
+      const Url = new URL(tab.url);
+      if (Url.pathname && Url.pathname.length > 0) {
         isNonWhitelistedChannel = !isChannelWhitelisted(
-          url.pathname.substring(1)
+          Url.pathname.substring(1)
         );
       }
       if (isNonWhitelistedChannel && !store.state.chromiumProxyActive)

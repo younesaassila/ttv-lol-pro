@@ -30,6 +30,9 @@ browser.webRequest.onResponseStarted.addListener(onResponseStarted, {
 });
 
 if (isChromium) {
+  // Listen to whether proxy is set or not.
+  browser.proxy.settings.onChange.addListener(onProxySettingsChange);
+
   // Check if there are any opened Twitch tabs on startup.
   checkForOpenedTwitchTabs();
 
@@ -37,9 +40,6 @@ if (isChromium) {
   browser.tabs.onCreated.addListener(onTabCreated);
   browser.tabs.onUpdated.addListener(onTabUpdated);
   browser.tabs.onRemoved.addListener(onTabRemoved);
-
-  // Listen to whether proxy is set or not
-  chrome.proxy.settings.onChange.addListener(onProxySettingsChange);
 } else {
   // Block tracking pixels.
   browser.webRequest.onBeforeRequest.addListener(

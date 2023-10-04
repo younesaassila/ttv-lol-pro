@@ -27,12 +27,10 @@ export default function onTabUpdated(
   if (isTwitchTab && !wasTwitchTab) {
     console.log(`➕ Opened Twitch tab: ${tabId}`);
     if (isChromium) {
-      var isNonWhitelistedPage = true;
-      const urlObj = new URL(url);
-      if (urlObj.pathname && urlObj.pathname.length > 0) {
-        isNonWhitelistedPage = !isChannelWhitelisted(
-          urlObj.pathname.substring(1)
-        );
+      let isNonWhitelistedPage = true;
+      const Url = new URL(url);
+      if (Url.pathname && Url.pathname.length > 0) {
+        isNonWhitelistedPage = !isChannelWhitelisted(Url.pathname.substring(1));
       }
       if (isNonWhitelistedPage) updateProxySettings();
     }
@@ -55,9 +53,9 @@ export default function onTabUpdated(
               .get(tabId)
               .then(tab => {
                 if (!tab.url) return false;
-                const url = new URL(tab.url);
-                if (!url.pathname || url.pathname == "/") return false;
-                return isChannelWhitelisted(url.pathname.substring(1));
+                const Url = new URL(tab.url);
+                if (!Url.pathname || Url.pathname == "/") return false;
+                return isChannelWhitelisted(Url.pathname.substring(1));
               })
               .catch(() => false);
           })
@@ -78,9 +76,9 @@ export default function onTabUpdated(
             .get(tabId)
             .then(tab => {
               if (!tab.url) return false;
-              const url = new URL(tab.url);
-              if (!url.pathname || url.pathname == "/") return false;
-              return isChannelWhitelisted(url.pathname.substring(1));
+              const Url = new URL(tab.url);
+              if (!Url.pathname || Url.pathname == "/") return false;
+              return isChannelWhitelisted(Url.pathname.substring(1));
             })
             .catch(() => false);
         })

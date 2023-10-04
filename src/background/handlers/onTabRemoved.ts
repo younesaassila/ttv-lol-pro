@@ -21,9 +21,9 @@ export default function onTabRemoved(tabId: number): void {
             .get(tabId)
             .then(tab => {
               if (!tab.url) return false;
-              const url = new URL(tab.url);
-              if (!url.pathname || url.pathname == "/") return false;
-              return isChannelWhitelisted(url.pathname.substring(1));
+              const Url = new URL(tab.url);
+              if (!Url.pathname || Url.pathname == "/") return false;
+              return isChannelWhitelisted(Url.pathname.substring(1));
             })
             .catch(() => false);
         })
