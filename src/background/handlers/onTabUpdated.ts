@@ -17,9 +17,11 @@ export default function onTabUpdated(
   changeInfo: Tabs.OnUpdatedChangeInfoType,
   tab: Tabs.Tab
 ): void {
-  // Also check for `changeInfo.status === "complete"` because the `url` property
-  // is not always accurate when navigating to a new page.
-  if (!(changeInfo.url || changeInfo.status === "loading")) return;
+  const isPageNavigation = changeInfo.url != null;
+  // FIXME: changeInfo.status === "loading" is triggered multiple times when
+  // reloading a page.
+  const isPageReload = changeInfo.status === "loading";
+  if (!isPageNavigation && !isPageReload) return;
 
   const url = changeInfo.url || tab.url || tab.pendingUrl;
   if (!url) return;

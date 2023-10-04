@@ -33,10 +33,16 @@ export default async function onProxyRequest(
     });
   }
 
+  const documentHost = details.documentUrl
+    ? getHostFromUrl(details.documentUrl)
+    : null;
+  const isFromTwitchTvHost =
+    documentHost && twitchTvHostRegex.test(documentHost);
   const isFlagged =
     (store.state.optimizedProxiesEnabled &&
       isFlaggedRequest(details.requestHeaders)) ||
     !store.state.optimizedProxiesEnabled;
+
   const proxies = store.state.optimizedProxiesEnabled
     ? store.state.optimizedProxies
     : store.state.normalProxies;
@@ -71,12 +77,6 @@ export default async function onProxyRequest(
     );
     return proxyInfoArray;
   }
-
-  const documentHost = details.documentUrl
-    ? getHostFromUrl(details.documentUrl)
-    : null;
-  const isFromTwitchTvHost =
-    documentHost && twitchTvHostRegex.test(documentHost);
 
   // Usher requests.
   if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
