@@ -13,17 +13,18 @@ export default function checkForOpenedTwitchTabs() {
   browser.tabs
     .query({ url: ["https://www.twitch.tv/*", "https://m.twitch.tv/*"] })
     .then(tabs => {
-      const tabsIds = tabs.filter(tab => tab.id != null).map(tab => tab.id!);
-      if (tabsIds.length === 0) {
+      if (tabs.length === 0) {
         if (isChromium) clearProxySettings();
         return;
       }
       console.log(
-        `🔍 Found ${tabsIds.length} opened Twitch tabs: ${tabsIds.join(", ")}`
+        `🔍 Found ${tabs.length} opened Twitch tabs: ${tabs
+          .map(tab => tab.id)
+          .join(", ")}`
       );
       if (isChromium) {
         updateProxySettings();
       }
-      store.state.openedTwitchTabs = tabsIds;
+      store.state.openedTwitchTabs = tabs;
     });
 }

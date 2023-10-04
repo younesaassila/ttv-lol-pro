@@ -116,15 +116,11 @@ function main() {
     });
   }
   // Whitelisted channels
-  if (isChromium) {
-    whitelistedChannelsSectionElement.style.display = "none";
-  } else {
-    listInit(whitelistedChannelsListElement, "whitelistedChannels", {
-      getAlreadyExistsAlertMessage: channelName =>
-        `'${channelName}' is already whitelisted`,
-      getPromptPlaceholder: () => "Enter a channel name…",
-    });
-  }
+  listInit(whitelistedChannelsListElement, "whitelistedChannels", {
+    getAlreadyExistsAlertMessage: channelName =>
+      `'${channelName}' is already whitelisted`,
+    getPromptPlaceholder: () => "Enter a channel name…",
+  });
   // Proxies
   if (isChromium) {
     optimizedProxiesDivElement.style.display = "none";
