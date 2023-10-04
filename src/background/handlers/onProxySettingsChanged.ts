@@ -1,9 +1,10 @@
+import { Types } from "webextension-polyfill";
 import store from "../../store";
 
 export default function onProxySettingsChange(
-  details: chrome.types.ChromeSettingGetResultDetails
+  details: Types.SettingOnChangeDetailsType
 ) {
-  console.log("PROXY SETTINGS CHANGE: " + details.levelOfControl);
+  console.log(`⚙️ Proxy settings changed: ${details.levelOfControl}`);
   store.state.chromiumProxyActive =
     details.levelOfControl == "controlled_by_this_extension";
 }
