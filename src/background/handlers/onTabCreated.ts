@@ -1,4 +1,5 @@
 import { Tabs } from "webextension-polyfill";
+import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import isChromium from "../../common/ts/isChromium";
@@ -7,21 +8,23 @@ import { twitchTvHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
 
 export default function onTabCreated(tab: Tabs.Tab): void {
-  if (!tab.url || tab.id == null) return;
-  const host = getHostFromUrl(tab.url);
-  if (host != null && twitchTvHostRegex.test(host)) {
+  const url = tab.url || tab.pendingUrl;
+  if (!url) return;
+  const host = getHostFromUrl(url);
+  if (!host) return;
+
+  if (twitchTvHostRegex.test(host)) {
     console.log(`➕ Opened Twitch tab: ${tab.id}`);
+    store.state.openedTwitchTabs.push(tab);
+
     if (isChromium) {
-      let isNonWhitelistedChannel = true;
-      const Url = new URL(tab.url);
-      if (Url.pathname && Url.pathname.length > 0) {
-        isNonWhitelistedChannel = !isChannelWhitelisted(
-          Url.pathname.substring(1)
-        );
-      }
-      if (isNonWhitelistedChannel && !store.state.chromiumProxyActive)
+      const channelName = findChannelFromTwitchTvUrl(url);
+      const isWhitelisted = channelName
+        ? isChannelWhitelisted(channelName)
+        : false;
+      if (!isWhitelisted && !store.state.chromiumProxyActive) {
         updateProxySettings();
+      }
     }
-    store.state.openedTwitchTabs.push(tab.id);
   }
 }

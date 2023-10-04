@@ -1,4 +1,5 @@
-import browser, { Tabs } from "webextension-polyfill";
+import { Tabs } from "webextension-polyfill";
+import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import isChromium from "../../common/ts/isChromium";
@@ -8,6 +9,8 @@ import {
 } from "../../common/ts/proxySettings";
 import { twitchTvHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
+import onTabCreated from "./onTabCreated";
+import onTabRemoved from "./onTabRemoved";
 
 export default function onTabUpdated(
   tabId: number,
@@ -16,79 +19,49 @@ export default function onTabUpdated(
 ): void {
   // Also check for `changeInfo.status === "complete"` because the `url` property
   // is not always accurate when navigating to a new page.
-  if (!(changeInfo.url || changeInfo.status === "complete")) return;
+  if (!(changeInfo.url || changeInfo.status === "loading")) return;
 
-  const url = changeInfo.url || tab.url;
+  const url = changeInfo.url || tab.url || tab.pendingUrl;
   if (!url) return;
   const host = getHostFromUrl(url);
-  const isTwitchTab = host != null && twitchTvHostRegex.test(host);
-  const wasTwitchTab = store.state.openedTwitchTabs.includes(tabId);
+  if (!host) return;
+
+  const isTwitchTab = twitchTvHostRegex.test(host);
+  const wasTwitchTab = store.state.openedTwitchTabs.findIndex(
+    tab => tab.id === tabId
+  );
 
   if (isTwitchTab && !wasTwitchTab) {
-    console.log(`➕ Opened Twitch tab: ${tabId}`);
-    if (isChromium) {
-      let isNonWhitelistedPage = true;
-      const Url = new URL(url);
-      if (Url.pathname && Url.pathname.length > 0) {
-        isNonWhitelistedPage = !isChannelWhitelisted(Url.pathname.substring(1));
-      }
-      if (isNonWhitelistedPage) updateProxySettings();
-    }
-    store.state.openedTwitchTabs.push(tabId);
+    onTabCreated(tab);
   }
-  if (!isTwitchTab && wasTwitchTab) {
-    const index = store.state.openedTwitchTabs.indexOf(tabId);
-    if (index !== -1) {
-      console.log(`➖ Closed Twitch tab: ${tabId}`);
-      store.state.openedTwitchTabs.splice(index, 1);
-      if (isChromium) {
-        if (store.state.openedTwitchTabs.length === 0) {
-          clearProxySettings();
-          return;
-        }
 
-        Promise.all(
-          store.state.openedTwitchTabs.map(tabId => {
-            return browser.tabs
-              .get(tabId)
-              .then(tab => {
-                if (!tab.url) return false;
-                const Url = new URL(tab.url);
-                if (!Url.pathname || Url.pathname == "/") return false;
-                return isChannelWhitelisted(Url.pathname.substring(1));
-              })
-              .catch(() => false);
-          })
-        ).then(res => {
-          if (!res.includes(false) && store.state.chromiumProxyActive) {
-            clearProxySettings();
-          }
-        });
-      }
-    }
+  if (!isTwitchTab && wasTwitchTab) {
+    onTabRemoved(tabId);
   }
+
   if (isTwitchTab && wasTwitchTab) {
-    console.log(`Changed Twitch tab: ${tabId}`);
+    const index = store.state.openedTwitchTabs.findIndex(
+      tab => tab.id === tabId
+    );
+    if (index === -1) return;
+
+    console.log(`🟰 Updated Twitch tab: ${tabId}`);
+    store.state.openedTwitchTabs[index] = tab;
+
     if (isChromium) {
-      Promise.all(
-        store.state.openedTwitchTabs.map(tabId => {
-          return browser.tabs
-            .get(tabId)
-            .then(tab => {
-              if (!tab.url) return false;
-              const Url = new URL(tab.url);
-              if (!Url.pathname || Url.pathname == "/") return false;
-              return isChannelWhitelisted(Url.pathname.substring(1));
-            })
-            .catch(() => false);
-        })
-      ).then(res => {
-        if (!res.includes(false) && store.state.chromiumProxyActive) {
-          clearProxySettings();
-        } else if (res.includes(false) && !store.state.chromiumProxyActive) {
-          updateProxySettings();
-        }
+      const allTabsAreWhitelisted = store.state.openedTwitchTabs.every(tab => {
+        if (!tab.url) return false;
+        const channelName = findChannelFromTwitchTvUrl(tab.url);
+        const isWhitelisted = channelName
+          ? isChannelWhitelisted(channelName)
+          : false;
+        return isWhitelisted;
       });
+      if (!allTabsAreWhitelisted && !store.state.chromiumProxyActive) {
+        updateProxySettings();
+      } else if (allTabsAreWhitelisted && store.state.chromiumProxyActive) {
+        clearProxySettings();
+      }
     }
   }
 }

@@ -1,3 +1,4 @@
+import type { Tabs } from "webextension-polyfill";
 import type { AdLogEntry, DnsResponse, StreamStatus } from "../types";
 
 export type EventType = "load" | "change";
@@ -12,7 +13,7 @@ export interface State {
   chromiumProxyActive: boolean;
   dnsResponses: DnsResponse[];
   normalProxies: string[];
-  openedTwitchTabs: number[];
+  openedTwitchTabs: Tabs.Tab[];
   optimizedProxies: string[];
   optimizedProxiesEnabled: boolean;
   proxyTwitchWebpage: boolean;
