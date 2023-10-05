@@ -1,7 +1,6 @@
 import { Tabs } from "webextension-polyfill";
-import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
+import areAllTabsWhitelisted from "../../common/ts/areAllTabsWhitelisted";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
-import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import isChromium from "../../common/ts/isChromium";
 import {
   clearProxySettings,
@@ -56,14 +55,9 @@ export default function onTabUpdated(
     store.state.openedTwitchTabs[index] = tab;
 
     if (isChromium) {
-      const allTabsAreWhitelisted = store.state.openedTwitchTabs.every(tab => {
-        if (!tab.url) return false;
-        const channelName = findChannelFromTwitchTvUrl(tab.url);
-        const isWhitelisted = channelName
-          ? isChannelWhitelisted(channelName)
-          : false;
-        return isWhitelisted;
-      });
+      const allTabsAreWhitelisted = areAllTabsWhitelisted(
+        store.state.openedTwitchTabs
+      );
       if (!allTabsAreWhitelisted && !store.state.chromiumProxyActive) {
         updateProxySettings();
       } else if (allTabsAreWhitelisted && store.state.chromiumProxyActive) {

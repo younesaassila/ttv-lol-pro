@@ -1,5 +1,4 @@
-import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
-import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
+import areAllTabsWhitelisted from "../../common/ts/areAllTabsWhitelisted";
 import isChromium from "../../common/ts/isChromium";
 import { clearProxySettings } from "../../common/ts/proxySettings";
 import store from "../../store";
@@ -12,14 +11,9 @@ export default function onTabRemoved(tabId: number): void {
   store.state.openedTwitchTabs.splice(index, 1);
 
   if (isChromium) {
-    const allTabsAreWhitelisted = store.state.openedTwitchTabs.every(tab => {
-      if (!tab.url) return false;
-      const channelName = findChannelFromTwitchTvUrl(tab.url);
-      const isWhitelisted = channelName
-        ? isChannelWhitelisted(channelName)
-        : false;
-      return isWhitelisted;
-    });
+    const allTabsAreWhitelisted = areAllTabsWhitelisted(
+      store.state.openedTwitchTabs
+    );
     if (
       (store.state.openedTwitchTabs.length === 0 || allTabsAreWhitelisted) &&
       store.state.chromiumProxyActive
