@@ -70,7 +70,7 @@ TTV LOL PRO removes _most_ livestream ads from Twitch. This is free, don't expec
 **TTV LOL PRO:**
 
 - removes _most_ livestream ads from Twitch,
-- lets you whitelist channels (Firefox only),
+- lets you whitelist channels,
 - improves TTV LOL's popup by showing stream status,
 - lets you add custom primary/fallback proxies.
 
