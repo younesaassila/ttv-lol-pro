@@ -29,7 +29,7 @@ export default function onTabUpdated(
   if (!host) return;
 
   const isTwitchTab = twitchTvHostRegex.test(host);
-  const wasTwitchTab = store.state.openedTwitchTabs.findIndex(
+  const wasTwitchTab = store.state.openedTwitchTabs.some(
     tab => tab.id === tabId
   );
 
