@@ -39,10 +39,10 @@ export default function onBeforeVideoWeaverRequest(
     const isPurpleScreen = textLower.includes(
       "https://help.twitch.tv/s/article/ad-experience-on-twitch"
     );
-    let proxy: string | null = null;
-    if (details.proxyInfo && details.proxyInfo.type !== "direct") {
-      proxy = `${details.proxyInfo.host}:${details.proxyInfo.port}`;
-    }
+    const proxy =
+      details.proxyInfo && details.proxyInfo.type !== "direct"
+        ? `${details.proxyInfo.host}:${details.proxyInfo.port}`
+        : null;
 
     const adLog = store.state.adLog.filter(
       entry => details.timeStamp - entry.timestamp < 1000 * 60 * 60 * 24 * 7 // 7 days

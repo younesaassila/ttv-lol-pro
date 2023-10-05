@@ -19,10 +19,10 @@ export default function checkForOpenedTwitchTabs() {
 
       if (isChromium) {
         const allTabsAreWhitelisted = areAllTabsWhitelisted(tabs);
-        if (tabs.length === 0 || allTabsAreWhitelisted) {
-          clearProxySettings();
-        } else {
+        if (tabs.length > 0 && !allTabsAreWhitelisted) {
           updateProxySettings();
+        } else {
+          clearProxySettings();
         }
       }
     });
