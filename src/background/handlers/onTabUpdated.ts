@@ -18,10 +18,11 @@ export default function onTabUpdated(
   tab: Tabs.Tab
 ): void {
   const isPageNavigation = changeInfo.url != null;
-  // FIXME: changeInfo.status === "loading" is triggered multiple times when
-  // reloading a page.
-  const isPageReload = changeInfo.status === "loading";
-  if (!isPageNavigation && !isPageReload) return;
+  // We have to check for `changeInfo.status === "loading"` because
+  // `changeInfo.url` is incorrect when navigating from Twitch to another
+  // website.
+  const isPageLoad = changeInfo.status === "loading";
+  if (!isPageNavigation && !isPageLoad) return;
 
   const url = changeInfo.url || tab.url || tab.pendingUrl;
   if (!url) return;
@@ -32,15 +33,19 @@ export default function onTabUpdated(
   const wasTwitchTab = store.state.openedTwitchTabs.some(
     tab => tab.id === tabId
   );
+  if (!isTwitchTab && !wasTwitchTab) return;
 
+  // Tab created
   if (isTwitchTab && !wasTwitchTab) {
     onTabCreated(tab);
   }
 
+  // Tab removed
   if (!isTwitchTab && wasTwitchTab) {
     onTabRemoved(tabId);
   }
 
+  // Tab updated
   if (isTwitchTab && wasTwitchTab) {
     const index = store.state.openedTwitchTabs.findIndex(
       tab => tab.id === tabId
