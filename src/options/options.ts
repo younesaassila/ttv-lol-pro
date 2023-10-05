@@ -2,7 +2,10 @@ import $ from "../common/ts/$";
 import { readFile, saveFile } from "../common/ts/file";
 import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
 import isChromium from "../common/ts/isChromium";
-import { updateProxySettings } from "../common/ts/proxySettings";
+import {
+  clearProxySettings,
+  updateProxySettings,
+} from "../common/ts/proxySettings";
 import sendAdLog from "../common/ts/sendAdLog";
 import store from "../store";
 import getDefaultState from "../store/getDefaultState";
@@ -71,6 +74,9 @@ const adLogClearButtonElement = $("#ad-log-clear-button") as HTMLButtonElement;
 const exportButtonElement = $("#export-button") as HTMLButtonElement;
 const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
+const unsetPacScriptButtonElement = $(
+  "#unset-pac-script-button"
+) as HTMLButtonElement;
 //#endregion
 
 const DEFAULT_STATE = Object.freeze(getDefaultState());
@@ -169,6 +175,9 @@ function main() {
     adLogEnabledCheckboxElement.addEventListener("change", () => {
       store.state.adLogEnabled = adLogEnabledCheckboxElement.checked;
     });
+  }
+  if (!isChromium) {
+    unsetPacScriptButtonElement.style.display = "none";
   }
 }
 
@@ -502,4 +511,11 @@ resetButtonElement.addEventListener("click", () => {
   if (!confirmation) return;
   store.clear();
   window.location.reload(); // Reload page to update UI.
+});
+
+unsetPacScriptButtonElement.addEventListener("click", () => {
+  if (isChromium) {
+    clearProxySettings();
+    alert("PAC script unset successfully.");
+  }
 });
