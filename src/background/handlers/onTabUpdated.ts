@@ -58,6 +58,9 @@ export default function onTabUpdated(
       const allTabsAreWhitelisted = areAllTabsWhitelisted(
         store.state.openedTwitchTabs
       );
+      // We don't check for `store.state.openedTwitchTabs.length === 0` because
+      // there is always at least one tab open (the one that triggered this
+      // event).
       if (!allTabsAreWhitelisted && !store.state.chromiumProxyActive) {
         updateProxySettings();
       } else if (allTabsAreWhitelisted && store.state.chromiumProxyActive) {
