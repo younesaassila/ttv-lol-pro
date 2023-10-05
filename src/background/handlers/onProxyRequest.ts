@@ -22,6 +22,12 @@ export default async function onProxyRequest(
   const host = getHostFromUrl(details.url);
   if (!host) return { type: "direct" };
 
+  const documentHost = details.documentUrl
+    ? getHostFromUrl(details.documentUrl)
+    : null;
+  const isFromTwitchTvHost =
+    documentHost && twitchTvHostRegex.test(documentHost);
+
   // Wait for the store to be ready.
   if (store.readyState !== "complete") {
     await new Promise(resolve => {
@@ -33,16 +39,10 @@ export default async function onProxyRequest(
     });
   }
 
-  const documentHost = details.documentUrl
-    ? getHostFromUrl(details.documentUrl)
-    : null;
-  const isFromTwitchTvHost =
-    documentHost && twitchTvHostRegex.test(documentHost);
   const isFlagged =
     (store.state.optimizedProxiesEnabled &&
       isFlaggedRequest(details.requestHeaders)) ||
     !store.state.optimizedProxiesEnabled;
-
   const proxies = store.state.optimizedProxiesEnabled
     ? store.state.optimizedProxies
     : store.state.normalProxies;
