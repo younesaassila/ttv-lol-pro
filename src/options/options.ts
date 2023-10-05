@@ -448,6 +448,7 @@ exportButtonElement.addEventListener("click", () => {
     "ttv-lol-pro_backup.json",
     JSON.stringify({
       adLogEnabled: store.state.adLogEnabled,
+      anonymousMode: store.state.anonymousMode,
       normalProxies: store.state.normalProxies,
       optimizedProxies: store.state.optimizedProxies,
       optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,

@@ -170,6 +170,7 @@ copyDebugInfoButtonElement.addEventListener("click", async e => {
     `- OS: ${userAgentParser.getOSName()} ${userAgentParser.getOSVersion()}`,
     `- Passport enabled: ${store.state.proxyUsherRequests}`,
     `- Is laissez-passer: ${store.state.proxyTwitchWebpage}`,
+    `- Is redacted: ${store.state.anonymousMode}`,
     `- Optimized proxies enabled: ${store.state.optimizedProxiesEnabled}`,
     `- Optimized proxies: ${JSON.stringify(
       e.shiftKey

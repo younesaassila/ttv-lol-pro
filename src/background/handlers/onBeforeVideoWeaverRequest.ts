@@ -39,6 +39,7 @@ export default function onBeforeVideoWeaverRequest(
       }
       const proxyTwitchWebpage = store.state.proxyTwitchWebpage;
       const proxyUsherRequests = store.state.proxyUsherRequests;
+      const anonymousMode = store.state.anonymousMode;
       const timestamp = details.timeStamp;
       const videoWeaverHost = host;
       const videoWeaverUrl = details.url;
@@ -62,6 +63,7 @@ export default function onBeforeVideoWeaverRequest(
           proxy,
           proxyTwitchWebpage,
           proxyUsherRequests,
+          anonymousMode,
           timestamp,
           videoWeaverHost,
           videoWeaverUrl,
