@@ -2,7 +2,10 @@ import $ from "../common/ts/$";
 import { readFile, saveFile } from "../common/ts/file";
 import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
 import isChromium from "../common/ts/isChromium";
-import { updateProxySettings } from "../common/ts/proxySettings";
+import {
+  clearProxySettings,
+  updateProxySettings,
+} from "../common/ts/proxySettings";
 import sendAdLog from "../common/ts/sendAdLog";
 import store from "../store";
 import getDefaultState from "../store/getDefaultState";
@@ -28,12 +31,16 @@ type ListOptions = {
 //#endregion
 
 //#region HTML Elements
-// Proxy Usher requests
+// Proxy settings
 const proxyUsherRequestsCheckboxElement = $(
   "#proxy-usher-requests-checkbox"
 ) as HTMLInputElement;
 const proxyTwitchWebpageCheckboxElement = $(
   "#proxy-twitch-webpage-checkbox"
+) as HTMLInputElement;
+const anonymousModeLiElement = $("#anonymous-mode-li") as HTMLLIElement;
+const anonymousModeCheckboxElement = $(
+  "#anonymous-mode-checkbox"
 ) as HTMLInputElement;
 // Whitelisted channels
 const whitelistedChannelsSectionElement = $(
@@ -67,6 +74,9 @@ const adLogClearButtonElement = $("#ad-log-clear-button") as HTMLButtonElement;
 const exportButtonElement = $("#export-button") as HTMLButtonElement;
 const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
+const unsetPacScriptButtonElement = $(
+  "#unset-pac-script-button"
+) as HTMLButtonElement;
 //#endregion
 
 const DEFAULT_STATE = Object.freeze(getDefaultState());
@@ -86,32 +96,37 @@ if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 
 function main() {
-  // Proxy Usher requests
+  // Proxy settings
   proxyUsherRequestsCheckboxElement.checked = store.state.proxyUsherRequests;
   proxyUsherRequestsCheckboxElement.addEventListener("change", () => {
     const checked = proxyUsherRequestsCheckboxElement.checked;
     store.state.proxyUsherRequests = checked;
-    if (isChromium && store.state.openedTwitchTabs.length > 0) {
+    if (isChromium && store.state.chromiumProxyActive) {
       updateProxySettings();
     }
   });
   proxyTwitchWebpageCheckboxElement.checked = store.state.proxyTwitchWebpage;
   proxyTwitchWebpageCheckboxElement.addEventListener("change", () => {
     store.state.proxyTwitchWebpage = proxyTwitchWebpageCheckboxElement.checked;
-    if (isChromium && store.state.openedTwitchTabs.length > 0) {
+    if (isChromium && store.state.chromiumProxyActive) {
       updateProxySettings();
     }
   });
-  // Whitelisted channels
+  // TODO: Figure out why this feature doesn't work in Chromium.
   if (isChromium) {
-    whitelistedChannelsSectionElement.style.display = "none";
+    anonymousModeLiElement.style.display = "none";
   } else {
-    listInit(whitelistedChannelsListElement, "whitelistedChannels", {
-      getAlreadyExistsAlertMessage: channelName =>
-        `'${channelName}' is already whitelisted`,
-      getPromptPlaceholder: () => "Enter a channel name…",
+    anonymousModeCheckboxElement.checked = store.state.anonymousMode;
+    anonymousModeCheckboxElement.addEventListener("change", () => {
+      store.state.anonymousMode = anonymousModeCheckboxElement.checked;
     });
   }
+  // Whitelisted channels
+  listInit(whitelistedChannelsListElement, "whitelistedChannels", {
+    getAlreadyExistsAlertMessage: channelName =>
+      `'${channelName}' is already whitelisted`,
+    getPromptPlaceholder: () => "Enter a channel name…",
+  });
   // Proxies
   if (isChromium) {
     optimizedProxiesDivElement.style.display = "none";
@@ -145,7 +160,7 @@ function main() {
     isAddAllowed: isNormalProxyUrlAllowed,
     isEditAllowed: isNormalProxyUrlAllowed,
     onEdit() {
-      if (isChromium && store.state.openedTwitchTabs.length > 0) {
+      if (isChromium && store.state.chromiumProxyActive) {
         updateProxySettings();
       }
     },
@@ -160,6 +175,9 @@ function main() {
     adLogEnabledCheckboxElement.addEventListener("change", () => {
       store.state.adLogEnabled = adLogEnabledCheckboxElement.checked;
     });
+  }
+  if (!isChromium) {
+    unsetPacScriptButtonElement.style.display = "none";
   }
 }
 
@@ -439,6 +457,7 @@ exportButtonElement.addEventListener("click", () => {
     "ttv-lol-pro_backup.json",
     JSON.stringify({
       adLogEnabled: store.state.adLogEnabled,
+      anonymousMode: store.state.anonymousMode,
       normalProxies: store.state.normalProxies,
       optimizedProxies: store.state.optimizedProxies,
       optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
@@ -492,4 +511,11 @@ resetButtonElement.addEventListener("click", () => {
   if (!confirmation) return;
   store.clear();
   window.location.reload(); // Reload page to update UI.
+});
+
+unsetPacScriptButtonElement.addEventListener("click", () => {
+  if (isChromium) {
+    clearProxySettings();
+    alert("PAC script unset successfully.");
+  }
 });

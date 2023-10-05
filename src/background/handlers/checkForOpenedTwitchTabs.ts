@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import areAllTabsWhitelisted from "../../common/ts/areAllTabsWhitelisted";
 import isChromium from "../../common/ts/isChromium";
 import {
   clearProxySettings,
@@ -13,17 +14,16 @@ export default function checkForOpenedTwitchTabs() {
   browser.tabs
     .query({ url: ["https://www.twitch.tv/*", "https://m.twitch.tv/*"] })
     .then(tabs => {
-      const tabsIds = tabs.filter(tab => tab.id != null).map(tab => tab.id!);
-      if (tabsIds.length === 0) {
-        if (isChromium) clearProxySettings();
-        return;
-      }
-      console.log(
-        `🔍 Found ${tabsIds.length} opened Twitch tabs: ${tabsIds.join(", ")}`
-      );
+      console.log(`🔍 Found ${tabs.length} opened Twitch tabs.`);
+      store.state.openedTwitchTabs = tabs;
+
       if (isChromium) {
-        updateProxySettings();
+        const allTabsAreWhitelisted = areAllTabsWhitelisted(tabs);
+        if (tabs.length > 0 && !allTabsAreWhitelisted) {
+          updateProxySettings();
+        } else {
+          clearProxySettings();
+        }
       }
-      store.state.openedTwitchTabs = tabsIds;
     });
 }

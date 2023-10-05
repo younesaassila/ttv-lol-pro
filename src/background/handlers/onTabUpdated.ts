@@ -1,4 +1,5 @@
 import { Tabs } from "webextension-polyfill";
+import areAllTabsWhitelisted from "../../common/ts/areAllTabsWhitelisted";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import isChromium from "../../common/ts/isChromium";
 import {
@@ -7,35 +8,62 @@ import {
 } from "../../common/ts/proxySettings";
 import { twitchTvHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
+import onTabCreated from "./onTabCreated";
+import onTabRemoved from "./onTabRemoved";
 
 export default function onTabUpdated(
   tabId: number,
   changeInfo: Tabs.OnUpdatedChangeInfoType,
   tab: Tabs.Tab
 ): void {
-  // Also check for `changeInfo.status === "complete"` because the `url` property
-  // is not always accurate when navigating to a new page.
-  if (!(changeInfo.url || changeInfo.status === "complete")) return;
+  const isPageNavigation = changeInfo.url != null;
+  // We have to check for `changeInfo.status === "loading"` because
+  // `changeInfo.url` is incorrect when navigating from Twitch to another
+  // website.
+  const isPageLoad = changeInfo.status === "loading";
+  if (!isPageNavigation && !isPageLoad) return;
 
-  const url = changeInfo.url || tab.url;
+  const url = changeInfo.url || tab.url || tab.pendingUrl;
   if (!url) return;
   const host = getHostFromUrl(url);
-  const isTwitchTab = host != null && twitchTvHostRegex.test(host);
-  const wasTwitchTab = store.state.openedTwitchTabs.includes(tabId);
+  if (!host) return;
 
+  const isTwitchTab = twitchTvHostRegex.test(host);
+  const wasTwitchTab = store.state.openedTwitchTabs.some(
+    tab => tab.id === tabId
+  );
+  if (!isTwitchTab && !wasTwitchTab) return;
+
+  // Tab created
   if (isTwitchTab && !wasTwitchTab) {
-    console.log(`➕ Opened Twitch tab: ${tabId}`);
-    if (isChromium && store.state.openedTwitchTabs.length === 0) {
-      updateProxySettings();
-    }
-    store.state.openedTwitchTabs.push(tabId);
+    onTabCreated(tab);
   }
+
+  // Tab removed
   if (!isTwitchTab && wasTwitchTab) {
-    const index = store.state.openedTwitchTabs.indexOf(tabId);
-    if (index !== -1) {
-      console.log(`➖ Closed Twitch tab: ${tabId}`);
-      store.state.openedTwitchTabs.splice(index, 1);
-      if (isChromium && store.state.openedTwitchTabs.length === 0) {
+    onTabRemoved(tabId);
+  }
+
+  // Tab updated
+  if (isTwitchTab && wasTwitchTab) {
+    const index = store.state.openedTwitchTabs.findIndex(
+      tab => tab.id === tabId
+    );
+    if (index === -1) return;
+
+    console.log(`🟰 Updated Twitch tab: ${tabId}`);
+    store.state.openedTwitchTabs[index] = tab;
+
+    if (isChromium) {
+      const allTabsAreWhitelisted = areAllTabsWhitelisted(
+        store.state.openedTwitchTabs
+      );
+      // We don't check for `store.state.openedTwitchTabs.length === 0` because
+      // there is always at least one tab open (the one that triggered this
+      // event).
+      if (!allTabsAreWhitelisted && !store.state.chromiumProxyActive) {
+        updateProxySettings();
+      } else if (allTabsAreWhitelisted && store.state.chromiumProxyActive) {
         clearProxySettings();
       }
     }

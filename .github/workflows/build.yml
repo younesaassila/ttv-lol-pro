@@ -11,7 +11,7 @@ jobs:
       - name: Run linter
         run: npm run lint
       - name: Run type checker
-        run: npx tsc --noEmit
+        run: npm run type-check
       # - name: Run tests
       #   run: npm run test
       - name: Build for Firefox

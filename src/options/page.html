@@ -83,6 +83,21 @@
                 </b>
               </small>
             </li>
+            <li id="anonymous-mode-li">
+              <input
+                type="checkbox"
+                name="anonymous-mode-checkbox"
+                id="anonymous-mode-checkbox"
+              />
+              <label for="anonymous-mode-checkbox">
+                Redact my passport information
+              </label>
+              <br />
+              <small>
+                Watch streams as if you were logged out. This option removes
+                authentication headers from requests to Twitch.
+              </small>
+            </li>
             <small><b>Expiration date:</b> 2038-01-19T03:14:07.000Z</small>
           </ul>
         </div>
@@ -93,6 +108,8 @@
         <h2>Whitelisted channels</h2>
         <small>
           Support your favorite content creators by whitelisting their channels.
+          On Chromium-based browsers, whitelisting only works when all opened
+          Twitch tabs are whitelisted channels.
         </small>
         <ul id="whitelisted-channels-list" class="store-list"></ul>
       </section>
@@ -115,8 +132,8 @@
           <div id="optimized-proxies-div">
             <input
               type="radio"
+              name="proxy-mode"
               id="optimized"
-              name="drone"
               value="optimized"
               checked
             />
@@ -124,7 +141,7 @@
             <ol id="optimized-proxies-list" class="store-list" start="0"></ol>
           </div>
           <div>
-            <input type="radio" id="normal" name="drone" value="normal" />
+            <input type="radio" name="proxy-mode" id="normal" value="normal" />
             <label for="normal">Proxy all requests</label>
             <ol id="normal-proxies-list" class="store-list" start="0"></ol>
           </div>
@@ -169,6 +186,7 @@
         <button id="export-button">Back up to file…</button>
         <button id="import-button">Restore from file…</button>
         <button id="reset-button">Reset to default settings…</button>
+        <button id="unset-pac-script-button">Unset PAC script</button>
       </section>
     </main>
 

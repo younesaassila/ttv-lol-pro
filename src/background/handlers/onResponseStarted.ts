@@ -1,4 +1,5 @@
 import { WebRequest } from "webextension-polyfill";
+import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
@@ -48,7 +49,9 @@ export default function onResponseStarted(
 
   // Video-weaver requests.
   if (videoWeaverHostRegex.test(host)) {
-    const channelName = findChannelFromVideoWeaverUrl(details.url);
+    const channelName =
+      findChannelFromVideoWeaverUrl(details.url) ??
+      findChannelFromTwitchTvUrl(details.documentUrl);
     const streamStatus = getStreamStatus(channelName);
     const stats = streamStatus?.stats ?? { proxied: 0, notProxied: 0 };
     if (!proxy) {

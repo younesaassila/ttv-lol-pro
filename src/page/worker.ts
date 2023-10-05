@@ -1,5 +1,10 @@
-import { getFetch } from "./getFetch";
+import { FetchOptions, getFetch } from "./getFetch";
 
 console.info("[TTV LOL PRO] 🚀 Worker script running.");
 
-self.fetch = getFetch({ scope: "worker" });
+const options: FetchOptions = {
+  scope: "worker",
+  shouldWaitForStore: false,
+};
+
+self.fetch = getFetch(options);

@@ -1,4 +1,5 @@
 import { Proxy } from "webextension-polyfill";
+import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
 import findChannelFromUsherUrl from "../../common/ts/findChannelFromUsherUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
@@ -20,6 +21,12 @@ export default async function onProxyRequest(
 ): Promise<ProxyInfo | ProxyInfo[]> {
   const host = getHostFromUrl(details.url);
   if (!host) return { type: "direct" };
+
+  const documentHost = details.documentUrl
+    ? getHostFromUrl(details.documentUrl)
+    : null;
+  const isFromTwitchTvHost =
+    documentHost && twitchTvHostRegex.test(documentHost);
 
   // Wait for the store to be ready.
   if (store.readyState !== "complete") {
@@ -73,6 +80,13 @@ export default async function onProxyRequest(
 
   // Usher requests.
   if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
+    // Don't proxy Usher requests from non-supported hosts.
+    if (!isFromTwitchTvHost) {
+      console.log(
+        `✋ '${details.url}' from host '${documentHost}' is not supported.`
+      );
+      return { type: "direct" };
+    }
     // Don't proxy whitelisted channels.
     const channelName = findChannelFromUsherUrl(details.url);
     if (isChannelWhitelisted(channelName)) {
@@ -89,8 +103,17 @@ export default async function onProxyRequest(
 
   // Video Weaver requests.
   if (videoWeaverHostRegex.test(host) && isFlagged) {
+    // Don't proxy Video Weaver requests from non-supported hosts.
+    if (!isFromTwitchTvHost) {
+      console.log(
+        `✋ '${details.url}' from host '${documentHost}' is not supported.`
+      );
+      return { type: "direct" };
+    }
     // Don't proxy whitelisted channels.
-    const channelName = findChannelFromVideoWeaverUrl(details.url);
+    const channelName =
+      findChannelFromVideoWeaverUrl(details.url) ??
+      findChannelFromTwitchTvUrl(details.documentUrl);
     if (isChannelWhitelisted(channelName)) {
       console.log(`✋ Channel '${channelName}' is whitelisted.`);
       return { type: "direct" };
