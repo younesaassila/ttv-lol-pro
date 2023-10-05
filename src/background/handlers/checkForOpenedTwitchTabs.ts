@@ -15,11 +15,7 @@ export default function checkForOpenedTwitchTabs() {
   browser.tabs
     .query({ url: ["https://www.twitch.tv/*", "https://m.twitch.tv/*"] })
     .then(tabs => {
-      console.log(
-        `🔍 Found ${tabs.length} opened Twitch tabs: ${tabs
-          .map(tab => tab.id)
-          .join(", ")}`
-      );
+      console.log(`🔍 Found ${tabs.length} opened Twitch tabs.`);
       store.state.openedTwitchTabs = tabs;
 
       if (isChromium) {
