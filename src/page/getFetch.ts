@@ -28,7 +28,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
   if (options.shouldWaitForStore) {
     setTimeout(() => {
       options.shouldWaitForStore = false;
-    }, 3000);
+    }, 5000);
   }
 
   return async function fetch(
@@ -87,15 +87,35 @@ export function getFetch(options: FetchOptions): typeof fetch {
         console.debug(
           "[TTV LOL PRO] 🥅 Caught GraphQL PlaybackAccessToken_Template request. Flagging…"
         );
+
         while (options.shouldWaitForStore) await sleep(100);
-        if (options.state?.anonymousMode) {
-          console.log("[TTV LOL PRO] ❓ Acting as anonymous user");
-          setHeaderToMap(headersMap, "Authorization", "undefined");
-          removeHeaderFromMap(headersMap, "Client-Session-Id");
-          removeHeaderFromMap(headersMap, "Client-Version");
-          setHeaderToMap(headersMap, "Device-ID", generateRandomString(32));
-          removeHeaderFromMap(headersMap, "Sec-GPC");
-          removeHeaderFromMap(headersMap, "X-Device-Id");
+        let graphQlBody = null;
+        try {
+          graphQlBody = JSON.parse(requestBody);
+        } catch {}
+        const channelName = graphQlBody?.variables?.login as string | undefined;
+        const whitelistedChannelsLower = options.state?.whitelistedChannels.map(
+          channel => channel.toLowerCase()
+        );
+        const isWhitelisted =
+          channelName != null &&
+          whitelistedChannelsLower != null &&
+          whitelistedChannelsLower.includes(channelName.toLowerCase());
+
+        if (options.state?.anonymousMode === true) {
+          if (!isWhitelisted) {
+            console.log("[TTV LOL PRO] 🕵️ Anonymous mode is enabled.");
+            setHeaderToMap(headersMap, "Authorization", "undefined");
+            removeHeaderFromMap(headersMap, "Client-Session-Id");
+            removeHeaderFromMap(headersMap, "Client-Version");
+            setHeaderToMap(headersMap, "Device-ID", generateRandomString(32));
+            removeHeaderFromMap(headersMap, "Sec-GPC");
+            removeHeaderFromMap(headersMap, "X-Device-Id");
+          } else {
+            console.log(
+              "[TTV LOL PRO] 🕵️✋ Anonymous mode is enabled but channel is whitelisted."
+            );
+          }
         }
         flagRequest(headersMap);
       } else if (
