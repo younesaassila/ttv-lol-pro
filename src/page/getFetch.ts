@@ -102,18 +102,20 @@ export function getFetch(options: FetchOptions): typeof fetch {
           whitelistedChannelsLower != null &&
           whitelistedChannelsLower.includes(channelName.toLowerCase());
 
-        if (options.state?.anonymousMode === true && !isWhitelisted) {
-          console.log("[TTV LOL PRO] 🕵️ Anonymous mode is enabled.");
-          setHeaderToMap(headersMap, "Authorization", "undefined");
-          removeHeaderFromMap(headersMap, "Client-Session-Id");
-          removeHeaderFromMap(headersMap, "Client-Version");
-          setHeaderToMap(headersMap, "Device-ID", generateRandomString(32));
-          removeHeaderFromMap(headersMap, "Sec-GPC");
-          removeHeaderFromMap(headersMap, "X-Device-Id");
-        } else if (options.state?.anonymousMode === true) {
-          console.log(
-            "[TTV LOL PRO] 🕵️ Anonymous mode is enabled but channel is whitelisted."
-          );
+        if (options.state?.anonymousMode === true) {
+          if (!isWhitelisted) {
+            console.log("[TTV LOL PRO] 🕵️ Anonymous mode is enabled.");
+            setHeaderToMap(headersMap, "Authorization", "undefined");
+            removeHeaderFromMap(headersMap, "Client-Session-Id");
+            removeHeaderFromMap(headersMap, "Client-Version");
+            setHeaderToMap(headersMap, "Device-ID", generateRandomString(32));
+            removeHeaderFromMap(headersMap, "Sec-GPC");
+            removeHeaderFromMap(headersMap, "X-Device-Id");
+          } else {
+            console.log(
+              "[TTV LOL PRO] 🕵️✋ Anonymous mode is enabled but channel is whitelisted."
+            );
+          }
         }
         flagRequest(headersMap);
       } else if (
