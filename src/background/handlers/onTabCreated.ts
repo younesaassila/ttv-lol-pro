@@ -8,6 +8,9 @@ import { twitchTvHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
 
 export default function onTabCreated(tab: Tabs.Tab): void {
+  if (store.readyState !== "complete")
+    return store.addEventListener("load", () => onTabCreated(tab));
+
   const url = tab.url || tab.pendingUrl;
   if (!url) return;
   const host = getHostFromUrl(url);
