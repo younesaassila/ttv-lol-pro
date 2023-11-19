@@ -30,7 +30,7 @@ We strongly recommend you trying out the V1 branch and only update to V2 if need
 
 #### Q) Why does the Chrome extension need the permissions to read traffic on all websites?
 
-A) We require a very specific permission for the V2 system to work, `proxy`, as specified [here](src/manifest.chromium.json). Chrome does a really aggresive naming to that permission, as if it's used in a malicious manner, an extension could forward all the requests to a proxy server of his choice.
+A) We require a very specific permission for the V2 system to work, `proxy`, as specified [here](src/manifest.chromium.json). Chrome does a really aggresive naming to that permission, as if it's used in a malicious manner, an extension could forward all the requests to a proxy server of its choice.
 
 You can take a look at the extension's source code. We only proxy the following domains related to Twitch for the system to work:
 
