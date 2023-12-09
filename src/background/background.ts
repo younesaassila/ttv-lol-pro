@@ -10,6 +10,7 @@ import onResponseStarted from "./handlers/onResponseStarted";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
 import onTabCreated from "./handlers/onTabCreated";
 import onTabRemoved from "./handlers/onTabRemoved";
+import onTabReplaced from "./handlers/onTabReplaced";
 import onTabUpdated from "./handlers/onTabUpdated";
 
 console.info("🚀 Background script loaded.");
@@ -40,6 +41,7 @@ if (isChromium) {
   browser.tabs.onCreated.addListener(onTabCreated);
   browser.tabs.onUpdated.addListener(onTabUpdated);
   browser.tabs.onRemoved.addListener(onTabRemoved);
+  browser.tabs.onReplaced.addListener(onTabReplaced);
 } else {
   // Block tracking pixels.
   browser.webRequest.onBeforeRequest.addListener(
