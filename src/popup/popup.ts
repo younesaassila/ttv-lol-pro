@@ -182,6 +182,12 @@ copyDebugInfoButtonElement.addEventListener("click", async e => {
         ? store.state.normalProxies
         : anonymizeIpAddresses(store.state.normalProxies)
     )}`,
+    isChromium
+      ? `- Should extension be active: ${store.state.chromiumProxyActive}`
+      : "",
+    isChromium
+      ? `- Number of opened Twitch tabs: ${store.state.openedTwitchTabs.length}`
+      : "",
     `- Last ad log entry: ${
       store.state.adLog.length
         ? JSON.stringify({
