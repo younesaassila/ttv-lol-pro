@@ -16,6 +16,12 @@ export default function onTabUpdated(
   changeInfo: Tabs.OnUpdatedChangeInfoType,
   tab: Tabs.Tab
 ): void {
+  if (store.readyState !== "complete") {
+    return store.addEventListener("load", () =>
+      onTabUpdated(tabId, changeInfo, tab)
+    );
+  }
+
   const isPageNavigation = changeInfo.url != null;
   // We have to check for `changeInfo.status === "loading"` because
   // `changeInfo.url` is incorrect when navigating from Twitch to another
