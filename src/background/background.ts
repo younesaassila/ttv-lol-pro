@@ -46,7 +46,13 @@ if (isChromium) {
   // Block tracking pixels.
   browser.webRequest.onBeforeRequest.addListener(
     () => ({ cancel: true }),
-    { urls: ["https://*.twitch.tv/r/s/*", "https://*.twitch.tv/r/c/*"] },
+    {
+      urls: [
+        "https://*.twitch.tv/r/s/*",
+        "https://*.twitch.tv/r/c/*",
+        "https://*.ads.twitch.tv/*",
+      ],
+    },
     ["blocking"]
   );
 
