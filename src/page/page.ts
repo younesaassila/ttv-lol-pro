@@ -6,7 +6,10 @@ const params = JSON.parse(document.currentScript!.dataset.params!);
 const options: FetchOptions = {
   scope: "page",
   shouldWaitForStore: params.isChromium === false,
+  sendMessageToWorkers,
 };
+
+let workers = [] as Worker[];
 
 window.fetch = getFetch(options);
 
@@ -52,8 +55,18 @@ window.Worker = class Worker extends window.Worker {
         window.postMessage(event.data.message);
       }
     });
+    workers.push(this);
   }
 };
+
+function sendMessageToWorkers(message: any) {
+  workers.forEach(worker => worker.postMessage(message));
+}
+
+// // Ping workers every 5 seconds.
+// setInterval(() => {
+//   sendMessageToWorkers({ type: "TLP_Ping" });
+// }, 5000);
 
 window.addEventListener("message", event => {
   if (event.data?.type === "PageScriptMessage") {
@@ -66,6 +79,10 @@ window.addEventListener("message", event => {
       options.state = message.state;
       options.shouldWaitForStore = false;
     }
+  } else if (event.data?.type === "TLP_Ping") {
+    sendMessageToWorkers({ type: "TLP_Pong" });
+  } else if (event.data?.type === "TLP_Pong") {
+    console.log("[TTV LOL PRO] 🏓 Worker responded to ping.");
   }
 });
 
