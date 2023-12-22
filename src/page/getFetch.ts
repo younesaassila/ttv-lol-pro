@@ -39,29 +39,15 @@ export function getFetch(options: FetchOptions): typeof fetch {
   // TODO: Clear variables on navigation.
   const knownVideoWeaverUrls = new Set<string>();
   const videoWeaverUrlsToFlag = new Map<string, number>(); // Video Weaver URLs to flag -> number of times flagged.
-  const videoWeaverUrlsToIgnore = new Set<string>(); // No response check.
 
   // TODO: Again, what happens when the user navigates to another channel?
   let cachedPlaybackTokenRequestHeaders: Map<string, string> | null = null;
   let cachedPlaybackTokenRequestBody: string | null = null;
   let cachedUsherRequestUrl: string | null = null;
 
-  let currentVideoWeaversMap: Map<string, string> | null = null;
+  let assignedVideoWeaversMap: Map<string, string> | null = null;
   let replacementVideoWeaversMap: Map<string, string> | null = null;
-
-  function usherResponseToMap(response: string): Map<string, string> | null {
-    const parser = new m3u8Parser.Parser();
-    parser.push(response);
-    parser.end();
-    const parsedManifest = parser.manifest;
-    if (parsedManifest.playlists == null) return null;
-    return new Map(
-      parsedManifest.playlists.map(playlist => [
-        playlist.attributes.VIDEO,
-        playlist.uri,
-      ])
-    );
-  }
+  let consecutiveMidrollResponses = 0;
 
   if (options.shouldWaitForStore) {
     setTimeout(() => {
@@ -87,31 +73,35 @@ export function getFetch(options: FetchOptions): typeof fetch {
     });
   }
 
-  // TEST CODE
-  if (options.scope === "worker") {
-    setTimeout(async () => {
-      try {
-        console.log("[TTV LOL PRO] 🔄 Checking for new Video Weaver URLs…");
-        const newUsherManifest = await fetchReplacementUsherManifest(
-          cachedUsherRequestUrl
-        );
-        if (newUsherManifest == null) {
-          console.log("[TTV LOL PRO] 🔄 No new Video Weaver URLs found.");
-          return;
-        }
-        replacementVideoWeaversMap = usherResponseToMap(newUsherManifest);
-        console.log(
-          "[TTV LOL PRO] 🔄 Found new Video Weaver URLs:",
-          Object.fromEntries(replacementVideoWeaversMap?.entries() ?? [])
-        );
-      } catch (error) {
-        console.error(
-          "[TTV LOL PRO] 🔄 Failed to get new Video Weaver URLs:",
-          error
-        );
+  async function setReplacementVideoWeaversMap() {
+    try {
+      console.log("[TTV LOL PRO] 🔄 Checking for new Video Weaver URLs…");
+      const newUsherManifest = await fetchReplacementUsherManifest(
+        cachedUsherRequestUrl
+      );
+      if (newUsherManifest == null) {
+        console.log("[TTV LOL PRO] 🔄 No new Video Weaver URLs found.");
+        return;
       }
-    }, 30000);
+      replacementVideoWeaversMap =
+        getVideoWeaversMapFromUsherResponse(newUsherManifest);
+      console.log(
+        "[TTV LOL PRO] 🔄 Found new Video Weaver URLs:",
+        Object.fromEntries(replacementVideoWeaversMap?.entries() ?? [])
+      );
+    } catch (error) {
+      replacementVideoWeaversMap = null;
+      console.error(
+        "[TTV LOL PRO] 🔄 Failed to get new Video Weaver URLs:",
+        error
+      );
+    }
   }
+
+  // // TEST CODE
+  // if (options.scope === "worker") {
+  //   setTimeout(setReplacementVideoWeaversMap, 30000);
+  // }
 
   return async function fetch(
     input: RequestInfo | URL,
@@ -200,8 +190,8 @@ export function getFetch(options: FetchOptions): typeof fetch {
           }
         }
         flagRequest(headersMap);
-        // cachedPlaybackTokenRequestHeaders = headersMap;
-        // cachedPlaybackTokenRequestBody = requestBody;
+        cachedPlaybackTokenRequestHeaders = headersMap;
+        cachedPlaybackTokenRequestBody = requestBody;
       } else if (
         requestBody != null &&
         requestBody.includes("PlaybackAccessToken")
@@ -210,8 +200,8 @@ export function getFetch(options: FetchOptions): typeof fetch {
           "[TTV LOL PRO] 🥅 Caught GraphQL PlaybackAccessToken request. Flagging…"
         );
         flagRequest(headersMap);
-        // cachedPlaybackTokenRequestHeaders = headersMap;
-        // cachedPlaybackTokenRequestBody = requestBody;
+        cachedPlaybackTokenRequestHeaders = headersMap;
+        cachedPlaybackTokenRequestBody = requestBody;
       }
     }
 
@@ -226,30 +216,32 @@ export function getFetch(options: FetchOptions): typeof fetch {
     // Video Weaver requests.
     if (host != null && videoWeaverHostRegex.test(host)) {
       console.debug(`[TTV LOL PRO] 🥅 Caught Video Weaver request '${url}'.`);
-      // TODO: Implement replacement limit if the ad is a preroll to avoid infinite loops.
       let videoWeaverUrl = url;
-      if (
-        replacementVideoWeaversMap != null &&
-        replacementVideoWeaversMap.size > 0
-      ) {
-        const video = [...(currentVideoWeaversMap?.entries() ?? [])].find(
+      if (replacementVideoWeaversMap != null) {
+        const video = [...(assignedVideoWeaversMap?.entries() ?? [])].find(
           ([key, value]) => value === url
         )?.[0];
         if (video != null && replacementVideoWeaversMap.has(video)) {
           videoWeaverUrl = replacementVideoWeaversMap.get(video)!;
-        } else {
+          console.log(
+            `[TTV LOL PRO] 🔄 Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}'.`
+          );
+        } else if (replacementVideoWeaversMap.size > 0) {
           videoWeaverUrl = [...replacementVideoWeaversMap.values()][0];
+          console.log(
+            `[TTV LOL PRO] 🔄 Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}' (fallback).`
+          );
+        } else {
+          console.log(
+            `[TTV LOL PRO] 🔄 No replacement Video Weaver URL found for '${url}'.`
+          );
         }
-        console.log(
-          `[TTV LOL PRO] 🔄 Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}'.`
-        );
       }
 
-      const isIgnoredUrl = videoWeaverUrlsToIgnore.has(videoWeaverUrl);
       const isNewUrl = !knownVideoWeaverUrls.has(videoWeaverUrl);
       const isFlaggedUrl = videoWeaverUrlsToFlag.has(videoWeaverUrl);
 
-      if (!isIgnoredUrl && (isNewUrl || isFlaggedUrl)) {
+      if (isNewUrl || isFlaggedUrl) {
         console.log(
           `[TTV LOL PRO] 🥅 Caught ${
             isNewUrl
@@ -292,7 +284,8 @@ export function getFetch(options: FetchOptions): typeof fetch {
     if (host != null && usherHostRegex.test(host)) {
       responseBody = await readResponseBody();
       console.debug("[TTV LOL PRO] 🥅 Caught Usher response.");
-      currentVideoWeaversMap = usherResponseToMap(responseBody);
+      assignedVideoWeaversMap =
+        getVideoWeaversMapFromUsherResponse(responseBody);
       replacementVideoWeaversMap = null;
       const videoWeaverUrls = responseBody
         .split("\n")
@@ -313,36 +306,24 @@ export function getFetch(options: FetchOptions): typeof fetch {
     if (host != null && videoWeaverHostRegex.test(host)) {
       responseBody = await readResponseBody();
 
-      // Check if response contains ad.
-      if (responseBody.includes("stitched-ad")) {
+      // Check if response contains midroll ad.
+      if (
+        responseBody.includes("stitched-ad") &&
+        responseBody.toLowerCase().includes("midroll")
+      ) {
         console.log(
           "[TTV LOL PRO] 🥅 Caught Video Weaver response containing ad."
         );
-        // if (videoWeaverUrlsToIgnore.has(url)) return response;
-        // if (!videoWeaverUrlsToFlag.has(url)) {
-        //   // Let's proxy the next request for this URL, 2 attempts left.
-        //   videoWeaverUrlsToFlag.set(url, 0);
-        //   cancelRequest();
-        // }
-        // // FIXME: This workaround doesn't work. Let's find another way.
-        // // 0: First attempt, not proxied, cancelled.
-        // // 1: Second attempt, proxied, cancelled.
-        // // 2: Third attempt, proxied, last attempt by Twitch client.
-        // // If the third attempt contains an ad, we have to let it through.
-        // const isCancellable = videoWeaverUrlsToFlag.get(url)! < 2;
-        // if (isCancellable) {
-        //   cancelRequest();
-        // } else {
-        //   console.error(
-        //     "[TTV LOL PRO] ❌ Could not cancel Video Weaver response containing ad. All attempts used."
-        //   );
-        //   videoWeaverUrlsToFlag.delete(url); // Clear attempts.
-        //   videoWeaverUrlsToIgnore.add(url); // Ignore this URL, there's nothing we can do.
-        // }
+        consecutiveMidrollResponses += 1;
+        // Avoid infinite loops.
+        if (consecutiveMidrollResponses <= 2) {
+          await setReplacementVideoWeaversMap();
+        } else {
+          replacementVideoWeaversMap = null;
+        }
       } else {
-        // // No ad, remove from flagged list.
-        // videoWeaverUrlsToFlag.delete(url);
-        // videoWeaverUrlsToIgnore.delete(url);
+        // No ad, clear attempts.
+        consecutiveMidrollResponses = 0;
       }
     }
 
@@ -490,6 +471,7 @@ async function fetchReplacementPlaybackAccessToken(
   cachedPlaybackTokenRequestHeaders: Map<string, string> | null,
   cachedPlaybackTokenRequestBody: string | null
 ): Promise<PlaybackAccessToken | null> {
+  // FIXME: Take anonymous mode into account.
   let request: Request;
   if (
     cachedPlaybackTokenRequestHeaders != null &&
@@ -588,4 +570,20 @@ async function fetchReplacementUsherManifest(
   } catch {
     return null;
   }
+}
+
+function getVideoWeaversMapFromUsherResponse(
+  response: string
+): Map<string, string> | null {
+  const parser = new m3u8Parser.Parser();
+  parser.push(response);
+  parser.end();
+  const parsedManifest = parser.manifest;
+  if (parsedManifest.playlists == null) return null;
+  return new Map(
+    parsedManifest.playlists.map(playlist => [
+      playlist.attributes.VIDEO,
+      playlist.uri,
+    ])
+  );
 }
