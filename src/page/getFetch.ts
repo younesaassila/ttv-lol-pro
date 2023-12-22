@@ -209,6 +209,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
 
     // Video Weaver requests.
     if (host != null && videoWeaverHostRegex.test(host)) {
+      console.debug(`[TTV LOL PRO] 🥅 Caught Video Weaver request '${url}'.`);
       // TODO: Implement replacement limit if the ad is a preroll to avoid infinite loops.
       let videoWeaverUrl = url;
       if (replacementVideoWeaverUrls != null) {
@@ -278,6 +279,10 @@ export function getFetch(options: FetchOptions): typeof fetch {
     // Usher responses.
     if (host != null && usherHostRegex.test(host)) {
       responseBody = await readResponseBody();
+      currentVideoWeaverUrls = responseBody
+        .split("\n")
+        .filter(line => videoWeaverUrlRegex.test(line));
+      replacementVideoWeaverUrls = null;
       console.debug("[TTV LOL PRO] 🥅 Caught Usher response.");
       const videoWeaverUrls = responseBody
         .split("\n")
@@ -297,10 +302,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
     // Video Weaver responses.
     if (host != null && videoWeaverHostRegex.test(host)) {
       responseBody = await readResponseBody();
-      currentVideoWeaverUrls = responseBody
-        .split("\n")
-        .filter(line => videoWeaverUrlRegex.test(line));
-      replacementVideoWeaverUrls = null;
+
       // Check if response contains ad.
       if (responseBody.includes("stitched-ad")) {
         console.log(
