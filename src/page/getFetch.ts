@@ -520,7 +520,7 @@ async function fetchReplacementPlaybackAccessToken(
         Authorization: "undefined",
         "Client-ID": "kimne78kx3ncx6brgo4mv6wki5h1ko",
         "Content-Type": "text/plain; charset=UTF-8",
-        "Device-ID": "umQiGH8XN9QN2A9VyHQJv7437IbqHZLL",
+        "Device-ID": generateRandomString(32),
         Origin: "https://www.twitch.tv",
         DNT: "1",
         Connection: "keep-alive",
