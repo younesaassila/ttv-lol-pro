@@ -43,7 +43,8 @@
   "license": "GPL-3.0",
   "dependencies": {
     "bowser": "^2.11.0",
-    "ip": "^1.1.8"
+    "ip": "^1.1.8",
+    "m3u8-parser": "^7.1.0"
   },
   "devDependencies": {
     "@parcel/config-webextension": "^2.10.3",

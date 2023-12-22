@@ -1,3 +1,4 @@
+import * as m3u8Parser from "m3u8-parser";
 import acceptFlag from "../common/ts/acceptFlag";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import findChannelFromUsherUrl from "../common/ts/findChannelFromUsherUrl";
@@ -44,8 +45,23 @@ export function getFetch(options: FetchOptions): typeof fetch {
   let cachedPlaybackTokenRequestHeaders: Map<string, string> | null = null;
   let cachedPlaybackTokenRequestBody: string | null = null;
   let cachedUsherRequestUrl: string | null = null;
-  let currentVideoWeaverUrls: string[] | null = null;
-  let replacementVideoWeaverUrls: string[] | null = null;
+
+  let currentVideoWeaversMap: Map<string, string> | null = null;
+  let replacementVideoWeaversMap: Map<string, string> | null = null;
+
+  function usherResponseToMap(response: string): Map<string, string> | null {
+    const parser = new m3u8Parser.Parser();
+    parser.push(response);
+    parser.end();
+    const parsedManifest = parser.manifest;
+    if (parsedManifest.playlists == null) return null;
+    return new Map(
+      parsedManifest.playlists.map(playlist => [
+        playlist.attributes.VIDEO,
+        playlist.uri,
+      ])
+    );
+  }
 
   if (options.shouldWaitForStore) {
     setTimeout(() => {
@@ -76,17 +92,17 @@ export function getFetch(options: FetchOptions): typeof fetch {
     setTimeout(async () => {
       try {
         console.log("[TTV LOL PRO] 🔄 Checking for new Video Weaver URLs…");
-        const newVideoWeaverUrls = await fetchReplacementVideoWeaverUrls(
+        const newUsherManifest = await fetchReplacementUsherManifest(
           cachedUsherRequestUrl
         );
-        if (newVideoWeaverUrls == null) {
+        if (newUsherManifest == null) {
           console.log("[TTV LOL PRO] 🔄 No new Video Weaver URLs found.");
           return;
         }
-        replacementVideoWeaverUrls = newVideoWeaverUrls;
+        replacementVideoWeaversMap = usherResponseToMap(newUsherManifest);
         console.log(
           "[TTV LOL PRO] 🔄 Found new Video Weaver URLs:",
-          replacementVideoWeaverUrls
+          Object.fromEntries(replacementVideoWeaversMap?.entries() ?? [])
         );
       } catch (error) {
         console.error(
@@ -212,22 +228,18 @@ export function getFetch(options: FetchOptions): typeof fetch {
       console.debug(`[TTV LOL PRO] 🥅 Caught Video Weaver request '${url}'.`);
       // TODO: Implement replacement limit if the ad is a preroll to avoid infinite loops.
       let videoWeaverUrl = url;
-      if (replacementVideoWeaverUrls != null) {
-        // const index = currentVideoWeaverUrls?.findIndex(
-        //   url =>
-        //     url.split("playlist/")[1] === videoWeaverUrl.split("playlist/")[1]
-        // );
-        // console.log("index = ", index);
-        // if (index != null && index >= 0) {
-        //   videoWeaverUrl =
-        //     replacementVideoWeaverUrls[
-        //       Math.min(index, replacementVideoWeaverUrls.length - 1)
-        //     ];
-        //   console.log(
-        //     `[TTV LOL PRO] 🔄 Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}'.`
-        //   );
-        // }
-        videoWeaverUrl = replacementVideoWeaverUrls[0];
+      if (
+        replacementVideoWeaversMap != null &&
+        replacementVideoWeaversMap.size > 0
+      ) {
+        const video = [...(currentVideoWeaversMap?.entries() ?? [])].find(
+          ([key, value]) => value === url
+        )?.[0];
+        if (video != null && replacementVideoWeaversMap.has(video)) {
+          videoWeaverUrl = replacementVideoWeaversMap.get(video)!;
+        } else {
+          videoWeaverUrl = [...replacementVideoWeaversMap.values()][0];
+        }
         console.log(
           `[TTV LOL PRO] 🔄 Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}'.`
         );
@@ -279,11 +291,9 @@ export function getFetch(options: FetchOptions): typeof fetch {
     // Usher responses.
     if (host != null && usherHostRegex.test(host)) {
       responseBody = await readResponseBody();
-      currentVideoWeaverUrls = responseBody
-        .split("\n")
-        .filter(line => videoWeaverUrlRegex.test(line));
-      replacementVideoWeaverUrls = null;
       console.debug("[TTV LOL PRO] 🥅 Caught Usher response.");
+      currentVideoWeaversMap = usherResponseToMap(responseBody);
+      replacementVideoWeaversMap = null;
       const videoWeaverUrls = responseBody
         .split("\n")
         .filter(line => videoWeaverUrlRegex.test(line));
@@ -552,9 +562,9 @@ function getReplacementUsherUrl(
   }
 }
 
-async function fetchReplacementVideoWeaverUrls(
+async function fetchReplacementUsherManifest(
   cachedUsherRequestUrl: string | null
-): Promise<string[] | null> {
+): Promise<string | null> {
   if (cachedUsherRequestUrl == null) return null;
   try {
     const newPlaybackAccessToken = await sendMessageToPageScript({
@@ -574,10 +584,7 @@ async function fetchReplacementVideoWeaverUrls(
     }
     const response = await NATIVE_FETCH(newUsherUrl);
     const text = await response.text();
-    const videoWeaverUrls = text
-      .split("\n")
-      .filter(line => videoWeaverUrlRegex.test(line));
-    return videoWeaverUrls;
+    return text;
   } catch {
     return null;
   }
