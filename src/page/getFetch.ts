@@ -40,6 +40,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
   const videoWeaverUrlsToFlag = new Map<string, number>(); // Video Weaver URLs to flag -> number of times flagged.
   const videoWeaverUrlsToIgnore = new Set<string>(); // No response check.
 
+  // TODO: Again, what happens when the user navigates to another channel?
   let cachedPlaybackTokenRequestHeaders: Map<string, string> | null = null;
   let cachedPlaybackTokenRequestBody: string | null = null;
   let cachedUsherRequestUrl: string | null = null;
@@ -208,6 +209,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
 
     // Video Weaver requests.
     if (host != null && videoWeaverHostRegex.test(host)) {
+      // TODO: Implement replacement limit if the ad is a preroll to avoid infinite loops.
       let videoWeaverUrl = url;
       if (replacementVideoWeaverUrls != null) {
         // const index = currentVideoWeaverUrls?.findIndex(
