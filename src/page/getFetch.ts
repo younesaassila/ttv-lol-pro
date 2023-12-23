@@ -20,12 +20,12 @@ export interface FetchOptions {
   state?: State;
   sendMessageToWorkers?: (message: any) => void;
 }
-export interface VideoWeaver {
+interface VideoWeaver {
   assigned: Map<string, string>; // E.g. "720p60" -> "https://video-weaver.fra02.hls.ttvnw.net/v1/playlist/..."
   replacement: Map<string, string> | null; // Same as above, but with new URLs.
   consecutiveMidrollResponses: number; // Used to avoid infinite loops.
 }
-export interface PlaybackAccessToken {
+interface PlaybackAccessToken {
   value: string;
   signature: string;
   authorization: {
@@ -110,7 +110,10 @@ export function getFetch(options: FetchOptions): typeof fetch {
 
   // // TEST CODE
   // if (options.scope === "worker") {
-  //   setTimeout(() => setVideoWeaverReplacementMap(videoWeavers[0]), 30000);
+  //   setTimeout(
+  //     () => setVideoWeaverReplacementMap(videoWeavers[videoWeavers.length - 1]),
+  //     20000
+  //   );
   // }
 
   return async function fetch(

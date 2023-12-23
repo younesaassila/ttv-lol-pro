@@ -7,7 +7,7 @@ import store from "../store";
 
 console.info("[TTV LOL PRO] 🚀 Content script running.");
 
-injectPageScript();
+if (isChromium) injectPageScript();
 
 if (store.readyState === "complete") onStoreReady();
 else store.addEventListener("load", onStoreReady);
@@ -29,7 +29,7 @@ function injectPageScript() {
   // Please note that this does NOT involve remote code execution. The injected scripts are bundled
   // with the extension. The `url:` imports above are used to get the runtime URLs of the respective scripts.
   // Additionally, there is no custom Content Security Policy (CSP) in use.
-  (document.head || document.documentElement).append(script); // Note: Despite what the TS types say, `document.head` can be `null`.
+  (document.head || document.documentElement).prepend(script); // Note: Despite what the TS types say, `document.head` can be `null`.
 }
 
 function onStoreReady() {

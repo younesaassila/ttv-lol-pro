@@ -9,11 +9,12 @@ const options: FetchOptions = {
   sendMessageToWorkers,
 };
 
-let workers = [] as Worker[];
+const NATIVE_WORKER = window.Worker;
+let workers: Worker[] = [];
 
 window.fetch = getFetch(options);
 
-window.Worker = class Worker extends window.Worker {
+window.Worker = class Worker extends NATIVE_WORKER {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
     const url = scriptURL.toString();
     let script = "";
@@ -63,11 +64,6 @@ function sendMessageToWorkers(message: any) {
   workers.forEach(worker => worker.postMessage(message));
 }
 
-// // Ping workers every 5 seconds.
-// setInterval(() => {
-//   sendMessageToWorkers({ type: "TLP_Ping" });
-// }, 5000);
-
 window.addEventListener("message", event => {
   if (event.data?.type === "PageScriptMessage") {
     const message = event.data.message;
@@ -79,10 +75,6 @@ window.addEventListener("message", event => {
       options.state = message.state;
       options.shouldWaitForStore = false;
     }
-  } else if (event.data?.type === "TLP_Ping") {
-    sendMessageToWorkers({ type: "TLP_Pong" });
-  } else if (event.data?.type === "TLP_Pong") {
-    console.log("[TTV LOL PRO] 🏓 Worker responded to ping.");
   }
 });
 
