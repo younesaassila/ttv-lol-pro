@@ -8,6 +8,7 @@ import store from "../store";
 console.info("[TTV LOL PRO] 🚀 Content script running.");
 
 if (isChromium) injectPageScript();
+// Firefox uses FilterResponseData to inject the page script.
 
 if (store.readyState === "complete") onStoreReady();
 else store.addEventListener("load", onStoreReady);
