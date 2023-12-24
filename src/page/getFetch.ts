@@ -9,32 +9,14 @@ import {
   usherHostRegex,
   videoWeaverHostRegex,
 } from "../common/ts/regexes";
-import { State } from "../store/types";
 import { MessageType } from "../types";
+import type { FetchOptions, PlaybackAccessToken, VideoWeaver } from "./types";
 
 const NATIVE_FETCH = self.fetch;
 const IS_CHROMIUM = !!self.chrome;
 
-export interface FetchOptions {
-  scope: "page" | "worker";
-  shouldWaitForStore: boolean;
-  state?: State;
-  twitchWorker?: Worker;
-}
-interface VideoWeaver {
-  assigned: Map<string, string>; // E.g. "720p60" -> "https://video-weaver.fra02.hls.ttvnw.net/v1/playlist/..."
-  replacement: Map<string, string> | null; // Same as above, but with new URLs.
-  consecutiveMidrollResponses: number; // Used to avoid infinite loops.
-}
-interface PlaybackAccessToken {
-  value: string;
-  signature: string;
-  authorization: {
-    isForbidden: boolean;
-    forbiddenReasonCode: string;
-  };
-  __typename: string;
-}
+// TODO: Fix Chromium support. Also why anonymous mode limited to Firefox currently??
+// TODO: Clear variables on navigation.
 
 export function getFetch(options: FetchOptions): typeof fetch {
   // TODO: What happens when the user navigates to another channel?
@@ -194,7 +176,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
     // Video Weaver requests.
     if (host != null && videoWeaverHostRegex.test(host)) {
       const videoWeaver = videoWeavers.find(videoWeaver =>
-        [...videoWeaver.assigned.values()].includes(url)
+        [...videoWeaver.assignedMap.values()].includes(url)
       );
       if (videoWeaver == null) {
         console.warn(
@@ -203,18 +185,18 @@ export function getFetch(options: FetchOptions): typeof fetch {
       }
       let videoWeaverUrl = url;
 
-      if (videoWeaver?.replacement != null) {
-        const video = [...videoWeaver.assigned].find(
+      if (videoWeaver?.replacementMap != null) {
+        const video = [...videoWeaver.assignedMap].find(
           ([, url]) => url === videoWeaverUrl
         )?.[0];
         // Replace Video Weaver URL with replacement URL.
-        if (video != null && videoWeaver.replacement.has(video)) {
-          videoWeaverUrl = videoWeaver.replacement.get(video)!;
+        if (video != null && videoWeaver.replacementMap.has(video)) {
+          videoWeaverUrl = videoWeaver.replacementMap.get(video)!;
           console.debug(
             `[TTV LOL PRO] 🔄 Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}'.`
           );
-        } else if (videoWeaver.replacement.size > 0) {
-          videoWeaverUrl = [...videoWeaver.replacement.values()][0];
+        } else if (videoWeaver.replacementMap.size > 0) {
+          videoWeaverUrl = [...videoWeaver.replacementMap.values()][0];
           console.warn(
             `[TTV LOL PRO] 🔄 Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}' (fallback).`
           );
@@ -264,8 +246,8 @@ export function getFetch(options: FetchOptions): typeof fetch {
       const videoWeaverMap = parseUsherManifest(responseBody);
       if (videoWeaverMap != null) {
         videoWeavers.push({
-          assigned: videoWeaverMap,
-          replacement: null,
+          assignedMap: videoWeaverMap,
+          replacementMap: null,
           consecutiveMidrollResponses: 0,
         });
       }
@@ -286,7 +268,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
     if (host != null && videoWeaverHostRegex.test(host)) {
       responseBody ??= await readResponseBody();
       const videoWeaver = videoWeavers.find(videoWeaver =>
-        [...videoWeaver.assigned.values()].includes(url)
+        [...videoWeaver.assignedMap.values()].includes(url)
       );
       if (videoWeaver == null) {
         console.warn(
@@ -306,14 +288,18 @@ export function getFetch(options: FetchOptions): typeof fetch {
         videoWeaver.consecutiveMidrollResponses += 1;
         // Avoid infinite loops.
         if (videoWeaver.consecutiveMidrollResponses <= 2) {
-          await updateVideoWeaverReplacementMap(
+          const success = await updateVideoWeaverReplacementMap(
             options.scope,
             cachedUsherRequestUrl,
             videoWeaver
           );
-          cancelRequest();
+          if (success) {
+            cancelRequest();
+          } else {
+            videoWeaver.replacementMap = null;
+          }
         } else {
-          videoWeaver.replacement = null;
+          videoWeaver.replacementMap = null;
         }
       } else {
         // No ad, clear attempts.
@@ -702,20 +688,20 @@ async function updateVideoWeaverReplacementMap(
     }
 
     console.log("[TTV LOL PRO] 🔄 (3/3) Parsing new Usher manifest…");
-    const replacement = parseUsherManifest(newUsherManifest);
-    if (replacement == null || replacement.size === 0) {
+    const replacementMap = parseUsherManifest(newUsherManifest);
+    if (replacementMap == null || replacementMap.size === 0) {
       console.error("[TTV LOL PRO] ❌ Failed to parse new Usher manifest.");
       return false;
     }
 
     console.log(
       "[TTV LOL PRO] 🔄 Replacement Video Weaver URLs:",
-      Object.fromEntries(replacement)
+      Object.fromEntries(replacementMap)
     );
-    videoWeaver.replacement = replacement;
+    videoWeaver.replacementMap = replacementMap;
 
     // Send replacement Video Weaver URLs to content script.
-    const videoWeaverUrls = [...replacement.values()];
+    const videoWeaverUrls = [...replacementMap.values()];
     if (cachedUsherRequestUrl != null && videoWeaverUrls.length > 0) {
       sendMessageToContentScript(scope, {
         type: MessageType.UsherResponse,
@@ -732,7 +718,6 @@ async function updateVideoWeaverReplacementMap(
       "[TTV LOL PRO] ❌ Failed to get replacement Video Weaver URLs:",
       error
     );
-    videoWeaver.replacement = null;
     return false;
   }
 }
