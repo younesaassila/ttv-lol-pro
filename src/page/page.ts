@@ -3,19 +3,22 @@ import { FetchOptions, getFetch } from "./getFetch";
 console.info("[TTV LOL PRO] 🚀 Page script running.");
 
 const params = JSON.parse(document.currentScript!.dataset.params!);
-const options: FetchOptions = {
+const fetchOptions: FetchOptions = {
   scope: "page",
   shouldWaitForStore: params.isChromium === false,
-  sendMessageToWorkers,
 };
 
 const NATIVE_WORKER = window.Worker;
-let workers: Worker[] = [];
 
-window.fetch = getFetch(options);
+window.fetch = getFetch(fetchOptions);
 
 window.Worker = class Worker extends NATIVE_WORKER {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
+    const isTwitchWorker = scriptURL.toString().includes("twitch.tv");
+    if (!isTwitchWorker) {
+      super(scriptURL, options);
+      return;
+    }
     const url = scriptURL.toString();
     let script = "";
     // Fetch Twitch's script, since Firefox Nightly errors out when trying to
@@ -56,13 +59,9 @@ window.Worker = class Worker extends NATIVE_WORKER {
         window.postMessage(event.data.message);
       }
     });
-    workers.push(this);
+    fetchOptions.twitchWorker = this;
   }
 };
-
-function sendMessageToWorkers(message: any) {
-  workers.forEach(worker => worker.postMessage(message));
-}
 
 window.addEventListener("message", event => {
   if (event.data?.type === "PageScriptMessage") {
@@ -72,8 +71,8 @@ window.addEventListener("message", event => {
         "[TTV LOL PRO] 📦 Page received store state from content script."
       );
       // Mutate the options object.
-      options.state = message.state;
-      options.shouldWaitForStore = false;
+      fetchOptions.state = message.state;
+      fetchOptions.shouldWaitForStore = false;
     }
   }
 });

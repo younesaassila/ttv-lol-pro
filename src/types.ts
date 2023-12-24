@@ -51,3 +51,11 @@ export interface DnsResponse {
   timestamp: number;
   ttl: number;
 }
+
+export const enum MessageType {
+  ContentScriptMessage = "ContentScriptMessage",
+  PageScriptMessage = "PageScriptMessage",
+  UsherResponse = "UsherResponse",
+  NewPlaybackAccessToken = "TLP_NewPlaybackAccessToken",
+  NewPlaybackAccessTokenResponse = "TLP_NewPlaybackAccessTokenResponse",
+}

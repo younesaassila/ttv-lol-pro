@@ -10,6 +10,7 @@ import {
   videoWeaverHostRegex,
 } from "../common/ts/regexes";
 import { State } from "../store/types";
+import { MessageType } from "../types";
 
 const NATIVE_FETCH = self.fetch;
 const IS_CHROMIUM = !!self.chrome;
@@ -18,7 +19,7 @@ export interface FetchOptions {
   scope: "page" | "worker";
   shouldWaitForStore: boolean;
   state?: State;
-  sendMessageToWorkers?: (message: any) => void;
+  twitchWorker?: Worker;
 }
 interface VideoWeaver {
   assigned: Map<string, string>; // E.g. "720p60" -> "https://video-weaver.fra02.hls.ttvnw.net/v1/playlist/..."
@@ -33,10 +34,6 @@ interface PlaybackAccessToken {
     forbiddenReasonCode: string;
   };
   __typename: string;
-}
-enum MessageType {
-  NewPlaybackAccessToken = "TLP_NewPlaybackAccessToken",
-  NewPlaybackAccessTokenResponse = "TLP_NewPlaybackAccessTokenResponse",
 }
 
 export function getFetch(options: FetchOptions): typeof fetch {
@@ -66,52 +63,20 @@ export function getFetch(options: FetchOptions): typeof fetch {
           newPlaybackAccessToken,
         };
         console.log("[TTV LOL PRO] 💬 Sent message to workers", message);
-        options.sendMessageToWorkers?.(message);
+        options.twitchWorker?.postMessage(message);
       }
     });
-  }
-
-  async function setVideoWeaverReplacementMap(videoWeaver: VideoWeaver) {
-    try {
-      console.log("[TTV LOL PRO] 🔄 Checking for new Video Weaver URLs…");
-      const newUsherManifest = await fetchReplacementUsherManifest(
-        cachedUsherRequestUrl
-      );
-      if (newUsherManifest == null) {
-        console.log("[TTV LOL PRO] 🔄 No new Video Weaver URLs found.");
-        return;
-      }
-      videoWeaver.replacement =
-        getVideoWeaverMapFromUsherResponse(newUsherManifest);
-      console.log(
-        "[TTV LOL PRO] 🔄 Found new Video Weaver URLs:",
-        Object.fromEntries(videoWeaver.replacement?.entries() ?? [])
-      );
-      // Send replacement Video Weaver URLs to content script.
-      const videoWeaverUrls = [...(videoWeaver.replacement?.values() ?? [])];
-      if (cachedUsherRequestUrl != null && videoWeaverUrls.length > 0) {
-        // Send Video Weaver URLs to content script.
-        sendMessageToContentScript(options.scope, {
-          type: "UsherResponse",
-          channel: findChannelFromUsherUrl(cachedUsherRequestUrl),
-          videoWeaverUrls,
-          proxyCountry:
-            /USER-COUNTRY="([A-Z]+)"/i.exec(newUsherManifest)?.[1] || null,
-        });
-      }
-    } catch (error) {
-      videoWeaver.replacement = null;
-      console.error(
-        "[TTV LOL PRO] 🔄 Failed to get new Video Weaver URLs:",
-        error
-      );
-    }
   }
 
   // // TEST CODE
   // if (options.scope === "worker") {
   //   setTimeout(
-  //     () => setVideoWeaverReplacementMap(videoWeavers[videoWeavers.length - 1]),
+  //     () =>
+  //       setVideoWeaverReplacementMap(
+  //         options.scope,
+  //         cachedUsherRequestUrl,
+  //         videoWeavers[videoWeavers.length - 1]
+  //       ),
   //     20000
   //   );
   // }
@@ -296,7 +261,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
     if (host != null && usherHostRegex.test(host)) {
       responseBody ??= await readResponseBody();
       console.log("[TTV LOL PRO] 🥅 Caught Usher response.");
-      const videoWeaverMap = getVideoWeaverMapFromUsherResponse(responseBody);
+      const videoWeaverMap = parseUsherManifest(responseBody);
       if (videoWeaverMap != null) {
         videoWeavers.push({
           assigned: videoWeaverMap,
@@ -307,7 +272,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
       const videoWeaverUrls = [...(videoWeaverMap?.values() ?? [])];
       // Send Video Weaver URLs to content script.
       sendMessageToContentScript(options.scope, {
-        type: "UsherResponse",
+        type: MessageType.UsherResponse,
         channel: findChannelFromUsherUrl(url),
         videoWeaverUrls,
         proxyCountry:
@@ -341,7 +306,11 @@ export function getFetch(options: FetchOptions): typeof fetch {
         videoWeaver.consecutiveMidrollResponses += 1;
         // Avoid infinite loops.
         if (videoWeaver.consecutiveMidrollResponses <= 2) {
-          await setVideoWeaverReplacementMap(videoWeaver);
+          await setVideoWeaverReplacementMap(
+            options.scope,
+            cachedUsherRequestUrl,
+            videoWeaver
+          );
           cancelRequest();
         } else {
           videoWeaver.replacement = null;
@@ -440,17 +409,6 @@ function removeHeaderFromMap(headersMap: Map<string, string>, name: string) {
   }
 }
 
-function sendMessageToContentScript(scope: "page" | "worker", message: any) {
-  if (scope === "page") {
-    self.postMessage(message);
-  } else {
-    self.postMessage({
-      type: "ContentScriptMessage",
-      message,
-    });
-  }
-}
-
 function flagRequest(headersMap: Map<string, string>) {
   if (IS_CHROMIUM) {
     console.debug(
@@ -470,29 +428,97 @@ async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function sendMessageToPageScript(
+//#region Messages
+
+/**
+ * Sends a message to the content script.
+ * @param scope
+ * @param message
+ */
+function sendMessageToContentScript(scope: "page" | "worker", message: any) {
+  if (scope === "page") {
+    self.postMessage(message);
+  } else {
+    self.postMessage({
+      type: MessageType.ContentScriptMessage,
+      message,
+    });
+  }
+}
+
+/**
+ * Sends a message to the content script and waits for a response.
+ * @param scope
+ * @param message
+ */
+async function sendMessageToContentScriptAndWaitForResponse(
+  scope: "page" | "worker",
   message: any,
-  timeout = 5000
+  messageResponseType: MessageType,
+  timeoutMs = 5000
 ): Promise<any> {
   return new Promise((resolve, reject) => {
     const listener = (event: MessageEvent) => {
-      if (event.data?.type === MessageType.NewPlaybackAccessTokenResponse) {
-        resolve(event.data?.newPlaybackAccessToken);
+      if (event.data?.type === messageResponseType) {
+        resolve(event.data);
       }
     };
     self.addEventListener("message", listener);
-    console.log("[TTV LOL PRO] 💬 Sent message to page", message);
-    self.postMessage({
-      type: "PageScriptMessage",
-      message,
-    });
+    sendMessageToContentScript(scope, message);
     setTimeout(() => {
       self.removeEventListener("message", listener);
-      reject(new Error("Timed out."));
-    }, timeout);
+      reject(new Error("Timed out waiting for message response."));
+    }, timeoutMs);
   });
 }
 
+/**
+ * Sends a message to the page script.
+ * @param scope
+ * @param message
+ */
+function sendMessageToPageScript(scope: "page" | "worker", message: any) {
+  if (scope === "page") {
+    self.postMessage(message);
+  } else {
+    self.postMessage({
+      type: MessageType.PageScriptMessage,
+      message,
+    });
+  }
+}
+
+/**
+ * Sends a message to the page script and waits for a response.
+ * @param scope
+ * @param message
+ */
+async function sendMessageToPageScriptAndWaitForResponse(
+  scope: "page" | "worker",
+  message: any,
+  messageResponseType: MessageType,
+  timeoutMs = 5000
+): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const listener = (event: MessageEvent) => {
+      if (event.data?.type === messageResponseType) {
+        resolve(event.data);
+      }
+    };
+    self.addEventListener("message", listener);
+    sendMessageToPageScript(scope, message);
+    setTimeout(() => {
+      self.removeEventListener("message", listener);
+      reject(new Error("Timed out waiting for message response."));
+    }, timeoutMs);
+  });
+}
+
+//#endregion
+
+//#region Video Weaver
+
+// FIXME:
 async function fetchReplacementPlaybackAccessToken(
   cachedPlaybackTokenRequestHeaders: Map<string, string> | null,
   cachedPlaybackTokenRequestBody: string | null
@@ -509,27 +535,19 @@ async function fetchReplacementPlaybackAccessToken(
       body: cachedPlaybackTokenRequestBody,
     });
   } else {
+    // Twitch sometimes doesn't send a playback access token request on page reload,
+    // so we need this fallback.
     const login = findChannelFromTwitchTvUrl(location.href);
     if (login == null) return null;
     request = new Request("https://gql.twitch.tv/gql", {
       method: "POST",
       headers: {
-        // TODO: Find unnecessary headers.
         // TODO: Flag this request!!
-        Accept: "*/*",
-        "Accept-Language": "en-US",
-        "Accept-Encoding": "gzip, deflate, br",
-        Referer: "https://www.twitch.tv/",
         Authorization: "undefined",
         "Client-ID": "kimne78kx3ncx6brgo4mv6wki5h1ko",
-        "Content-Type": "text/plain; charset=UTF-8",
         "Device-ID": generateRandomString(32),
-        Origin: "https://www.twitch.tv",
-        DNT: "1",
-        Connection: "keep-alive",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-site",
+        Pragma: "no-cache",
+        "Cache-Control": "no-cache",
       },
       body: JSON.stringify({
         operationName: "PlaybackAccessToken_Template",
@@ -553,12 +571,17 @@ async function fetchReplacementPlaybackAccessToken(
   return newPlaybackAccessToken;
 }
 
+/**
+ * Returns a new Usher URL with the new playback access token.
+ * @param cachedUsherRequestUrl
+ * @param playbackAccessToken
+ * @returns
+ */
 function getReplacementUsherUrl(
   cachedUsherRequestUrl: string | null,
-  playbackAccessToken: PlaybackAccessToken | null
+  playbackAccessToken: PlaybackAccessToken
 ): string | null {
-  if (cachedUsherRequestUrl == null) return null;
-  if (playbackAccessToken == null) return null;
+  if (cachedUsherRequestUrl == null) return null; // Very unlikely.
   try {
     const newUsherUrl = new URL(cachedUsherRequestUrl);
     newUsherUrl.searchParams.delete("acmb");
@@ -571,14 +594,21 @@ function getReplacementUsherUrl(
   }
 }
 
+// FIXME:
 async function fetchReplacementUsherManifest(
-  cachedUsherRequestUrl: string | null
+  cachedUsherRequestUrl: string | null,
+  scope: "page" | "worker"
 ): Promise<string | null> {
   if (cachedUsherRequestUrl == null) return null;
   try {
-    const newPlaybackAccessToken = await sendMessageToPageScript({
-      type: MessageType.NewPlaybackAccessToken,
-    });
+    const newPlaybackAccessToken: PlaybackAccessToken | null =
+      await sendMessageToPageScriptAndWaitForResponse(
+        scope,
+        {
+          type: MessageType.NewPlaybackAccessToken,
+        },
+        MessageType.NewPlaybackAccessTokenResponse
+      );
     if (newPlaybackAccessToken == null) {
       console.log("[TTV LOL PRO] 🔄 No new playback token found.");
       return null;
@@ -599,14 +629,19 @@ async function fetchReplacementUsherManifest(
   }
 }
 
-function getVideoWeaverMapFromUsherResponse(
-  response: string
-): Map<string, string> | null {
+/**
+ * Parses a Usher response and returns a map of video quality to URL.
+ * @param manifest
+ * @returns
+ */
+function parseUsherManifest(manifest: string): Map<string, string> | null {
   const parser = new m3u8Parser.Parser();
-  parser.push(response);
+  parser.push(manifest);
   parser.end();
   const parsedManifest = parser.manifest;
-  if (parsedManifest.playlists == null) return null;
+  if (!parsedManifest.playlists || parsedManifest.playlists.length === 0) {
+    return null;
+  }
   return new Map(
     parsedManifest.playlists.map(playlist => [
       playlist.attributes.VIDEO,
@@ -614,3 +649,47 @@ function getVideoWeaverMapFromUsherResponse(
     ])
   );
 }
+
+// FIXME:
+async function setVideoWeaverReplacementMap(
+  scope: "page" | "worker",
+  cachedUsherRequestUrl: string | null,
+  videoWeaver: VideoWeaver
+) {
+  try {
+    console.log("[TTV LOL PRO] 🔄 Checking for new Video Weaver URLs…");
+    const newUsherManifest = await fetchReplacementUsherManifest(
+      cachedUsherRequestUrl,
+      scope
+    );
+    if (newUsherManifest == null) {
+      console.log("[TTV LOL PRO] 🔄 No new Video Weaver URLs found.");
+      return;
+    }
+    videoWeaver.replacement = parseUsherManifest(newUsherManifest);
+    console.log(
+      "[TTV LOL PRO] 🔄 Found new Video Weaver URLs:",
+      Object.fromEntries(videoWeaver.replacement?.entries() ?? [])
+    );
+    // Send replacement Video Weaver URLs to content script.
+    const videoWeaverUrls = [...(videoWeaver.replacement?.values() ?? [])];
+    if (cachedUsherRequestUrl != null && videoWeaverUrls.length > 0) {
+      // Send Video Weaver URLs to content script.
+      sendMessageToContentScript(scope, {
+        type: MessageType.UsherResponse,
+        channel: findChannelFromUsherUrl(cachedUsherRequestUrl),
+        videoWeaverUrls,
+        proxyCountry:
+          /USER-COUNTRY="([A-Z]+)"/i.exec(newUsherManifest)?.[1] || null,
+      });
+    }
+  } catch (error) {
+    videoWeaver.replacement = null;
+    console.error(
+      "[TTV LOL PRO] 🔄 Failed to get new Video Weaver URLs:",
+      error
+    );
+  }
+}
+
+//#endregion
