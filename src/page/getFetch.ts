@@ -523,7 +523,6 @@ async function fetchReplacementPlaybackAccessToken(
   cachedPlaybackTokenRequestHeaders: Map<string, string> | null,
   cachedPlaybackTokenRequestBody: string | null
 ): Promise<PlaybackAccessToken | null> {
-  // FIXME: Take anonymous mode into account.
   let request: Request;
   if (
     cachedPlaybackTokenRequestHeaders != null &&
@@ -537,28 +536,32 @@ async function fetchReplacementPlaybackAccessToken(
   } else {
     // Twitch sometimes doesn't send a playback access token request on page reload,
     // so we need this fallback.
-    const login = findChannelFromTwitchTvUrl(location.href);
-    if (login == null) return null;
+
+    const channelName = findChannelFromTwitchTvUrl(location.href);
+    if (channelName == null) return null;
+    const isVod = /^\d+$/.test(channelName);
+
+    const headersMap = new Map<string, string>([
+      ["Authorization", "undefined"], // Anonymous mode.
+      ["Client-ID", "kimne78kx3ncx6brgo4mv6wki5h1ko"],
+      ["Device-ID", generateRandomString(32)],
+      ["Pragma", "no-cache"],
+      ["Cache-Control", "no-cache"],
+    ]);
+    flagRequest(headersMap);
+
     request = new Request("https://gql.twitch.tv/gql", {
       method: "POST",
-      headers: {
-        // TODO: Flag this request!!
-        Authorization: "undefined",
-        "Client-ID": "kimne78kx3ncx6brgo4mv6wki5h1ko",
-        "Device-ID": generateRandomString(32),
-        Pragma: "no-cache",
-        "Cache-Control": "no-cache",
-      },
+      headers: Object.fromEntries(headersMap),
       body: JSON.stringify({
         operationName: "PlaybackAccessToken_Template",
         query:
           'query PlaybackAccessToken_Template($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!) {  streamPlaybackAccessToken(channelName: $login, params: {platform: "web", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isLive) {    value    signature   authorization { isForbidden forbiddenReasonCode }   __typename  }  videoPlaybackAccessToken(id: $vodID, params: {platform: "web", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isVod) {    value    signature   __typename  }}',
-        // TODO: Check impact on VODs.
         variables: {
-          isLive: true,
-          login,
-          isVod: false,
-          vodID: "",
+          isLive: !isVod,
+          login: isVod ? "" : channelName,
+          isVod: isVod,
+          vodID: isVod ? channelName : "",
           playerType: "site",
         },
       }),
