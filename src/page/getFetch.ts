@@ -33,6 +33,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
   }
 
   if (options.scope === "page") {
+    // TODO: Add rate limiting to prevent potential spam by Twitch's client.
     self.addEventListener("message", async event => {
       if (event.data?.type === MessageType.NewPlaybackAccessToken) {
         const newPlaybackAccessToken =
