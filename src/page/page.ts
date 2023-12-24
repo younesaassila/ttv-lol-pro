@@ -1,3 +1,4 @@
+import { MessageType } from "../types";
 import { FetchOptions, getFetch } from "./getFetch";
 
 console.info("[TTV LOL PRO] 🚀 Page script running.");
@@ -53,8 +54,8 @@ window.Worker = class Worker extends NATIVE_WORKER {
     super(newScriptURL, options);
     this.addEventListener("message", event => {
       if (
-        event.data?.type === "ContentScriptMessage" ||
-        event.data?.type === "PageScriptMessage"
+        event.data?.type === MessageType.ContentScriptMessage ||
+        event.data?.type === MessageType.PageScriptMessage
       ) {
         window.postMessage(event.data.message);
       }
@@ -64,9 +65,9 @@ window.Worker = class Worker extends NATIVE_WORKER {
 };
 
 window.addEventListener("message", event => {
-  if (event.data?.type === "PageScriptMessage") {
+  if (event.data?.type === MessageType.PageScriptMessage) {
     const message = event.data.message;
-    if (message.type === "StoreReady") {
+    if (message.type === MessageType.StoreReady) {
       console.log(
         "[TTV LOL PRO] 📦 Page received store state from content script."
       );

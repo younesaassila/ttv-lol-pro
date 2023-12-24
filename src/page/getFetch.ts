@@ -72,7 +72,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
   // if (options.scope === "worker") {
   //   setTimeout(
   //     () =>
-  //       setVideoWeaverReplacementMap(
+  //       updateVideoWeaverReplacementMap(
   //         options.scope,
   //         cachedUsherRequestUrl,
   //         videoWeavers[videoWeavers.length - 1]
@@ -194,7 +194,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
     // Video Weaver requests.
     if (host != null && videoWeaverHostRegex.test(host)) {
       const videoWeaver = videoWeavers.find(videoWeaver =>
-        [...(videoWeaver.assigned.values() ?? [])].includes(url)
+        [...videoWeaver.assigned.values()].includes(url)
       );
       if (videoWeaver == null) {
         console.warn(
@@ -204,22 +204,22 @@ export function getFetch(options: FetchOptions): typeof fetch {
       let videoWeaverUrl = url;
 
       if (videoWeaver?.replacement != null) {
-        const video = [...(videoWeaver.assigned.entries() ?? [])].find(
+        const video = [...videoWeaver.assigned].find(
           ([, url]) => url === videoWeaverUrl
         )?.[0];
         // Replace Video Weaver URL with replacement URL.
         if (video != null && videoWeaver.replacement.has(video)) {
           videoWeaverUrl = videoWeaver.replacement.get(video)!;
-          console.log(
+          console.debug(
             `[TTV LOL PRO] 🔄 Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}'.`
           );
         } else if (videoWeaver.replacement.size > 0) {
           videoWeaverUrl = [...videoWeaver.replacement.values()][0];
-          console.log(
+          console.warn(
             `[TTV LOL PRO] 🔄 Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}' (fallback).`
           );
         } else {
-          console.log(
+          console.error(
             `[TTV LOL PRO] 🔄 No replacement Video Weaver URL found for '${url}'.`
           );
         }
@@ -276,7 +276,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
         channel: findChannelFromUsherUrl(url),
         videoWeaverUrls,
         proxyCountry:
-          /USER-COUNTRY="([A-Z]+)"/i.exec(responseBody)?.[1] || null,
+          /USER-COUNTRY="([A-Z]+)"/i.exec(responseBody)?.[1] || undefined,
       });
       // Remove all Video Weaver URLs from known URLs.
       videoWeaverUrls.forEach(url => proxiedVideoWeaverUrls.delete(url));
@@ -286,7 +286,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
     if (host != null && videoWeaverHostRegex.test(host)) {
       responseBody ??= await readResponseBody();
       const videoWeaver = videoWeavers.find(videoWeaver =>
-        [...(videoWeaver.assigned.values() ?? [])].includes(url)
+        [...videoWeaver.assigned.values()].includes(url)
       );
       if (videoWeaver == null) {
         console.warn(
@@ -306,7 +306,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
         videoWeaver.consecutiveMidrollResponses += 1;
         // Avoid infinite loops.
         if (videoWeaver.consecutiveMidrollResponses <= 2) {
-          await setVideoWeaverReplacementMap(
+          await updateVideoWeaverReplacementMap(
             options.scope,
             cachedUsherRequestUrl,
             videoWeaver
@@ -318,7 +318,6 @@ export function getFetch(options: FetchOptions): typeof fetch {
       } else {
         // No ad, clear attempts.
         videoWeaver.consecutiveMidrollResponses = 0;
-        console.debug("[TTV LOL PRO] Caught Video Weaver response WITHOUT ad.");
       }
     }
 
@@ -516,62 +515,81 @@ async function sendMessageToPageScriptAndWaitForResponse(
 
 //#endregion
 
-//#region Video Weaver
+//#region Video Weaver URL replacement
 
-// FIXME:
+/**
+ * Returns a PlaybackAccessToken request that can be used when Twitch doesn't send one.
+ * @returns
+ */
+function getFallbackPlaybackAccessTokenRequest(): Request | null {
+  // We can use `location.href` because we're in the page script.
+  const channelName = findChannelFromTwitchTvUrl(location.href);
+  if (!channelName) return null;
+  const isVod = /^\d+$/.test(channelName); // VODs have numeric IDs.
+
+  const headersMap = new Map<string, string>([
+    ["Authorization", "undefined"], // TODO: Cache this value if anonymous mode is disabled.
+    ["Client-ID", "kimne78kx3ncx6brgo4mv6wki5h1ko"],
+    ["Device-ID", generateRandomString(32)],
+    ["Pragma", "no-cache"],
+    ["Cache-Control", "no-cache"],
+  ]);
+  flagRequest(headersMap);
+
+  return new Request("https://gql.twitch.tv/gql", {
+    method: "POST",
+    headers: Object.fromEntries(headersMap),
+    body: JSON.stringify({
+      operationName: "PlaybackAccessToken_Template",
+      query:
+        'query PlaybackAccessToken_Template($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!) {  streamPlaybackAccessToken(channelName: $login, params: {platform: "web", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isLive) {    value    signature   authorization { isForbidden forbiddenReasonCode }   __typename  }  videoPlaybackAccessToken(id: $vodID, params: {platform: "web", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isVod) {    value    signature   __typename  }}',
+      variables: {
+        isLive: !isVod,
+        login: isVod ? "" : channelName,
+        isVod: isVod,
+        vodID: isVod ? channelName : "",
+        playerType: "site",
+      },
+    }),
+  });
+}
+
+/**
+ * Fetches a new PlaybackAccessToken from Twitch.
+ * @param cachedPlaybackTokenRequestHeaders
+ * @param cachedPlaybackTokenRequestBody
+ * @returns
+ */
 async function fetchReplacementPlaybackAccessToken(
   cachedPlaybackTokenRequestHeaders: Map<string, string> | null,
   cachedPlaybackTokenRequestBody: string | null
 ): Promise<PlaybackAccessToken | null> {
-  let request: Request;
+  let request: Request | null = null;
   if (
     cachedPlaybackTokenRequestHeaders != null &&
     cachedPlaybackTokenRequestBody != null
   ) {
     request = new Request("https://gql.twitch.tv/gql", {
       method: "POST",
-      headers: Object.fromEntries(cachedPlaybackTokenRequestHeaders), // Headers already flagged.
+      headers: Object.fromEntries(cachedPlaybackTokenRequestHeaders), // Headers already contain the flag.
       body: cachedPlaybackTokenRequestBody,
     });
   } else {
-    // Twitch sometimes doesn't send a playback access token request on page reload,
-    // so we need this fallback.
-
-    const channelName = findChannelFromTwitchTvUrl(location.href);
-    if (channelName == null) return null;
-    const isVod = /^\d+$/.test(channelName);
-
-    const headersMap = new Map<string, string>([
-      ["Authorization", "undefined"], // Anonymous mode.
-      ["Client-ID", "kimne78kx3ncx6brgo4mv6wki5h1ko"],
-      ["Device-ID", generateRandomString(32)],
-      ["Pragma", "no-cache"],
-      ["Cache-Control", "no-cache"],
-    ]);
-    flagRequest(headersMap);
-
-    request = new Request("https://gql.twitch.tv/gql", {
-      method: "POST",
-      headers: Object.fromEntries(headersMap),
-      body: JSON.stringify({
-        operationName: "PlaybackAccessToken_Template",
-        query:
-          'query PlaybackAccessToken_Template($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!) {  streamPlaybackAccessToken(channelName: $login, params: {platform: "web", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isLive) {    value    signature   authorization { isForbidden forbiddenReasonCode }   __typename  }  videoPlaybackAccessToken(id: $vodID, params: {platform: "web", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isVod) {    value    signature   __typename  }}',
-        variables: {
-          isLive: !isVod,
-          login: isVod ? "" : channelName,
-          isVod: isVod,
-          vodID: isVod ? channelName : "",
-          playerType: "site",
-        },
-      }),
-    });
+    // This fallback request is used when Twitch doesn't send a PlaybackAccessToken request.
+    // This can happen when the user refreshes the page.
+    request = getFallbackPlaybackAccessTokenRequest();
   }
-  const response = await NATIVE_FETCH(request);
-  const json = await response.json();
-  const newPlaybackAccessToken = json?.data?.streamPlaybackAccessToken;
-  if (newPlaybackAccessToken == null) return null;
-  return newPlaybackAccessToken;
+  if (request == null) return null;
+
+  try {
+    const response = await NATIVE_FETCH(request);
+    const json = await response.json();
+    const newPlaybackAccessToken = json?.data?.streamPlaybackAccessToken;
+    if (newPlaybackAccessToken == null) return null;
+    return newPlaybackAccessToken;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -597,33 +615,23 @@ function getReplacementUsherUrl(
   }
 }
 
-// FIXME:
+/**
+ * Fetches a new Usher manifest from Twitch.
+ * @param cachedUsherRequestUrl
+ * @param playbackAccessToken
+ * @returns
+ */
 async function fetchReplacementUsherManifest(
   cachedUsherRequestUrl: string | null,
-  scope: "page" | "worker"
+  playbackAccessToken: PlaybackAccessToken
 ): Promise<string | null> {
-  if (cachedUsherRequestUrl == null) return null;
+  if (cachedUsherRequestUrl == null) return null; // Very unlikely.
   try {
-    const newPlaybackAccessToken: PlaybackAccessToken | null =
-      await sendMessageToPageScriptAndWaitForResponse(
-        scope,
-        {
-          type: MessageType.NewPlaybackAccessToken,
-        },
-        MessageType.NewPlaybackAccessTokenResponse
-      );
-    if (newPlaybackAccessToken == null) {
-      console.log("[TTV LOL PRO] 🔄 No new playback token found.");
-      return null;
-    }
     const newUsherUrl = getReplacementUsherUrl(
       cachedUsherRequestUrl,
-      newPlaybackAccessToken
+      playbackAccessToken
     );
-    if (newUsherUrl == null) {
-      console.log("[TTV LOL PRO] 🔄 No new Usher URL found.");
-      return null;
-    }
+    if (newUsherUrl == null) return null;
     const response = await NATIVE_FETCH(newUsherUrl);
     const text = await response.text();
     return text;
@@ -653,45 +661,79 @@ function parseUsherManifest(manifest: string): Map<string, string> | null {
   );
 }
 
-// FIXME:
-async function setVideoWeaverReplacementMap(
+/**
+ * Updates the replacement Video Weaver URLs.
+ * @param scope
+ * @param cachedUsherRequestUrl
+ * @param videoWeaver
+ * @returns
+ */
+async function updateVideoWeaverReplacementMap(
   scope: "page" | "worker",
   cachedUsherRequestUrl: string | null,
   videoWeaver: VideoWeaver
-) {
+): Promise<boolean> {
+  console.log("[TTV LOL PRO] 🔄 Getting replacement Video Weaver URLs…");
   try {
-    console.log("[TTV LOL PRO] 🔄 Checking for new Video Weaver URLs…");
+    console.log("[TTV LOL PRO] 🔄 (1/3) Getting new PlaybackAccessToken…");
+    const newPlaybackAccessTokenResponse =
+      await sendMessageToPageScriptAndWaitForResponse(
+        scope,
+        {
+          type: MessageType.NewPlaybackAccessToken,
+        },
+        MessageType.NewPlaybackAccessTokenResponse
+      );
+    const newPlaybackAccessToken: PlaybackAccessToken | undefined =
+      newPlaybackAccessTokenResponse?.newPlaybackAccessToken;
+    if (newPlaybackAccessToken == null) {
+      console.error("[TTV LOL PRO] ❌ Failed to get new PlaybackAccessToken.");
+      return false;
+    }
+
+    console.log("[TTV LOL PRO] 🔄 (2/3) Fetching new Usher manifest…");
     const newUsherManifest = await fetchReplacementUsherManifest(
       cachedUsherRequestUrl,
-      scope
+      newPlaybackAccessToken
     );
     if (newUsherManifest == null) {
-      console.log("[TTV LOL PRO] 🔄 No new Video Weaver URLs found.");
-      return;
+      console.error("[TTV LOL PRO] ❌ Failed to fetch new Usher manifest.");
+      return false;
     }
-    videoWeaver.replacement = parseUsherManifest(newUsherManifest);
+
+    console.log("[TTV LOL PRO] 🔄 (3/3) Parsing new Usher manifest…");
+    const replacement = parseUsherManifest(newUsherManifest);
+    if (replacement == null || replacement.size === 0) {
+      console.error("[TTV LOL PRO] ❌ Failed to parse new Usher manifest.");
+      return false;
+    }
+
     console.log(
-      "[TTV LOL PRO] 🔄 Found new Video Weaver URLs:",
-      Object.fromEntries(videoWeaver.replacement?.entries() ?? [])
+      "[TTV LOL PRO] 🔄 Replacement Video Weaver URLs:",
+      Object.fromEntries(replacement)
     );
+    videoWeaver.replacement = replacement;
+
     // Send replacement Video Weaver URLs to content script.
-    const videoWeaverUrls = [...(videoWeaver.replacement?.values() ?? [])];
+    const videoWeaverUrls = [...replacement.values()];
     if (cachedUsherRequestUrl != null && videoWeaverUrls.length > 0) {
-      // Send Video Weaver URLs to content script.
       sendMessageToContentScript(scope, {
         type: MessageType.UsherResponse,
         channel: findChannelFromUsherUrl(cachedUsherRequestUrl),
         videoWeaverUrls,
         proxyCountry:
-          /USER-COUNTRY="([A-Z]+)"/i.exec(newUsherManifest)?.[1] || null,
+          /USER-COUNTRY="([A-Z]+)"/i.exec(newUsherManifest)?.[1] || undefined,
       });
     }
+
+    return true;
   } catch (error) {
-    videoWeaver.replacement = null;
     console.error(
-      "[TTV LOL PRO] 🔄 Failed to get new Video Weaver URLs:",
+      "[TTV LOL PRO] ❌ Failed to get replacement Video Weaver URLs:",
       error
     );
+    videoWeaver.replacement = null;
+    return false;
   }
 }
 

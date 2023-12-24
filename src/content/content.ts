@@ -4,6 +4,7 @@ import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl"
 import isChromium from "../common/ts/isChromium";
 import { getStreamStatus, setStreamStatus } from "../common/ts/streamStatus";
 import store from "../store";
+import { MessageType } from "../types";
 
 console.info("[TTV LOL PRO] 🚀 Content script running.");
 
@@ -36,11 +37,11 @@ function injectPageScript() {
 function onStoreReady() {
   // Send store state to page script.
   const message = {
-    type: "StoreReady",
+    type: MessageType.StoreReady,
     state: JSON.parse(JSON.stringify(store.state)),
   };
   window.postMessage({
-    type: "PageScriptMessage",
+    type: MessageType.PageScriptMessage,
     message,
   });
   // Clear stats for stream on page load/reload.
@@ -66,7 +67,7 @@ function clearStats() {
 
 function onMessage(event: MessageEvent) {
   if (event.source !== window) return;
-  if (event.data?.type === "UsherResponse") {
+  if (event.data?.type === MessageType.UsherResponse) {
     const { channel, videoWeaverUrls, proxyCountry } = event.data;
     // Update Video Weaver URLs.
     store.state.videoWeaverUrlsByChannel[channel] = [
