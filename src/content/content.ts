@@ -53,7 +53,6 @@ function onStoreReady() {
  * @returns
  */
 function clearStats() {
-  // TODO: Clear stats on navigation.
   const channelName = findChannelFromTwitchTvUrl(location.href);
   if (!channelName) return;
 
