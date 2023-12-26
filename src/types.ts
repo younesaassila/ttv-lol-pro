@@ -59,4 +59,5 @@ export const enum MessageType {
   UsherResponse = "TLP_UsherResponse",
   NewPlaybackAccessToken = "TLP_NewPlaybackAccessToken",
   NewPlaybackAccessTokenResponse = "TLP_NewPlaybackAccessTokenResponse",
+  ClearStats = "TLP_ClearStats",
 }

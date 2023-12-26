@@ -16,7 +16,9 @@ const NATIVE_FETCH = self.fetch;
 const IS_CHROMIUM = !!self.chrome;
 
 // TODO: Fix Chromium support. Also why anonymous mode limited to Firefox currently??
-// TODO: Clear variables on navigation.
+// FIXME: Use rolling codes to secure the communication between the content, page, and worker scripts.
+// TODO: A lot of proxied requests are GQL requests with Client-Integrity header. Can we do something about that?
+//            The playback access token request doesn't require it if always using _Template!
 
 export function getFetch(options: FetchOptions): typeof fetch {
   // TODO: What happens when the user navigates to another channel?
@@ -33,7 +35,6 @@ export function getFetch(options: FetchOptions): typeof fetch {
   }
 
   if (options.scope === "page") {
-    // TODO: Add rate limiting to prevent potential spam by Twitch's client.
     self.addEventListener("message", async event => {
       if (event.data?.type === MessageType.NewPlaybackAccessToken) {
         const newPlaybackAccessToken =
@@ -50,6 +51,16 @@ export function getFetch(options: FetchOptions): typeof fetch {
       }
     });
   }
+
+  self.addEventListener("message", async event => {
+    if (event.data?.type === MessageType.ClearStats) {
+      console.info("[TTV LOL PRO] 📊 Fetch stats cleared.");
+      videoWeavers = [];
+      cachedPlaybackTokenRequestHeaders = null;
+      cachedPlaybackTokenRequestBody = null;
+      cachedUsherRequestUrl = null;
+    }
+  });
 
   // // TEST CODE
   // if (options.scope === "worker") {

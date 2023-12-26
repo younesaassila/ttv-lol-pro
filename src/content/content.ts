@@ -63,6 +63,7 @@ function clearStats() {
       notProxied: 0,
     };
   }
+  console.info(`[TTV LOL PRO] 📊 Stats cleared for channel: ${channelName}`);
 }
 
 function onMessage(event: MessageEvent) {
@@ -80,5 +81,8 @@ function onMessage(event: MessageEvent) {
       ...(streamStatus ?? { proxied: false, reason: "" }),
       proxyCountry,
     });
+  }
+  if (event.data?.type === MessageType.ClearStats) {
+    clearStats();
   }
 }

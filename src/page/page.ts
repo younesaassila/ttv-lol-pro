@@ -1,3 +1,4 @@
+import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import { MessageType } from "../types";
 import { getFetch } from "./getFetch";
 import type { FetchOptions } from "./types";
@@ -77,6 +78,66 @@ window.addEventListener("message", event => {
       fetchOptions.shouldWaitForStore = false;
     }
   }
+});
+
+function toAbsoluteUrl(url: string) {
+  try {
+    const Url = new URL(url, location.href);
+    return Url.href;
+  } catch {
+    return url;
+  }
+}
+
+function onChannelChange(callback: (channelName: string) => void) {
+  let channelName: string | null = findChannelFromTwitchTvUrl(location.href);
+
+  const NATIVE_PUSH_STATE = window.history.pushState;
+  function pushState(
+    data: any,
+    unused: string,
+    url?: string | URL | null | undefined
+  ) {
+    if (!url) return NATIVE_PUSH_STATE.call(window.history, data, unused);
+    const fullUrl = toAbsoluteUrl(url.toString());
+    const newChannelName = findChannelFromTwitchTvUrl(fullUrl);
+    if (newChannelName != null && newChannelName !== channelName) {
+      channelName = newChannelName;
+      callback(channelName);
+    }
+    return NATIVE_PUSH_STATE.call(window.history, data, unused, url);
+  }
+  window.history.pushState = pushState;
+
+  const NATIVE_REPLACE_STATE = window.history.replaceState;
+  function replaceState(
+    data: any,
+    unused: string,
+    url?: string | URL | null | undefined
+  ) {
+    if (!url) return NATIVE_REPLACE_STATE.call(window.history, data, unused);
+    const fullUrl = toAbsoluteUrl(url.toString());
+    const newChannelName = findChannelFromTwitchTvUrl(fullUrl);
+    if (newChannelName != null && newChannelName !== channelName) {
+      channelName = newChannelName;
+      callback(channelName);
+    }
+    return NATIVE_REPLACE_STATE.call(window.history, data, unused, url);
+  }
+  window.history.replaceState = replaceState;
+
+  window.addEventListener("popstate", () => {
+    const newChannelName = findChannelFromTwitchTvUrl(location.href);
+    if (newChannelName != null && newChannelName !== channelName) {
+      channelName = newChannelName;
+      callback(channelName);
+    }
+  });
+}
+
+onChannelChange(() => {
+  window.postMessage({ type: MessageType.ClearStats });
+  fetchOptions.twitchWorker?.postMessage({ type: MessageType.ClearStats });
 });
 
 document.currentScript!.remove();
