@@ -78,6 +78,10 @@ window.addEventListener("message", event => {
       const state = message.state;
       fetchOptions.state = state;
       fetchOptions.shouldWaitForStore = false;
+      sendMessageToWorkerScript({
+        type: MessageType.GetStoreStateResponse,
+        state,
+      });
       break;
   }
 });
@@ -119,6 +123,7 @@ function onChannelChange(callback: (channelName: string) => void) {
     if (!url) return NATIVE_PUSH_STATE.call(window.history, data, unused);
     const fullUrl = toAbsoluteUrl(url.toString());
     const newChannelName = findChannelFromTwitchTvUrl(fullUrl);
+    // TODO: Check on m.twitch.tv if miniplayer is a thing too. -> It's not!!!!
     if (newChannelName != null && newChannelName !== channelName) {
       channelName = newChannelName;
       callback(channelName);

@@ -10,22 +10,23 @@ import {
   videoWeaverHostRegex,
 } from "../common/ts/regexes";
 import { MessageType } from "../types";
-import type { FetchOptions, PlaybackAccessToken, VideoWeaver } from "./types";
+import type { FetchOptions, PlaybackAccessToken, UsherManifest } from "./types";
 
 const NATIVE_FETCH = self.fetch;
 const IS_CHROMIUM = !!self.chrome;
 
 // FIXME: Use rolling codes to secure the communication between the content, page, and worker scripts.
-// TODO: A lot of proxied requests are GQL requests with Client-Integrity header. Can we do something about that?
-//            The playback access token request doesn't require it if always using _Template!
+// TODO: A lot of proxied requests are GQL requests with Client-Integrity header. -> Working on it (passport level).
+// TODO: Test if default PlaybackAccessToken_Template gets proxied successfully in all use cases (laissez on).
 // TODO: Fix Chromium support. Also why anonymous mode limited to Firefox currently??
 
 export function getFetch(options: FetchOptions): typeof fetch {
-  let videoWeavers: VideoWeaver[] = [];
-  let proxiedVideoWeaverUrls = new Set<string>(); // Used to proxy only the first request to each Video Weaver URL.
   let cachedPlaybackTokenRequestHeaders: Map<string, string> | null = null; // Cached by page script.
   let cachedPlaybackTokenRequestBody: string | null = null; // Cached by page script.
   let cachedUsherRequestUrl: string | null = null; // Cached by worker script.
+
+  let usherManifests: UsherManifest[] = [];
+  let videoWeaverUrlsProxiedCount = new Map<string, number>(); // Used to count how many times each Video Weaver URL was proxied.
 
   if (options.shouldWaitForStore) {
     setTimeout(() => {
@@ -51,7 +52,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
             type: MessageType.NewPlaybackAccessTokenResponse,
             newPlaybackAccessToken,
           };
-          console.log("[TTV LOL PRO] 💬 Sent message to workers", message);
+          console.log("[TTV LOL PRO] 💬 Sent message to worker", message);
           options.twitchWorker?.postMessage({
             type: MessageType.WorkerScriptMessage,
             message,
@@ -74,7 +75,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
     switch (message.type) {
       case MessageType.ClearStats:
         console.info("[TTV LOL PRO] 📊 Fetch stats cleared.");
-        videoWeavers = [];
+        usherManifests = [];
         cachedPlaybackTokenRequestHeaders = null;
         cachedPlaybackTokenRequestBody = null;
         cachedUsherRequestUrl = null;
@@ -82,21 +83,22 @@ export function getFetch(options: FetchOptions): typeof fetch {
     }
   });
 
+  // TODO: Maybe implement some kind of retry that sends message to content script to get store state?
+  async function waitForStore() {
+    while (options.shouldWaitForStore) await sleep(100);
+  }
+
   // // TEST CODE
   // if (options.scope === "worker") {
   //   setTimeout(
   //     () =>
   //       updateVideoWeaverReplacementMap(
   //         cachedUsherRequestUrl,
-  //         videoWeavers[videoWeavers.length - 1]
+  //         usherManifests[usherManifests.length - 1]
   //       ),
   //     15000
   //   );
   // }
-
-  async function waitForStore() {
-    while (options.shouldWaitForStore) await sleep(100);
-  }
 
   return async function fetch(
     input: RequestInfo | URL,
@@ -138,6 +140,8 @@ export function getFetch(options: FetchOptions): typeof fetch {
       const isIntegrityHeaderRequest = integrityHeader != null;
       if (isIntegrityRequest || isIntegrityHeaderRequest) {
         await waitForStore();
+        // TODO: These `shouldFlagRequest` should be for all types of requests (like weaver)
+        // once the waitForStore is refactored to be cleaner!
         const shouldFlagRequest =
           (options.state?.optimizedProxiesEnabled === true &&
             options.state?.passportLevel === 2) ||
@@ -219,7 +223,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
           willFailIntegrityCheckIfProxied;
 
         if (shouldOverrideRequest) {
-          const newRequest = getFallbackPlaybackAccessTokenRequest(
+          const newRequest = getDefaultPlaybackAccessTokenRequest(
             channelName,
             options.state?.anonymousMode === true
           );
@@ -237,7 +241,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
         }
         // Notice that if anonymous mode fails, we still flag the request to avoid ads.
         if (!willFailIntegrityCheckIfProxied) {
-          console.debug("[TTV LOL PRO] Flagging PlaybackAccessToken request…");
+          console.log("[TTV LOL PRO] Flagging PlaybackAccessToken request…");
           flagRequest(headersMap);
         }
         break graphql;
@@ -245,59 +249,79 @@ export function getFetch(options: FetchOptions): typeof fetch {
       //#endregion
     }
 
-    // Usher requests.
+    // Twitch Usher requests.
     if (host != null && usherHostRegex.test(host)) {
       cachedUsherRequestUrl = url; // Cache the URL for later use.
       console.debug("[TTV LOL PRO] Detected Usher request.");
     }
 
-    // Video Weaver requests.
+    // Twitch Video Weaver requests.
     if (host != null && videoWeaverHostRegex.test(host)) {
-      const videoWeaver = videoWeavers.find(videoWeaver =>
-        [...videoWeaver.assignedMap.values()].includes(url)
+      //#region Video Weaver requests.
+      const manifest = usherManifests.find(manifest =>
+        [...manifest.assignedMap.values()].includes(url)
       );
-      if (videoWeaver == null) {
+      if (manifest == null) {
         console.warn(
-          "[TTV LOL PRO] 🥅 Caught Video Weaver request, but no associated Video Weaver found."
+          "[TTV LOL PRO] No associated Usher manifest found for Video Weaver request."
         );
       }
       let videoWeaverUrl = url;
 
-      if (videoWeaver?.replacementMap != null) {
-        const video = [...videoWeaver.assignedMap].find(
+      // Check if we should replace the Video Weaver URL.
+      if (manifest?.replacementMap != null) {
+        const videoQuality = [...manifest.assignedMap].find(
           ([, url]) => url === videoWeaverUrl
         )?.[0];
-        // Replace Video Weaver URL with replacement URL.
-        if (video != null && videoWeaver.replacementMap.has(video)) {
-          videoWeaverUrl = videoWeaver.replacementMap.get(video)!;
+        if (videoQuality != null && manifest.replacementMap.has(videoQuality)) {
+          videoWeaverUrl = manifest.replacementMap.get(videoQuality)!;
           console.debug(
-            `[TTV LOL PRO] 🔄 Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}'.`
+            `[TTV LOL PRO] Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}'.`
           );
-        } else if (videoWeaver.replacementMap.size > 0) {
-          videoWeaverUrl = [...videoWeaver.replacementMap.values()][0];
+        } else if (manifest.replacementMap.size > 0) {
+          videoWeaverUrl = [...manifest.replacementMap.values()][0];
           console.warn(
-            `[TTV LOL PRO] 🔄 Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}' (fallback).`
+            `[TTV LOL PRO] Replacement Video Weaver URL not found for '${url}'. Using first replacement URL '${videoWeaverUrl}'.`
           );
         } else {
           console.error(
-            `[TTV LOL PRO] 🔄 No replacement Video Weaver URL found for '${url}'.`
+            `[TTV LOL PRO] Replacement Video Weaver URL not found for '${url}'.`
           );
         }
       }
 
       // Flag first request to each Video Weaver URL.
-      if (!proxiedVideoWeaverUrls.has(videoWeaverUrl)) {
-        proxiedVideoWeaverUrls.add(videoWeaverUrl);
+      const proxiedCount = videoWeaverUrlsProxiedCount.get(videoWeaverUrl) ?? 0;
+      if (proxiedCount < 1) {
+        videoWeaverUrlsProxiedCount.set(videoWeaverUrl, proxiedCount + 1);
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/PluralRules/PluralRules#using_options
+        const pr = new Intl.PluralRules("en-US", { type: "ordinal" });
+        const suffixes = new Map([
+          ["one", "st"],
+          ["two", "nd"],
+          ["few", "rd"],
+          ["other", "th"],
+        ]);
+        const formatOrdinals = (n: number) => {
+          const rule = pr.select(n);
+          const suffix = suffixes.get(rule);
+          return `${n}${suffix}`;
+        };
         console.log(
-          `[TTV LOL PRO] 🥅 Caught first request to Video Weaver URL. Flagging…`
+          `[TTV LOL PRO] Flagging ${formatOrdinals(
+            proxiedCount + 1
+          )} request to Video Weaver URL '${videoWeaverUrl}'…`
         );
         flagRequest(headersMap);
       }
 
-      request ??= new Request(videoWeaverUrl, {
-        ...init,
-        headers: Object.fromEntries(headersMap),
-      });
+      if (videoWeaverUrl !== url) {
+        request ??= new Request(videoWeaverUrl, {
+          ...init,
+          headers: Object.fromEntries(headersMap),
+        });
+      }
+      //#endregion
     }
 
     //#endregion
@@ -320,18 +344,20 @@ export function getFetch(options: FetchOptions): typeof fetch {
 
     // Usher responses.
     if (host != null && usherHostRegex.test(host)) {
+      console.log("[TTV LOL PRO] Received Usher response.");
       responseBody ??= await readResponseBody();
-      console.log("[TTV LOL PRO] 🥅 Caught Usher response.");
-      const videoWeaverMap = parseUsherManifest(responseBody);
-      if (videoWeaverMap != null) {
-        videoWeavers.push({
-          assignedMap: videoWeaverMap,
+      const assignedMap = parseUsherManifest(responseBody);
+      if (assignedMap != null) {
+        console.log(Object.fromEntries(assignedMap));
+        usherManifests.push({
+          assignedMap: assignedMap,
           replacementMap: null,
           consecutiveMidrollResponses: 0,
         });
       }
-      const videoWeaverUrls = [...(videoWeaverMap?.values() ?? [])];
       // Send Video Weaver URLs to content script.
+      const videoWeaverUrls = [...(assignedMap?.values() ?? [])];
+      videoWeaverUrls.forEach(url => videoWeaverUrlsProxiedCount.delete(url)); // Shouldn't be necessary, but just in case.
       sendMessageToContentScript({
         type: MessageType.UsherResponse,
         channel: findChannelFromUsherUrl(url),
@@ -339,49 +365,42 @@ export function getFetch(options: FetchOptions): typeof fetch {
         proxyCountry:
           /USER-COUNTRY="([A-Z]+)"/i.exec(responseBody)?.[1] || undefined,
       });
-      // Remove all Video Weaver URLs from known URLs.
-      videoWeaverUrls.forEach(url => proxiedVideoWeaverUrls.delete(url));
     }
 
     // Video Weaver responses.
     if (host != null && videoWeaverHostRegex.test(host)) {
-      responseBody ??= await readResponseBody();
-      const videoWeaver = videoWeavers.find(videoWeaver =>
-        [...videoWeaver.assignedMap.values()].includes(url)
+      const manifest = usherManifests.find(manifest =>
+        [...manifest.assignedMap.values()].includes(url)
       );
-      if (videoWeaver == null) {
+      if (manifest == null) {
         console.warn(
-          "[TTV LOL PRO] 🥅 Caught Video Weaver response, but no associated Video Weaver found."
+          "[TTV LOL PRO] No associated Usher manifest found for Video Weaver response."
         );
         return response;
       }
 
       // Check if response contains midroll ad.
+      responseBody ??= await readResponseBody();
       if (
         responseBody.includes("stitched-ad") &&
         responseBody.toLowerCase().includes("midroll")
       ) {
-        console.log(
-          "[TTV LOL PRO] 🥅 Caught Video Weaver response containing ad."
-        );
-        videoWeaver.consecutiveMidrollResponses += 1;
-        // Avoid infinite loops.
-        if (videoWeaver.consecutiveMidrollResponses <= 2) {
+        console.log("[TTV LOL PRO] Midroll ad detected.");
+        manifest.consecutiveMidrollResponses += 1;
+        if (
+          options.state?.optimizedProxiesEnabled === true &&
+          manifest.consecutiveMidrollResponses <= 2 // Avoid infinite loop.
+        ) {
           const success = await updateVideoWeaverReplacementMap(
             cachedUsherRequestUrl,
-            videoWeaver
+            manifest
           );
-          if (success) {
-            cancelRequest();
-          } else {
-            videoWeaver.replacementMap = null;
-          }
-        } else {
-          videoWeaver.replacementMap = null;
+          if (success) cancelRequest();
         }
+        manifest.replacementMap = null;
       } else {
         // No ad, clear attempts.
-        videoWeaver.consecutiveMidrollResponses = 0;
+        manifest.consecutiveMidrollResponses = 0;
       }
     }
 
@@ -599,7 +618,7 @@ async function sendMessageToPageScriptAndWaitForResponse(
  * @param channel
  * @returns
  */
-function getFallbackPlaybackAccessTokenRequest(
+function getDefaultPlaybackAccessTokenRequest(
   channel: string | null = null,
   anonymousMode: boolean = false
 ): Request | null {
@@ -669,7 +688,7 @@ async function fetchReplacementPlaybackAccessToken(
   } else {
     // This fallback request is used when Twitch doesn't send a PlaybackAccessToken request.
     // This can happen when the user refreshes the page.
-    request = getFallbackPlaybackAccessTokenRequest(null, anonymousMode);
+    request = getDefaultPlaybackAccessTokenRequest(null, anonymousMode);
   }
   if (request == null) return null;
 
@@ -756,12 +775,12 @@ function parseUsherManifest(manifest: string): Map<string, string> | null {
 /**
  * Updates the replacement Video Weaver URLs.
  * @param cachedUsherRequestUrl
- * @param videoWeaver
+ * @param manifest
  * @returns
  */
 async function updateVideoWeaverReplacementMap(
   cachedUsherRequestUrl: string | null,
-  videoWeaver: VideoWeaver
+  manifest: UsherManifest
 ): Promise<boolean> {
   console.log("[TTV LOL PRO] 🔄 Getting replacement Video Weaver URLs…");
   try {
@@ -802,7 +821,7 @@ async function updateVideoWeaverReplacementMap(
       "[TTV LOL PRO] 🔄 Replacement Video Weaver URLs:",
       Object.fromEntries(replacementMap)
     );
-    videoWeaver.replacementMap = replacementMap;
+    manifest.replacementMap = replacementMap;
 
     // Send replacement Video Weaver URLs to content script.
     const videoWeaverUrls = [...replacementMap.values()];
