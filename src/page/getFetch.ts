@@ -15,17 +15,17 @@ import type { FetchOptions, PlaybackAccessToken, VideoWeaver } from "./types";
 const NATIVE_FETCH = self.fetch;
 const IS_CHROMIUM = !!self.chrome;
 
-// TODO: Fix Chromium support. Also why anonymous mode limited to Firefox currently??
 // FIXME: Use rolling codes to secure the communication between the content, page, and worker scripts.
 // TODO: A lot of proxied requests are GQL requests with Client-Integrity header. Can we do something about that?
 //            The playback access token request doesn't require it if always using _Template!
+// TODO: Fix Chromium support. Also why anonymous mode limited to Firefox currently??
 
 export function getFetch(options: FetchOptions): typeof fetch {
-  // TODO: What happens when the user navigates to another channel?
   let videoWeavers: VideoWeaver[] = [];
   let proxiedVideoWeaverUrls = new Set<string>(); // Used to proxy only the first request to each Video Weaver URL.
   let cachedPlaybackTokenRequestHeaders: Map<string, string> | null = null; // Cached by page script.
   let cachedPlaybackTokenRequestBody: string | null = null; // Cached by page script.
+  let cachedGqlAuthorization: string | null = null;
   let cachedUsherRequestUrl: string | null = null; // Cached by worker script.
 
   if (options.shouldWaitForStore) {
@@ -40,7 +40,8 @@ export function getFetch(options: FetchOptions): typeof fetch {
         const newPlaybackAccessToken =
           await fetchReplacementPlaybackAccessToken(
             cachedPlaybackTokenRequestHeaders,
-            cachedPlaybackTokenRequestBody
+            cachedPlaybackTokenRequestBody,
+            cachedGqlAuthorization
           );
         const message = {
           type: MessageType.NewPlaybackAccessTokenResponse,
@@ -71,7 +72,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
   //         cachedUsherRequestUrl,
   //         videoWeavers[videoWeavers.length - 1]
   //       ),
-  //     20000
+  //     15000
   //   );
   // }
 
@@ -103,26 +104,32 @@ export function getFetch(options: FetchOptions): typeof fetch {
       return getRequestBodyText(input, init);
     };
 
+    let response: Response;
+
     //#region Requests
 
     // Twitch GraphQL requests.
     if (host != null && twitchGqlHostRegex.test(host)) {
       requestBody ??= await readRequestBody();
-      // Integrity requests.
-      if (url === "https://gql.twitch.tv/integrity") {
-        console.debug(
-          "[TTV LOL PRO] 🥅 Caught GraphQL integrity request. Flagging…"
-        );
-        flagRequest(headersMap);
+      const authorization = getHeaderFromMap(headersMap, "Authorization");
+      if (authorization != null) {
+        cachedGqlAuthorization = authorization;
       }
-      // Requests with Client-Integrity header.
-      const integrityHeader = getHeaderFromMap(headersMap, "Client-Integrity");
-      if (integrityHeader != null) {
-        console.debug(
-          "[TTV LOL PRO] 🥅 Caught GraphQL request with Client-Integrity header. Flagging…"
-        );
-        flagRequest(headersMap);
-      }
+      // // Integrity requests.
+      // if (url === "https://gql.twitch.tv/integrity") {
+      //   console.debug(
+      //     "[TTV LOL PRO] 🥅 Caught GraphQL integrity request. Flagging…"
+      //   );
+      //   flagRequest(headersMap);
+      // }
+      // // Requests with Client-Integrity header.
+      // const integrityHeader = getHeaderFromMap(headersMap, "Client-Integrity");
+      // if (integrityHeader != null) {
+      //   console.debug(
+      //     "[TTV LOL PRO] 🥅 Caught GraphQL request with Client-Integrity header. Flagging…"
+      //   );
+      //   flagRequest(headersMap);
+      // }
       // PlaybackAccessToken requests.
       if (
         requestBody != null &&
@@ -141,6 +148,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
         const whitelistedChannelsLower = options.state?.whitelistedChannels.map(
           channel => channel.toLowerCase()
         );
+        const isLive = channelName != null && channelName.length > 0;
         const isWhitelisted =
           channelName != null &&
           whitelistedChannelsLower != null &&
@@ -161,19 +169,51 @@ export function getFetch(options: FetchOptions): typeof fetch {
             );
           }
         }
-        flagRequest(headersMap);
+        if (!isWhitelisted && isLive) flagRequest(headersMap);
+        // Doesn't fail because no Client-Integrity header.
+        else {
+          console.debug(
+            "[TTV LOL PRO] ✋ Channel is whitelisted or is a VOD. Not flagging."
+          );
+        }
         cachedPlaybackTokenRequestHeaders = headersMap;
         cachedPlaybackTokenRequestBody = requestBody;
       } else if (
         requestBody != null &&
         requestBody.includes("PlaybackAccessToken")
       ) {
-        console.debug(
-          "[TTV LOL PRO] 🥅 Caught GraphQL PlaybackAccessToken request. Flagging…"
+        while (options.shouldWaitForStore) await sleep(100);
+        let graphQlBody = null;
+        try {
+          graphQlBody = JSON.parse(requestBody);
+        } catch {}
+        const channelName = graphQlBody?.variables?.login as string | undefined;
+        const whitelistedChannelsLower = options.state?.whitelistedChannels.map(
+          channel => channel.toLowerCase()
         );
-        flagRequest(headersMap);
-        cachedPlaybackTokenRequestHeaders = headersMap;
-        cachedPlaybackTokenRequestBody = requestBody;
+        const isLive = channelName != null && channelName.length > 0;
+        const isWhitelisted =
+          channelName != null &&
+          whitelistedChannelsLower != null &&
+          whitelistedChannelsLower.includes(channelName.toLowerCase());
+
+        const request = getFallbackPlaybackAccessTokenRequest(
+          channelName,
+          getHeaderFromMap(headersMap, "Authorization")
+        );
+        if (request && !isWhitelisted) {
+          console.log(
+            "[TTV LOL PRO] 🔄 Replaced GraphQL PlaybackAccessToken request with PlaybackAccessToken_Template request."
+          );
+          response ??= await NATIVE_FETCH(request);
+        } else {
+          console.debug(
+            "[TTV LOL PRO] 🥅 Caught GraphQL PlaybackAccessToken request. Flagging…"
+          );
+          // if (!isWhitelisted && isLive) flagRequest(headersMap); // Fail because of Client-Integrity header.
+          cachedPlaybackTokenRequestHeaders = headersMap;
+          cachedPlaybackTokenRequestBody = requestBody;
+        }
       }
     }
 
@@ -182,8 +222,6 @@ export function getFetch(options: FetchOptions): typeof fetch {
       console.debug("[TTV LOL PRO] 🥅 Caught Usher request.");
       cachedUsherRequestUrl = url;
     }
-
-    let response: Response;
 
     // Video Weaver requests.
     if (host != null && videoWeaverHostRegex.test(host)) {
@@ -517,20 +555,22 @@ async function sendMessageToPageScriptAndWaitForResponse(
 
 /**
  * Returns a PlaybackAccessToken request that can be used when Twitch doesn't send one.
+ * @param channel
  * @returns
  */
-function getFallbackPlaybackAccessTokenRequest(): Request | null {
+function getFallbackPlaybackAccessTokenRequest(
+  channel: string | null = null,
+  authorization: string | null = null
+): Request | null {
   // We can use `location.href` because we're in the page script.
-  const channelName = findChannelFromTwitchTvUrl(location.href);
+  const channelName = channel ?? findChannelFromTwitchTvUrl(location.href);
   if (!channelName) return null;
   const isVod = /^\d+$/.test(channelName); // VODs have numeric IDs.
 
   const headersMap = new Map<string, string>([
-    ["Authorization", "undefined"], // TODO: Cache this value if anonymous mode is disabled.
+    ["Authorization", authorization ?? "undefined"],
     ["Client-ID", "kimne78kx3ncx6brgo4mv6wki5h1ko"],
     ["Device-ID", generateRandomString(32)],
-    ["Pragma", "no-cache"],
-    ["Cache-Control", "no-cache"],
   ]);
   flagRequest(headersMap);
 
@@ -560,7 +600,8 @@ function getFallbackPlaybackAccessTokenRequest(): Request | null {
  */
 async function fetchReplacementPlaybackAccessToken(
   cachedPlaybackTokenRequestHeaders: Map<string, string> | null,
-  cachedPlaybackTokenRequestBody: string | null
+  cachedPlaybackTokenRequestBody: string | null,
+  cachedGqlAuthorization: string | null
 ): Promise<PlaybackAccessToken | null> {
   let request: Request | null = null;
   if (
@@ -575,7 +616,10 @@ async function fetchReplacementPlaybackAccessToken(
   } else {
     // This fallback request is used when Twitch doesn't send a PlaybackAccessToken request.
     // This can happen when the user refreshes the page.
-    request = getFallbackPlaybackAccessTokenRequest();
+    request = getFallbackPlaybackAccessTokenRequest(
+      null,
+      cachedGqlAuthorization
+    );
   }
   if (request == null) return null;
 
