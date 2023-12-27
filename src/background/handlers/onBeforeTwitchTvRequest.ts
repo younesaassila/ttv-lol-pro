@@ -29,6 +29,9 @@ export default function onBeforeTwitchTvRequest(
     // with the extension. The `url:` imports above are used to get the runtime URLs of the respective scripts.
     // Additionally, there is no custom Content Security Policy (CSP) in use.
     (document.head || document.documentElement).prepend(script);
-    return "<!DOCTYPE html>" + document.documentElement.outerHTML;
+    return (
+      (document.compatMode === "CSS1Compat" ? "<!DOCTYPE html>" : "") +
+      document.documentElement.outerHTML
+    );
   });
 }
