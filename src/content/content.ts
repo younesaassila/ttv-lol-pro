@@ -35,15 +35,6 @@ function injectPageScript() {
 }
 
 function onStoreReady() {
-  // Send store state to page script.
-  const message = {
-    type: MessageType.StoreReady,
-    state: JSON.parse(JSON.stringify(store.state)),
-  };
-  window.postMessage({
-    type: MessageType.PageScriptMessage,
-    message,
-  });
   // Clear stats for stream on page load/reload.
   clearStats();
 }
@@ -66,22 +57,42 @@ function clearStats() {
 }
 
 function onMessage(event: MessageEvent) {
-  if (event.source !== window) return;
-  if (event.data?.type === MessageType.UsherResponse) {
-    const { channel, videoWeaverUrls, proxyCountry } = event.data;
-    // Update Video Weaver URLs.
-    store.state.videoWeaverUrlsByChannel[channel] = [
-      ...(store.state.videoWeaverUrlsByChannel[channel] ?? []),
-      ...videoWeaverUrls,
-    ];
-    // Update proxy country.
-    const streamStatus = getStreamStatus(channel);
-    setStreamStatus(channel, {
-      ...(streamStatus ?? { proxied: false, reason: "" }),
-      proxyCountry,
-    });
-  }
-  if (event.data?.type === MessageType.ClearStats) {
-    clearStats();
+  if (event.data?.type !== MessageType.ContentScriptMessage) return;
+
+  const message = event.data?.message;
+  if (!message) return;
+
+  switch (message.type) {
+    case MessageType.GetStoreState:
+      const sendStoreState = () => {
+        const message = {
+          type: MessageType.PageScriptMessage,
+          message: {
+            type: MessageType.GetStoreStateResponse,
+            state: JSON.parse(JSON.stringify(store.state)),
+          },
+        };
+        window.postMessage(message);
+      };
+      if (store.readyState === "complete") sendStoreState();
+      else store.addEventListener("load", sendStoreState);
+      break;
+    case MessageType.UsherResponse:
+      const { channel, videoWeaverUrls, proxyCountry } = message;
+      // Update Video Weaver URLs.
+      store.state.videoWeaverUrlsByChannel[channel] = [
+        ...(store.state.videoWeaverUrlsByChannel[channel] ?? []),
+        ...videoWeaverUrls,
+      ];
+      // Update proxy country.
+      const streamStatus = getStreamStatus(channel);
+      setStreamStatus(channel, {
+        ...(streamStatus ?? { proxied: false, reason: "" }),
+        proxyCountry,
+      });
+      break;
+    case MessageType.ClearStats:
+      clearStats();
+      break;
   }
 }

@@ -55,7 +55,9 @@ export interface DnsResponse {
 export const enum MessageType {
   ContentScriptMessage = "TLP_ContentScriptMessage",
   PageScriptMessage = "TLP_PageScriptMessage",
-  StoreReady = "TLP_StoreReady",
+  WorkerScriptMessage = "TLP_WorkerScriptMessage",
+  GetStoreState = "TLP_GetStoreState",
+  GetStoreStateResponse = "TLP_GetStoreStateResponse",
   UsherResponse = "TLP_UsherResponse",
   NewPlaybackAccessToken = "TLP_NewPlaybackAccessToken",
   NewPlaybackAccessTokenResponse = "TLP_NewPlaybackAccessTokenResponse",

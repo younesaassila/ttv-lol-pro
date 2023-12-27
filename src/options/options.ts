@@ -461,6 +461,7 @@ exportButtonElement.addEventListener("click", () => {
       normalProxies: store.state.normalProxies,
       optimizedProxies: store.state.optimizedProxies,
       optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
+      passportLevel: store.state.passportLevel,
       proxyTwitchWebpage: store.state.proxyTwitchWebpage,
       proxyUsherRequests: store.state.proxyUsherRequests,
       whitelistedChannels: store.state.whitelistedChannels,
@@ -494,6 +495,13 @@ importButtonElement.addEventListener("click", async () => {
         filteredValue = value.filter(item =>
           item != null ? isNormalProxyUrlAllowed(item.toString())[0] : false
         );
+      }
+      if (key === "passportLevel") {
+        if (typeof value !== "number") {
+          filteredValue = isChromium ? 0 : 1;
+        } else if (value < 0 || value > 2) {
+          filteredValue = Math.min(Math.max(value, 0), 2);
+        }
       }
       // @ts-ignore
       store.state[key] = filteredValue;

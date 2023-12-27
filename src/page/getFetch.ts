@@ -25,7 +25,6 @@ export function getFetch(options: FetchOptions): typeof fetch {
   let proxiedVideoWeaverUrls = new Set<string>(); // Used to proxy only the first request to each Video Weaver URL.
   let cachedPlaybackTokenRequestHeaders: Map<string, string> | null = null; // Cached by page script.
   let cachedPlaybackTokenRequestBody: string | null = null; // Cached by page script.
-  let cachedGqlAuthorization: string | null = null;
   let cachedUsherRequestUrl: string | null = null; // Cached by worker script.
 
   if (options.shouldWaitForStore) {
@@ -36,30 +35,50 @@ export function getFetch(options: FetchOptions): typeof fetch {
 
   if (options.scope === "page") {
     self.addEventListener("message", async event => {
-      if (event.data?.type === MessageType.NewPlaybackAccessToken) {
-        const newPlaybackAccessToken =
-          await fetchReplacementPlaybackAccessToken(
-            cachedPlaybackTokenRequestHeaders,
-            cachedPlaybackTokenRequestBody,
-            cachedGqlAuthorization
-          );
-        const message = {
-          type: MessageType.NewPlaybackAccessTokenResponse,
-          newPlaybackAccessToken,
-        };
-        console.log("[TTV LOL PRO] 💬 Sent message to workers", message);
-        options.twitchWorker?.postMessage(message);
+      if (event.data?.type !== MessageType.PageScriptMessage) return;
+
+      const message = event.data?.message;
+      if (!message) return;
+
+      switch (message.type) {
+        case MessageType.NewPlaybackAccessToken:
+          const newPlaybackAccessToken =
+            await fetchReplacementPlaybackAccessToken(
+              cachedPlaybackTokenRequestHeaders,
+              cachedPlaybackTokenRequestBody
+            );
+          const message = {
+            type: MessageType.NewPlaybackAccessTokenResponse,
+            newPlaybackAccessToken,
+          };
+          console.log("[TTV LOL PRO] 💬 Sent message to workers", message);
+          options.twitchWorker?.postMessage({
+            type: MessageType.WorkerScriptMessage,
+            message,
+          });
+          break;
       }
     });
   }
 
-  self.addEventListener("message", async event => {
-    if (event.data?.type === MessageType.ClearStats) {
-      console.info("[TTV LOL PRO] 📊 Fetch stats cleared.");
-      videoWeavers = [];
-      cachedPlaybackTokenRequestHeaders = null;
-      cachedPlaybackTokenRequestBody = null;
-      cachedUsherRequestUrl = null;
+  self.addEventListener("message", event => {
+    if (
+      event.data?.type !== MessageType.PageScriptMessage &&
+      event.data?.type !== MessageType.WorkerScriptMessage
+    )
+      return;
+
+    const message = event.data?.message;
+    if (!message) return;
+
+    switch (message.type) {
+      case MessageType.ClearStats:
+        console.info("[TTV LOL PRO] 📊 Fetch stats cleared.");
+        videoWeavers = [];
+        cachedPlaybackTokenRequestHeaders = null;
+        cachedPlaybackTokenRequestBody = null;
+        cachedUsherRequestUrl = null;
+        break;
     }
   });
 
@@ -68,13 +87,16 @@ export function getFetch(options: FetchOptions): typeof fetch {
   //   setTimeout(
   //     () =>
   //       updateVideoWeaverReplacementMap(
-  //         options.scope,
   //         cachedUsherRequestUrl,
   //         videoWeavers[videoWeavers.length - 1]
   //       ),
   //     15000
   //   );
   // }
+
+  async function waitForStore() {
+    while (options.shouldWaitForStore) await sleep(100);
+  }
 
   return async function fetch(
     input: RequestInfo | URL,
@@ -97,6 +119,8 @@ export function getFetch(options: FetchOptions): typeof fetch {
     const host = getHostFromUrl(url);
     const headersMap = getHeadersMap(input, init);
 
+    let request: Request | null = null;
+
     // Reading the request body can be expensive, so we only do it if we need to.
     let requestBody: string | null | undefined = undefined;
     const readRequestBody = async (): Promise<string | null> => {
@@ -104,123 +128,125 @@ export function getFetch(options: FetchOptions): typeof fetch {
       return getRequestBodyText(input, init);
     };
 
-    let response: Response;
-
     //#region Requests
 
     // Twitch GraphQL requests.
-    if (host != null && twitchGqlHostRegex.test(host)) {
-      requestBody ??= await readRequestBody();
-      const authorization = getHeaderFromMap(headersMap, "Authorization");
-      if (authorization != null) {
-        cachedGqlAuthorization = authorization;
+    graphql: if (host != null && twitchGqlHostRegex.test(host)) {
+      //#region GraphQL integrity requests.
+      const integrityHeader = getHeaderFromMap(headersMap, "Client-Integrity");
+      const isIntegrityRequest = url === "https://gql.twitch.tv/integrity";
+      const isIntegrityHeaderRequest = integrityHeader != null;
+      if (isIntegrityRequest || isIntegrityHeaderRequest) {
+        await waitForStore();
+        const shouldFlagRequest =
+          (options.state?.optimizedProxiesEnabled === true &&
+            options.state?.passportLevel === 2) ||
+          (options.state?.optimizedProxiesEnabled === false &&
+            options.state?.passportLevel === 1); // Level 2 proxies all GQL requests.
+        if (shouldFlagRequest) {
+          if (isIntegrityRequest) {
+            console.debug("[TTV LOL PRO] Flagging GraphQL integrity request…");
+            flagRequest(headersMap);
+          } else if (isIntegrityHeaderRequest) {
+            console.debug(
+              "[TTV LOL PRO] Flagging GraphQL request with Client-Integrity header…"
+            );
+            flagRequest(headersMap);
+          }
+        }
+        break graphql;
       }
-      // // Integrity requests.
-      // if (url === "https://gql.twitch.tv/integrity") {
-      //   console.debug(
-      //     "[TTV LOL PRO] 🥅 Caught GraphQL integrity request. Flagging…"
-      //   );
-      //   flagRequest(headersMap);
-      // }
-      // // Requests with Client-Integrity header.
-      // const integrityHeader = getHeaderFromMap(headersMap, "Client-Integrity");
-      // if (integrityHeader != null) {
-      //   console.debug(
-      //     "[TTV LOL PRO] 🥅 Caught GraphQL request with Client-Integrity header. Flagging…"
-      //   );
-      //   flagRequest(headersMap);
-      // }
-      // PlaybackAccessToken requests.
-      if (
-        requestBody != null &&
-        requestBody.includes("PlaybackAccessToken_Template")
-      ) {
-        console.debug(
-          "[TTV LOL PRO] 🥅 Caught GraphQL PlaybackAccessToken_Template request. Flagging…"
-        );
+      //#endregion
 
-        while (options.shouldWaitForStore) await sleep(100);
+      //#region GraphQL PlaybackAccessToken requests.
+      requestBody ??= await readRequestBody();
+      if (requestBody != null && requestBody.includes("PlaybackAccessToken")) {
+        // Cache the request headers and body for later use.
+        const headersMapCopy = new Map(headersMap);
+        flagRequest(headersMapCopy); // Make sure the cached request is flagged.
+        cachedPlaybackTokenRequestHeaders = headersMapCopy;
+        cachedPlaybackTokenRequestBody = requestBody;
+
+        // Check if this is a livestream and if it's whitelisted.
+        await waitForStore();
         let graphQlBody = null;
         try {
           graphQlBody = JSON.parse(requestBody);
-        } catch {}
+        } catch (error) {
+          console.error(
+            "[TTV LOL PRO] Failed to parse GraphQL request body:",
+            error
+          );
+        }
         const channelName = graphQlBody?.variables?.login as string | undefined;
+        const isLivestream = channelName != null && channelName.length > 0;
         const whitelistedChannelsLower = options.state?.whitelistedChannels.map(
           channel => channel.toLowerCase()
         );
-        const isLive = channelName != null && channelName.length > 0;
         const isWhitelisted =
           channelName != null &&
           whitelistedChannelsLower != null &&
           whitelistedChannelsLower.includes(channelName.toLowerCase());
 
-        if (options.state?.anonymousMode === true) {
-          if (!isWhitelisted) {
-            console.log("[TTV LOL PRO] 🕵️ Anonymous mode is enabled.");
-            setHeaderToMap(headersMap, "Authorization", "undefined");
-            removeHeaderFromMap(headersMap, "Client-Session-Id");
-            removeHeaderFromMap(headersMap, "Client-Version");
-            setHeaderToMap(headersMap, "Device-ID", generateRandomString(32));
-            removeHeaderFromMap(headersMap, "Sec-GPC");
-            removeHeaderFromMap(headersMap, "X-Device-Id");
-          } else {
+        // Check if we should flag this request.
+        const shouldFlagRequest =
+          options.state?.passportLevel === 1 ||
+          options.state?.passportLevel === 2;
+        if (!shouldFlagRequest) break graphql;
+        if (!isLivestream || isWhitelisted) {
+          console.log(
+            "[TTV LOL PRO] Not flagging PlaybackAccessToken request: not a livestream or is whitelisted."
+          );
+          break graphql;
+        }
+
+        const isTemplateRequest = requestBody.includes(
+          "PlaybackAccessToken_Template"
+        );
+        const areIntegrityRequestsProxied =
+          (options.state?.optimizedProxiesEnabled === true &&
+            options.state?.passportLevel === 2) ||
+          (options.state?.optimizedProxiesEnabled === false &&
+            options.state?.passportLevel === 1);
+        // "PlaybackAccessToken" requests contain a Client-Integrity header.
+        // Thus, if integrity requests are not proxied, we can't proxy this request.
+        const willFailIntegrityCheckIfProxied =
+          !isTemplateRequest && !areIntegrityRequestsProxied;
+        const shouldOverrideRequest =
+          options.state?.anonymousMode === true ||
+          willFailIntegrityCheckIfProxied;
+
+        if (shouldOverrideRequest) {
+          const newRequest = getFallbackPlaybackAccessTokenRequest(
+            channelName,
+            options.state?.anonymousMode === true
+          );
+          if (newRequest) {
             console.log(
-              "[TTV LOL PRO] 🕵️✋ Anonymous mode is enabled but channel is whitelisted."
+              "[TTV LOL PRO] Using default PlaybackAccessToken_Template request…"
+            );
+            request = newRequest; // This request is already flagged.
+            // Since this is a template request, whether or not integrity requests are proxied doesn't matter.
+          } else {
+            console.error(
+              "[TTV LOL PRO] Failed to use default PlaybackAccessToken_Template request."
             );
           }
         }
-        if (!isWhitelisted && isLive) flagRequest(headersMap);
-        // Doesn't fail because no Client-Integrity header.
-        else {
-          console.debug(
-            "[TTV LOL PRO] ✋ Channel is whitelisted or is a VOD. Not flagging."
-          );
+        // Notice that if anonymous mode fails, we still flag the request to avoid ads.
+        if (!willFailIntegrityCheckIfProxied) {
+          console.debug("[TTV LOL PRO] Flagging PlaybackAccessToken request…");
+          flagRequest(headersMap);
         }
-        cachedPlaybackTokenRequestHeaders = headersMap;
-        cachedPlaybackTokenRequestBody = requestBody;
-      } else if (
-        requestBody != null &&
-        requestBody.includes("PlaybackAccessToken")
-      ) {
-        while (options.shouldWaitForStore) await sleep(100);
-        let graphQlBody = null;
-        try {
-          graphQlBody = JSON.parse(requestBody);
-        } catch {}
-        const channelName = graphQlBody?.variables?.login as string | undefined;
-        const whitelistedChannelsLower = options.state?.whitelistedChannels.map(
-          channel => channel.toLowerCase()
-        );
-        const isLive = channelName != null && channelName.length > 0;
-        const isWhitelisted =
-          channelName != null &&
-          whitelistedChannelsLower != null &&
-          whitelistedChannelsLower.includes(channelName.toLowerCase());
-
-        const request = getFallbackPlaybackAccessTokenRequest(
-          channelName,
-          getHeaderFromMap(headersMap, "Authorization")
-        );
-        if (request && !isWhitelisted) {
-          console.log(
-            "[TTV LOL PRO] 🔄 Replaced GraphQL PlaybackAccessToken request with PlaybackAccessToken_Template request."
-          );
-          response ??= await NATIVE_FETCH(request);
-        } else {
-          console.debug(
-            "[TTV LOL PRO] 🥅 Caught GraphQL PlaybackAccessToken request. Flagging…"
-          );
-          // if (!isWhitelisted && isLive) flagRequest(headersMap); // Fail because of Client-Integrity header.
-          cachedPlaybackTokenRequestHeaders = headersMap;
-          cachedPlaybackTokenRequestBody = requestBody;
-        }
+        break graphql;
       }
+      //#endregion
     }
 
     // Usher requests.
     if (host != null && usherHostRegex.test(host)) {
-      console.debug("[TTV LOL PRO] 🥅 Caught Usher request.");
-      cachedUsherRequestUrl = url;
+      cachedUsherRequestUrl = url; // Cache the URL for later use.
+      console.debug("[TTV LOL PRO] Detected Usher request.");
     }
 
     // Video Weaver requests.
@@ -266,18 +292,19 @@ export function getFetch(options: FetchOptions): typeof fetch {
         flagRequest(headersMap);
       }
 
-      response ??= await NATIVE_FETCH(videoWeaverUrl, {
+      request ??= new Request(videoWeaverUrl, {
         ...init,
         headers: Object.fromEntries(headersMap),
       });
     }
 
-    response ??= await NATIVE_FETCH(input, {
+    //#endregion
+
+    request ??= new Request(input, {
       ...init,
       headers: Object.fromEntries(headersMap),
     });
-
-    //#endregion
+    const response = await NATIVE_FETCH(request);
 
     // Reading the response body can be expensive, so we only do it if we need to.
     let responseBody: string | undefined = undefined;
@@ -303,7 +330,7 @@ export function getFetch(options: FetchOptions): typeof fetch {
       }
       const videoWeaverUrls = [...(videoWeaverMap?.values() ?? [])];
       // Send Video Weaver URLs to content script.
-      sendMessageToContentScript(options.scope, {
+      sendMessageToContentScript({
         type: MessageType.UsherResponse,
         channel: findChannelFromUsherUrl(url),
         videoWeaverUrls,
@@ -339,7 +366,6 @@ export function getFetch(options: FetchOptions): typeof fetch {
         // Avoid infinite loops.
         if (videoWeaver.consecutiveMidrollResponses <= 2) {
           const success = await updateVideoWeaverReplacementMap(
-            options.scope,
             cachedUsherRequestUrl,
             videoWeaver
           );
@@ -452,6 +478,7 @@ function flagRequest(headersMap: Map<string, string>) {
     return;
   }
   const accept = getHeaderFromMap(headersMap, "Accept");
+  if (accept != null && accept.includes(acceptFlag)) return;
   setHeaderToMap(headersMap, "Accept", `${accept || ""}${acceptFlag}`);
 }
 
@@ -467,18 +494,13 @@ async function sleep(ms: number) {
 
 /**
  * Sends a message to the content script.
- * @param scope
  * @param message
  */
-function sendMessageToContentScript(scope: "page" | "worker", message: any) {
-  if (scope === "page") {
-    self.postMessage(message);
-  } else {
-    self.postMessage({
-      type: MessageType.ContentScriptMessage,
-      message,
-    });
-  }
+function sendMessageToContentScript(message: any) {
+  self.postMessage({
+    type: MessageType.ContentScriptMessage,
+    message,
+  });
 }
 
 /**
@@ -494,12 +516,23 @@ async function sendMessageToContentScriptAndWaitForResponse(
 ): Promise<any> {
   return new Promise((resolve, reject) => {
     const listener = (event: MessageEvent) => {
-      if (event.data?.type === messageResponseType) {
-        resolve(event.data);
+      if (
+        (scope === "page" &&
+          event.data?.type !== MessageType.PageScriptMessage) ||
+        (scope === "worker" &&
+          event.data?.type !== MessageType.WorkerScriptMessage)
+      )
+        return;
+
+      const message = event.data?.message;
+      if (!message) return;
+
+      if (message.type === messageResponseType) {
+        resolve(message);
       }
     };
     self.addEventListener("message", listener);
-    sendMessageToContentScript(scope, message);
+    sendMessageToContentScript(message);
     setTimeout(() => {
       self.removeEventListener("message", listener);
       reject(new Error("Timed out waiting for message response."));
@@ -509,18 +542,13 @@ async function sendMessageToContentScriptAndWaitForResponse(
 
 /**
  * Sends a message to the page script.
- * @param scope
  * @param message
  */
-function sendMessageToPageScript(scope: "page" | "worker", message: any) {
-  if (scope === "page") {
-    self.postMessage(message);
-  } else {
-    self.postMessage({
-      type: MessageType.PageScriptMessage,
-      message,
-    });
-  }
+function sendMessageToPageScript(message: any) {
+  self.postMessage({
+    type: MessageType.PageScriptMessage,
+    message,
+  });
 }
 
 /**
@@ -536,12 +564,23 @@ async function sendMessageToPageScriptAndWaitForResponse(
 ): Promise<any> {
   return new Promise((resolve, reject) => {
     const listener = (event: MessageEvent) => {
-      if (event.data?.type === messageResponseType) {
-        resolve(event.data);
+      if (
+        (scope === "page" &&
+          event.data?.type !== MessageType.PageScriptMessage) ||
+        (scope === "worker" &&
+          event.data?.type !== MessageType.WorkerScriptMessage)
+      )
+        return;
+
+      const message = event.data?.message;
+      if (!message) return;
+
+      if (message.type === messageResponseType) {
+        resolve(message);
       }
     };
     self.addEventListener("message", listener);
-    sendMessageToPageScript(scope, message);
+    sendMessageToPageScript(message);
     setTimeout(() => {
       self.removeEventListener("message", listener);
       reject(new Error("Timed out waiting for message response."));
@@ -560,15 +599,25 @@ async function sendMessageToPageScriptAndWaitForResponse(
  */
 function getFallbackPlaybackAccessTokenRequest(
   channel: string | null = null,
-  authorization: string | null = null
+  anonymousMode: boolean = false
 ): Request | null {
   // We can use `location.href` because we're in the page script.
   const channelName = channel ?? findChannelFromTwitchTvUrl(location.href);
   if (!channelName) return null;
   const isVod = /^\d+$/.test(channelName); // VODs have numeric IDs.
 
+  const cookieMap = new Map<string, string>(
+    document.cookie
+      .split(";")
+      .map(cookie => cookie.trim().split("="))
+      .map(([name, value]) => [name, decodeURIComponent(value)])
+  );
+  if (anonymousMode) {
+    cookieMap.set("auth-token", "undefined");
+  }
+
   const headersMap = new Map<string, string>([
-    ["Authorization", authorization ?? "undefined"],
+    ["Authorization", cookieMap.get("auth-token") ?? "undefined"],
     ["Client-ID", "kimne78kx3ncx6brgo4mv6wki5h1ko"],
     ["Device-ID", generateRandomString(32)],
   ]);
@@ -601,7 +650,7 @@ function getFallbackPlaybackAccessTokenRequest(
 async function fetchReplacementPlaybackAccessToken(
   cachedPlaybackTokenRequestHeaders: Map<string, string> | null,
   cachedPlaybackTokenRequestBody: string | null,
-  cachedGqlAuthorization: string | null
+  anonymousMode: boolean = false
 ): Promise<PlaybackAccessToken | null> {
   let request: Request | null = null;
   if (
@@ -616,10 +665,7 @@ async function fetchReplacementPlaybackAccessToken(
   } else {
     // This fallback request is used when Twitch doesn't send a PlaybackAccessToken request.
     // This can happen when the user refreshes the page.
-    request = getFallbackPlaybackAccessTokenRequest(
-      null,
-      cachedGqlAuthorization
-    );
+    request = getFallbackPlaybackAccessTokenRequest(null, anonymousMode);
   }
   if (request == null) return null;
 
@@ -705,13 +751,11 @@ function parseUsherManifest(manifest: string): Map<string, string> | null {
 
 /**
  * Updates the replacement Video Weaver URLs.
- * @param scope
  * @param cachedUsherRequestUrl
  * @param videoWeaver
  * @returns
  */
 async function updateVideoWeaverReplacementMap(
-  scope: "page" | "worker",
   cachedUsherRequestUrl: string | null,
   videoWeaver: VideoWeaver
 ): Promise<boolean> {
@@ -720,7 +764,7 @@ async function updateVideoWeaverReplacementMap(
     console.log("[TTV LOL PRO] 🔄 (1/3) Getting new PlaybackAccessToken…");
     const newPlaybackAccessTokenResponse =
       await sendMessageToPageScriptAndWaitForResponse(
-        scope,
+        "worker",
         {
           type: MessageType.NewPlaybackAccessToken,
         },
@@ -759,7 +803,7 @@ async function updateVideoWeaverReplacementMap(
     // Send replacement Video Weaver URLs to content script.
     const videoWeaverUrls = [...replacementMap.values()];
     if (cachedUsherRequestUrl != null && videoWeaverUrls.length > 0) {
-      sendMessageToContentScript(scope, {
+      sendMessageToContentScript({
         type: MessageType.UsherResponse,
         channel: findChannelFromUsherUrl(cachedUsherRequestUrl),
         videoWeaverUrls,

@@ -16,6 +16,7 @@ export interface State {
   openedTwitchTabs: Tabs.Tab[];
   optimizedProxies: string[];
   optimizedProxiesEnabled: boolean;
+  passportLevel: number;
   proxyTwitchWebpage: boolean;
   proxyUsherRequests: boolean;
   streamStatuses: Record<string, StreamStatus>;

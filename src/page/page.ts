@@ -9,12 +9,12 @@ const params = JSON.parse(document.currentScript!.dataset.params!);
 const fetchOptions: FetchOptions = {
   scope: "page",
   shouldWaitForStore: params.isChromium === false,
+  twitchWorker: undefined,
 };
-
-const NATIVE_WORKER = window.Worker;
 
 window.fetch = getFetch(fetchOptions);
 
+const NATIVE_WORKER = window.Worker;
 window.Worker = class Worker extends NATIVE_WORKER {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
     const isTwitchWorker = scriptURL.toString().includes("twitch.tv");
@@ -59,7 +59,7 @@ window.Worker = class Worker extends NATIVE_WORKER {
         event.data?.type === MessageType.ContentScriptMessage ||
         event.data?.type === MessageType.PageScriptMessage
       ) {
-        window.postMessage(event.data.message);
+        window.postMessage(event.data);
       }
     });
     fetchOptions.twitchWorker = this;
@@ -67,18 +67,36 @@ window.Worker = class Worker extends NATIVE_WORKER {
 };
 
 window.addEventListener("message", event => {
-  if (event.data?.type === MessageType.PageScriptMessage) {
-    const message = event.data.message;
-    if (message.type === MessageType.StoreReady) {
-      console.log(
-        "[TTV LOL PRO] 📦 Page received store state from content script."
-      );
-      // Mutate the options object.
-      fetchOptions.state = message.state;
+  if (event.data?.type !== MessageType.PageScriptMessage) return;
+
+  const message = event.data?.message;
+  if (!message) return;
+
+  switch (message.type) {
+    case MessageType.GetStoreStateResponse:
+      console.log("[TTV LOL PRO] Received store state from content script.");
+      const state = message.state;
+      fetchOptions.state = state;
       fetchOptions.shouldWaitForStore = false;
-    }
+      break;
   }
 });
+
+function sendMessageToContentScript(message: any) {
+  window.postMessage({
+    type: MessageType.ContentScriptMessage,
+    message,
+  });
+}
+
+function sendMessageToWorkerScript(message: any) {
+  fetchOptions.twitchWorker?.postMessage({
+    type: MessageType.WorkerScriptMessage,
+    message,
+  });
+}
+
+sendMessageToContentScript({ type: MessageType.GetStoreState });
 
 function toAbsoluteUrl(url: string) {
   try {
@@ -136,8 +154,8 @@ function onChannelChange(callback: (channelName: string) => void) {
 }
 
 onChannelChange(() => {
-  window.postMessage({ type: MessageType.ClearStats });
-  fetchOptions.twitchWorker?.postMessage({ type: MessageType.ClearStats });
+  sendMessageToContentScript({ type: MessageType.ClearStats });
+  sendMessageToWorkerScript({ type: MessageType.ClearStats });
 });
 
 document.currentScript!.remove();
