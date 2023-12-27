@@ -614,14 +614,11 @@ function getFallbackPlaybackAccessTokenRequest(
       .map(cookie => cookie.trim().split("="))
       .map(([name, value]) => [name, decodeURIComponent(value)])
   );
-  if (anonymousMode) {
-    cookieMap.delete("auth-token");
-  }
 
   const headersMap = new Map<string, string>([
     [
       "Authorization",
-      cookieMap.get("auth-token")
+      cookieMap.has("auth-token") && !anonymousMode
         ? `OAuth ${cookieMap.get("auth-token")}`
         : "undefined",
     ],
