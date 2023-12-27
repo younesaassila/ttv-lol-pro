@@ -179,7 +179,9 @@ export function getFetch(options: FetchOptions): typeof fetch {
           );
         }
         const channelName = graphQlBody?.variables?.login as string | undefined;
-        const isLivestream = channelName != null && channelName.length > 0;
+        const isLivestream = graphQlBody?.variables?.isLive as
+          | boolean
+          | undefined;
         const whitelistedChannelsLower = options.state?.whitelistedChannels.map(
           channel => channel.toLowerCase()
         );
@@ -223,13 +225,13 @@ export function getFetch(options: FetchOptions): typeof fetch {
           );
           if (newRequest) {
             console.log(
-              "[TTV LOL PRO] Using default PlaybackAccessToken_Template request…"
+              "[TTV LOL PRO] Overriding PlaybackAccessToken request…"
             );
             request = newRequest; // This request is already flagged.
             // Since this is a template request, whether or not integrity requests are proxied doesn't matter.
           } else {
             console.error(
-              "[TTV LOL PRO] Failed to use default PlaybackAccessToken_Template request."
+              "[TTV LOL PRO] Failed to override PlaybackAccessToken request."
             );
           }
         }
@@ -617,7 +619,12 @@ function getFallbackPlaybackAccessTokenRequest(
   }
 
   const headersMap = new Map<string, string>([
-    ["Authorization", cookieMap.get("auth-token") ?? "undefined"],
+    [
+      "Authorization",
+      cookieMap.get("auth-token")
+        ? `OAuth ${cookieMap.get("auth-token")}`
+        : "undefined",
+    ],
     ["Client-ID", "kimne78kx3ncx6brgo4mv6wki5h1ko"],
     ["Device-ID", generateRandomString(32)],
   ]);
