@@ -89,17 +89,17 @@ export function getFetch(pageState: PageState): typeof fetch {
     while (pageState.shouldWaitForStore) await sleep(100);
   }
 
-  // TEST CODE
-  if (pageState.scope === "worker") {
-    setTimeout(
-      () =>
-        updateVideoWeaverReplacementMap(
-          cachedUsherRequestUrl,
-          usherManifests[usherManifests.length - 1]
-        ),
-      15000
-    );
-  }
+  // // TEST CODE
+  // if (pageState.scope === "worker") {
+  //   setTimeout(
+  //     () =>
+  //       updateVideoWeaverReplacementMap(
+  //         cachedUsherRequestUrl,
+  //         usherManifests[usherManifests.length - 1]
+  //       ),
+  //     15000
+  //   );
+  // }
 
   return async function fetch(
     input: RequestInfo | URL,
