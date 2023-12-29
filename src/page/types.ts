@@ -1,6 +1,7 @@
 import type { State } from "../store/types";
 
-export interface FetchOptions {
+export interface PageState {
+  isChromium: boolean;
   scope: "page" | "worker";
   shouldWaitForStore: boolean;
   state?: State;

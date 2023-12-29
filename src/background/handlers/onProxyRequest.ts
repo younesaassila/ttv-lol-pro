@@ -49,16 +49,16 @@ export default async function onProxyRequest(
   const proxyInfoArray = getProxyInfoArrayFromUrls(proxies);
 
   // Twitch webpage requests.
-  if (store.state.proxyTwitchWebpage && twitchTvHostRegex.test(host)) {
+  if (store.state.passportLevel >= 2 && twitchTvHostRegex.test(host)) {
     console.log(`⌛ Proxying ${details.url} through one of: <empty>`);
     return proxyInfoArray;
   }
 
   // Twitch GraphQL requests.
   if (
-    store.state.proxyTwitchWebpage &&
-    twitchGqlHostRegex.test(host) &&
-    isFlagged
+    store.state.passportLevel >= 1 &&
+    isFlagged &&
+    twitchGqlHostRegex.test(host)
   ) {
     console.log(
       `⌛ Proxying ${details.url} through one of: ${
@@ -69,7 +69,7 @@ export default async function onProxyRequest(
   }
 
   // Passport requests.
-  if (store.state.proxyUsherRequests && passportHostRegex.test(host)) {
+  if (store.state.passportLevel >= 0 && passportHostRegex.test(host)) {
     console.log(
       `⌛ Proxying ${details.url} through one of: ${
         proxies.toString() || "<empty>"
@@ -79,7 +79,7 @@ export default async function onProxyRequest(
   }
 
   // Usher requests.
-  if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
+  if (store.state.passportLevel >= 0 && usherHostRegex.test(host)) {
     // Don't proxy Usher requests from non-supported hosts.
     if (!isFromTwitchTvHost) {
       console.log(

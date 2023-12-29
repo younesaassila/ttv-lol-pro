@@ -6,7 +6,6 @@ import {
   anonymizeIpAddresses,
 } from "../common/ts/anonymizeIpAddress";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
-import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
 import isChromium from "../common/ts/isChromium";
 import store from "../store";
 import type { StreamStatus } from "../types";
@@ -39,17 +38,12 @@ if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 
 async function main() {
-  let proxies: string[];
-  if (isChromium) {
-    proxies = store.state.normalProxies;
-  } else {
-    proxies = store.state.optimizedProxiesEnabled
-      ? store.state.optimizedProxies
-      : store.state.normalProxies;
-  }
-  const isLimitedProxy =
-    proxies.length > 0 &&
-    getProxyInfoFromUrl(proxies[0]).host === "chrome.api.cdn-perfprod.com";
+  const proxies = store.state.optimizedProxiesEnabled
+    ? store.state.optimizedProxies
+    : store.state.normalProxies;
+
+  // TODO: Is this code still needed?
+  const isLimitedProxy = false;
   if (proxies.length === 0) {
     setWarningBanner("noProxies");
   } else if (isLimitedProxy) {
@@ -168,9 +162,8 @@ copyDebugInfoButtonElement.addEventListener("click", async e => {
     `- Install type: ${extensionInfo.installType}`,
     `- Browser: ${userAgentParser.getBrowserName()} ${userAgentParser.getBrowserVersion()}`,
     `- OS: ${userAgentParser.getOSName()} ${userAgentParser.getOSVersion()}`,
-    `- Passport enabled: ${store.state.proxyUsherRequests}`,
-    `- Is laissez-passer: ${store.state.proxyTwitchWebpage}`,
-    `- Is redacted: ${store.state.anonymousMode}`,
+    `- Passport level: ${store.state.passportLevel}`,
+    `- Anonymous mode: ${store.state.anonymousMode}`,
     `- Optimized proxies enabled: ${store.state.optimizedProxiesEnabled}`,
     `- Optimized proxies: ${JSON.stringify(
       e.shiftKey

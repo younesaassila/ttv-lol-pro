@@ -17,8 +17,6 @@ export interface State {
   optimizedProxies: string[];
   optimizedProxiesEnabled: boolean;
   passportLevel: number;
-  proxyTwitchWebpage: boolean;
-  proxyUsherRequests: boolean;
   streamStatuses: Record<string, StreamStatus>;
   videoWeaverUrlsByChannel: Record<string, string[]>;
   whitelistedChannels: string[];

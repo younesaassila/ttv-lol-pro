@@ -5,6 +5,7 @@ import onAuthRequired from "./handlers/onAuthRequired";
 import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
 import onBeforeTwitchTvRequest from "./handlers/onBeforeTwitchTvRequest";
 import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
+import onContentScriptMessage from "./handlers/onContentScriptMessage";
 import onProxyRequest from "./handlers/onProxyRequest";
 import onProxySettingsChange from "./handlers/onProxySettingsChanged";
 import onResponseStarted from "./handlers/onResponseStarted";
@@ -34,6 +35,9 @@ browser.webRequest.onResponseStarted.addListener(onResponseStarted, {
 if (isChromium) {
   // Listen to whether proxy is set or not.
   browser.proxy.settings.onChange.addListener(onProxySettingsChange);
+
+  // Listen to messages from the content script.
+  browser.runtime.onMessage.addListener(onContentScriptMessage);
 
   // Check if there are any opened Twitch tabs on startup.
   checkForOpenedTwitchTabs();

@@ -1,15 +1,31 @@
 import { MessageType } from "../types";
 import { getFetch } from "./getFetch";
-import type { FetchOptions } from "./types";
+import type { PageState } from "./types";
 
 console.info("[TTV LOL PRO] 🚀 Worker script running.");
 
-const options: FetchOptions = {
+declare let getParams: () => string;
+let params;
+try {
+  params = JSON.parse(getParams()!);
+} catch (error) {
+  console.error("[TTV LOL PRO] ❌ Failed to parse params:", error);
+}
+getParams = undefined as any;
+const pageState: PageState = {
+  isChromium: params.isChromium,
   scope: "worker",
-  shouldWaitForStore: true, // FIXME: Some special value for Chrome???
+  shouldWaitForStore: true,
 };
 
-self.fetch = getFetch(options);
+self.fetch = getFetch(pageState);
+
+function sendMessageToPageScript(message: any) {
+  self.postMessage({
+    type: MessageType.PageScriptMessage,
+    message,
+  });
+}
 
 self.addEventListener("message", event => {
   if (event.data?.type !== MessageType.WorkerScriptMessage) return;
@@ -18,11 +34,13 @@ self.addEventListener("message", event => {
   if (!message) return;
 
   switch (message.type) {
-    case MessageType.GetStoreStateResponse:
+    case MessageType.GetStoreStateResponse: // From Page
       console.log("[TTV LOL PRO] Received store state from page script.");
       const state = message.state;
-      options.state = state;
-      options.shouldWaitForStore = false;
+      pageState.state = state;
+      pageState.shouldWaitForStore = false;
       break;
   }
 });
+
+sendMessageToPageScript({ type: MessageType.GetStoreState });

@@ -31,14 +31,10 @@ type ListOptions = {
 //#endregion
 
 //#region HTML Elements
-// Proxy settings
-const proxyUsherRequestsCheckboxElement = $(
-  "#proxy-usher-requests-checkbox"
+// Passport
+const passportLevelRangeElement = $(
+  "#passport-level-range"
 ) as HTMLInputElement;
-const proxyTwitchWebpageCheckboxElement = $(
-  "#proxy-twitch-webpage-checkbox"
-) as HTMLInputElement;
-const anonymousModeLiElement = $("#anonymous-mode-li") as HTMLLIElement;
 const anonymousModeCheckboxElement = $(
   "#anonymous-mode-checkbox"
 ) as HTMLInputElement;
@@ -51,9 +47,6 @@ const whitelistedChannelsListElement = $(
 ) as HTMLUListElement;
 $;
 // Proxies
-const optimizedProxiesDivElement = $(
-  "#optimized-proxies-div"
-) as HTMLDivElement;
 const optimizedProxiesInputElement = $("#optimized") as HTMLInputElement;
 const optimizedProxiesListElement = $(
   "#optimized-proxies-list"
@@ -97,30 +90,17 @@ else store.addEventListener("load", main);
 
 function main() {
   // Proxy settings
-  proxyUsherRequestsCheckboxElement.checked = store.state.proxyUsherRequests;
-  proxyUsherRequestsCheckboxElement.addEventListener("change", () => {
-    const checked = proxyUsherRequestsCheckboxElement.checked;
-    store.state.proxyUsherRequests = checked;
+  passportLevelRangeElement.value = store.state.passportLevel.toString();
+  passportLevelRangeElement.addEventListener("change", () => {
+    store.state.passportLevel = parseInt(passportLevelRangeElement.value);
     if (isChromium && store.state.chromiumProxyActive) {
       updateProxySettings();
     }
   });
-  proxyTwitchWebpageCheckboxElement.checked = store.state.proxyTwitchWebpage;
-  proxyTwitchWebpageCheckboxElement.addEventListener("change", () => {
-    store.state.proxyTwitchWebpage = proxyTwitchWebpageCheckboxElement.checked;
-    if (isChromium && store.state.chromiumProxyActive) {
-      updateProxySettings();
-    }
+  anonymousModeCheckboxElement.checked = store.state.anonymousMode;
+  anonymousModeCheckboxElement.addEventListener("change", () => {
+    store.state.anonymousMode = anonymousModeCheckboxElement.checked;
   });
-  // TODO: Figure out why this feature doesn't work in Chromium.
-  if (isChromium) {
-    anonymousModeLiElement.style.display = "none";
-  } else {
-    anonymousModeCheckboxElement.checked = store.state.anonymousMode;
-    anonymousModeCheckboxElement.addEventListener("change", () => {
-      store.state.anonymousMode = anonymousModeCheckboxElement.checked;
-    });
-  }
   // Whitelisted channels
   listInit(whitelistedChannelsListElement, "whitelistedChannels", {
     getAlreadyExistsAlertMessage: channelName =>
@@ -128,20 +108,15 @@ function main() {
     getPromptPlaceholder: () => "Enter a channel name…",
   });
   // Proxies
-  if (isChromium) {
-    optimizedProxiesDivElement.style.display = "none";
-    normalProxiesInputElement.checked = true;
-  } else {
-    if (store.state.optimizedProxiesEnabled)
-      optimizedProxiesInputElement.checked = true;
-    else normalProxiesInputElement.checked = true;
-    const onProxyTypeChange = () => {
-      store.state.optimizedProxiesEnabled =
-        optimizedProxiesInputElement.checked;
-    };
-    optimizedProxiesInputElement.addEventListener("change", onProxyTypeChange);
-    normalProxiesInputElement.addEventListener("change", onProxyTypeChange);
-  }
+  if (store.state.optimizedProxiesEnabled)
+    optimizedProxiesInputElement.checked = true;
+  else normalProxiesInputElement.checked = true;
+  const onProxyTypeChange = () => {
+    store.state.optimizedProxiesEnabled = optimizedProxiesInputElement.checked;
+  };
+  optimizedProxiesInputElement.addEventListener("change", onProxyTypeChange);
+  normalProxiesInputElement.addEventListener("change", onProxyTypeChange);
+  // }
   listInit(optimizedProxiesListElement, "optimizedProxies", {
     getPromptPlaceholder: insertMode => {
       if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
@@ -462,8 +437,6 @@ exportButtonElement.addEventListener("click", () => {
       optimizedProxies: store.state.optimizedProxies,
       optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
       passportLevel: store.state.passportLevel,
-      proxyTwitchWebpage: store.state.proxyTwitchWebpage,
-      proxyUsherRequests: store.state.proxyUsherRequests,
       whitelistedChannels: store.state.whitelistedChannels,
     } as Partial<State>),
     "application/json;charset=utf-8"

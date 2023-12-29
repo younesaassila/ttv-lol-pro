@@ -1,20 +1,23 @@
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import { MessageType } from "../types";
 import { getFetch } from "./getFetch";
-import type { FetchOptions } from "./types";
+import type { PageState } from "./types";
 
 console.info("[TTV LOL PRO] 🚀 Page script running.");
 
 const params = JSON.parse(document.currentScript!.dataset.params!);
-const fetchOptions: FetchOptions = {
+const pageState: PageState = {
+  isChromium: params.isChromium,
   scope: "page",
-  shouldWaitForStore: params.isChromium === false,
+  shouldWaitForStore: true,
+  state: undefined,
   twitchWorker: undefined,
 };
 
-window.fetch = getFetch(fetchOptions);
-
 const NATIVE_WORKER = window.Worker;
+
+window.fetch = getFetch(pageState);
+
 window.Worker = class Worker extends NATIVE_WORKER {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
     const isTwitchWorker = scriptURL.toString().includes("twitch.tv");
@@ -43,10 +46,13 @@ window.Worker = class Worker extends NATIVE_WORKER {
     // Please note that this does NOT involve remote code execution. The injected script is bundled
     // with the extension. Additionally, there is no custom Content Security Policy (CSP) in use.
     const newScript = `
+      let getParams = () => '${JSON.stringify(params)}';
       try {
         importScripts("${params.workerScriptURL}");
-      } catch {
-        console.error("[TTV LOL PRO] ❌ Failed to load worker script: ${params.workerScriptURL}");
+      } catch (error) {
+        console.error("[TTV LOL PRO] ❌ Failed to load worker script: ${
+          params.workerScriptURL
+        }:", error);
       }
       ${script}
     `;
@@ -62,29 +68,9 @@ window.Worker = class Worker extends NATIVE_WORKER {
         window.postMessage(event.data);
       }
     });
-    fetchOptions.twitchWorker = this;
+    pageState.twitchWorker = this;
   }
 };
-
-window.addEventListener("message", event => {
-  if (event.data?.type !== MessageType.PageScriptMessage) return;
-
-  const message = event.data?.message;
-  if (!message) return;
-
-  switch (message.type) {
-    case MessageType.GetStoreStateResponse:
-      console.log("[TTV LOL PRO] Received store state from content script.");
-      const state = message.state;
-      fetchOptions.state = state;
-      fetchOptions.shouldWaitForStore = false;
-      sendMessageToWorkerScript({
-        type: MessageType.GetStoreStateResponse,
-        state,
-      });
-      break;
-  }
-});
 
 function sendMessageToContentScript(message: any) {
   window.postMessage({
@@ -94,11 +80,50 @@ function sendMessageToContentScript(message: any) {
 }
 
 function sendMessageToWorkerScript(message: any) {
-  fetchOptions.twitchWorker?.postMessage({
+  pageState.twitchWorker?.postMessage({
     type: MessageType.WorkerScriptMessage,
     message,
   });
 }
+
+let sendStoreStateToWorker = false;
+window.addEventListener("message", event => {
+  // Relay messages from the content script to the worker script.
+  if (event.data?.type === MessageType.WorkerScriptMessage) {
+    sendMessageToWorkerScript(event.data.message);
+    return;
+  }
+
+  if (event.data?.type !== MessageType.PageScriptMessage) return;
+
+  const message = event.data?.message;
+  if (!message) return;
+
+  switch (message.type) {
+    case MessageType.GetStoreState: // From Worker
+      if (pageState.state != null) {
+        sendMessageToWorkerScript({
+          type: MessageType.GetStoreStateResponse,
+          state: pageState.state,
+        });
+      } else {
+        sendStoreStateToWorker = true;
+      }
+      break;
+    case MessageType.GetStoreStateResponse: // From Content
+      console.log("[TTV LOL PRO] Received store state from content script.");
+      const state = message.state;
+      pageState.state = state;
+      pageState.shouldWaitForStore = false;
+      if (sendStoreStateToWorker) {
+        sendMessageToWorkerScript({
+          type: MessageType.GetStoreStateResponse,
+          state,
+        });
+      }
+      break;
+  }
+});
 
 sendMessageToContentScript({ type: MessageType.GetStoreState });
 
@@ -124,6 +149,7 @@ function onChannelChange(callback: (channelName: string) => void) {
     const fullUrl = toAbsoluteUrl(url.toString());
     const newChannelName = findChannelFromTwitchTvUrl(fullUrl);
     // TODO: Check on m.twitch.tv if miniplayer is a thing too. -> It's not!!!!
+    // Btw also navigating to /videos cuts stream on mobile.
     if (newChannelName != null && newChannelName !== channelName) {
       channelName = newChannelName;
       callback(channelName);

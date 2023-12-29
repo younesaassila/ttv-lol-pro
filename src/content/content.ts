@@ -1,5 +1,6 @@
 import pageScriptURL from "url:../page/page.ts";
 import workerScriptURL from "url:../page/worker.ts";
+import browser from "webextension-polyfill";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import isChromium from "../common/ts/isChromium";
 import { getStreamStatus, setStreamStatus } from "../common/ts/streamStatus";
@@ -14,7 +15,8 @@ if (isChromium) injectPageScript();
 if (store.readyState === "complete") onStoreReady();
 else store.addEventListener("load", onStoreReady);
 
-window.addEventListener("message", onMessage);
+browser.runtime.onMessage.addListener(onBackgroundMessage);
+window.addEventListener("message", onPageMessage);
 
 function injectPageScript() {
   // From https://stackoverflow.com/a/9517879
@@ -53,10 +55,25 @@ function clearStats() {
       notProxied: 0,
     };
   }
-  console.info(`[TTV LOL PRO] 📊 Stats cleared for channel: ${channelName}`);
+  console.log(`[TTV LOL PRO] 📊 Stats cleared for channel: ${channelName}`);
 }
 
-function onMessage(event: MessageEvent) {
+function onBackgroundMessage(message: any) {
+  switch (message.type) {
+    case MessageType.EnableFullModeResponse:
+      window.postMessage({
+        type: MessageType.PageScriptMessage,
+        message,
+      });
+      window.postMessage({
+        type: MessageType.WorkerScriptMessage,
+        message,
+      });
+      break;
+  }
+}
+
+function onPageMessage(event: MessageEvent) {
   if (event.data?.type !== MessageType.ContentScriptMessage) return;
 
   const message = event.data?.message;
@@ -76,6 +93,12 @@ function onMessage(event: MessageEvent) {
       };
       if (store.readyState === "complete") sendStoreState();
       else store.addEventListener("load", sendStoreState);
+      break;
+    case MessageType.EnableFullMode:
+      // Send message to background script to update proxy settings.
+      browser.runtime.sendMessage({
+        type: MessageType.EnableFullMode,
+      });
       break;
     case MessageType.UsherResponse:
       const { channel, videoWeaverUrls, proxyCountry } = message;

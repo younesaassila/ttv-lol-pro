@@ -9,13 +9,13 @@ export default function getDefaultState() {
     anonymousMode: false,
     chromiumProxyActive: false,
     dnsResponses: [],
-    normalProxies: ["chrome.api.cdn-perfprod.com:4023"],
+    normalProxies: [],
     openedTwitchTabs: [],
-    optimizedProxies: isChromium ? [] : ["firefox.api.cdn-perfprod.com:2023"],
+    optimizedProxies: isChromium
+      ? ["chrome.api.cdn-perfprod.com:4023"]
+      : ["firefox.api.cdn-perfprod.com:2023"],
     optimizedProxiesEnabled: !isChromium,
     passportLevel: isChromium ? 0 : 1,
-    proxyTwitchWebpage: false,
-    proxyUsherRequests: true,
     streamStatuses: {},
     videoWeaverUrlsByChannel: {},
     whitelistedChannels: [],

@@ -26,8 +26,7 @@ export interface AdLogEntry {
   channel: string | null;
   isPurpleScreen: boolean;
   proxy: string | null;
-  proxyTwitchWebpage: boolean;
-  proxyUsherRequests: boolean;
+  passportLevel: number;
   anonymousMode: boolean;
   timestamp: number;
   videoWeaverHost: string;
@@ -58,6 +57,8 @@ export const enum MessageType {
   WorkerScriptMessage = "TLP_WorkerScriptMessage",
   GetStoreState = "TLP_GetStoreState",
   GetStoreStateResponse = "TLP_GetStoreStateResponse",
+  EnableFullMode = "TLP_EnableFullMode",
+  EnableFullModeResponse = "TLP_EnableFullModeResponse",
   UsherResponse = "TLP_UsherResponse",
   NewPlaybackAccessToken = "TLP_NewPlaybackAccessToken",
   NewPlaybackAccessTokenResponse = "TLP_NewPlaybackAccessTokenResponse",

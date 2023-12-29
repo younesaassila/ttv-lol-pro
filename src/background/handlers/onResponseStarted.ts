@@ -26,13 +26,13 @@ export default function onResponseStarted(
   const proxy = getProxyFromDetails(details);
 
   // Twitch webpage requests.
-  if (store.state.proxyTwitchWebpage && twitchTvHostRegex.test(host)) {
+  if (store.state.passportLevel >= 2 && twitchTvHostRegex.test(host)) {
     if (!proxy) return console.log(`❌ Did not proxy ${details.url}`);
     console.log(`✅ Proxied ${details.url} through ${proxy}`);
   }
 
   // Twitch GraphQL requests.
-  if (store.state.proxyTwitchWebpage && twitchGqlHostRegex.test(host)) {
+  if (store.state.passportLevel >= 1 && twitchGqlHostRegex.test(host)) {
     if (!proxy && store.state.optimizedProxiesEnabled) return; // Expected for most requests.
     if (!proxy) return console.log(`❌ Did not proxy ${details.url}`);
     console.log(`✅ Proxied ${details.url} through ${proxy}`);
@@ -40,7 +40,7 @@ export default function onResponseStarted(
 
   // Passport & Usher requests.
   if (
-    store.state.proxyUsherRequests &&
+    store.state.passportLevel >= 0 &&
     (passportHostRegex.test(host) || usherHostRegex.test(host))
   ) {
     if (!proxy) return console.log(`❌ Did not proxy ${details.url}`);

@@ -9,29 +9,45 @@ import {
 } from "./regexes";
 import updateDnsResponses from "./updateDnsResponses";
 
-export function updateProxySettings() {
-  const { proxyTwitchWebpage, proxyUsherRequests } = store.state;
+export function updateProxySettings(mode?: "limited" | "full") {
+  const { optimizedProxiesEnabled, passportLevel } = store.state;
 
-  const proxies = store.state.optimizedProxiesEnabled
+  mode ??= optimizedProxiesEnabled ? "limited" : "full";
+
+  const proxies = optimizedProxiesEnabled
     ? store.state.optimizedProxies
     : store.state.normalProxies;
   const proxyInfoString = getProxyInfoStringFromUrls(proxies);
+
+  const proxyPassportRequests = passportLevel >= 0;
+  const proxyUsherRequests = passportLevel >= 0;
+  const proxyGraphQLRequests = mode === "full" && passportLevel >= 1;
+  const proxyTwitchWebpageRequests = mode === "full" && passportLevel >= 2;
+  const proxyVideoWeaverRequests = mode === "full";
 
   const config = {
     mode: "pac_script",
     pacScript: {
       data: `
         function FindProxyForURL(url, host) {
-          // Twitch webpage & GraphQL requests.
-          if (${proxyTwitchWebpage} && (${twitchTvHostRegex}.test(host) || ${twitchGqlHostRegex}.test(host))) {
+          // Passport requests.
+          if (${proxyPassportRequests} && ${passportHostRegex}.test(host)) {
             return "${proxyInfoString}";
           }
-          // Passport & Usher requests.
-          if (${proxyUsherRequests} && (${passportHostRegex}.test(host) || ${usherHostRegex}.test(host))) {
+          // Usher requests.
+          if (${proxyUsherRequests} && ${usherHostRegex}.test(host)) {
+            return "${proxyInfoString}";
+          }
+          // GraphQL requests.
+          if (${proxyGraphQLRequests} && ${twitchGqlHostRegex}.test(host)) {
+            return "${proxyInfoString}";
+          }
+          // Twitch webpage requests.
+          if (${proxyTwitchWebpageRequests} && ${twitchTvHostRegex}.test(host)) {
             return "${proxyInfoString}";
           }
           // Video Weaver requests.
-          if (${videoWeaverHostRegex}.test(host)) {
+          if (${proxyVideoWeaverRequests} && ${videoWeaverHostRegex}.test(host)) {
             return "${proxyInfoString}";
           }
           return "DIRECT";
@@ -42,8 +58,12 @@ export function updateProxySettings() {
 
   chrome.proxy.settings.set({ value: config, scope: "regular" }, function () {
     console.log(
-      `⚙️ Proxying requests through one of: ${proxies.toString() || "<empty>"}`
+      `⚙️ Proxying requests through one of: ${
+        proxies.toString() || "<empty>"
+      } (${mode})`
     );
+    // FIXME: Lots of DNS requests in Chrome with optimizations turned on...
+    // What's the TTL??
     updateDnsResponses();
   });
 }

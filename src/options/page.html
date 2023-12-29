@@ -16,7 +16,7 @@
     </header>
 
     <main>
-      <!-- Proxy Usher requests -->
+      <!-- Passport -->
       <section class="section">
         <h2>Passport</h2>
         <div id="passport-container">
@@ -24,66 +24,16 @@
           <ul class="options-list">
             <li>
               <input
-                type="checkbox"
-                name="proxy-usher-requests-checkbox"
-                id="proxy-usher-requests-checkbox"
+                type="range"
+                name="passport-level-range"
+                id="passport-level-range"
+                min="0"
+                max="2"
+                value="0"
               />
-              <label for="proxy-usher-requests-checkbox">
-                Use my TTV LOL PRO passport
-              </label>
-              <br />
-              <small>
-                Browse Twitch as a TTV LOL PRO citizen! This option enables
-                proxying of <code>passport.twitch.tv</code> and
-                <code>usher.ttvnw.net</code> requests.
-              </small>
-              <br />
-              <small>
-                This option is not an on/off switch. TTV LOL PRO will still
-                proxy <code>video-weaver.*.hls.ttvnw.net</code> requests even if
-                this option is disabled.
-              </small>
+              <label for="passport-level-range">Passport level</label>
             </li>
             <li>
-              <input
-                type="checkbox"
-                name="proxy-twitch-webpage-checkbox"
-                id="proxy-twitch-webpage-checkbox"
-              />
-              <label for="proxy-twitch-webpage-checkbox">
-                Make the passport a
-                <a
-                  href="https://en.wikipedia.org/wiki/Laissez-passer"
-                  target="_blank"
-                  >laissez-passer</a
-                >
-              </label>
-              <br />
-              <small>
-                This option enables proxying of <code>www.twitch.tv</code> and
-                <code>gql.twitch.tv</code> requests.
-              </small>
-              <br />
-              <small>
-                <b>WARNING:</b>
-                Enabling this option may unlock unavailable features in your
-                country, like Predictions, Prime Subscriptions, or currency
-                changes, among others. You assume full responsibility for the
-                content passing through your proxy or public ones, and note that
-                some features, like Predictions, might be considered gambling in
-                certain countries, making them illegal for minors. If your
-                country lacks these features, there are valid reasons for it.
-                Stay informed and conduct online research accordingly.
-              </small>
-              <br />
-              <small>
-                <b>
-                  ONLY ENABLE THIS OPTION IF YOU ARE EXPERIENCING ISSUES WITH
-                  TTV LOL PRO'S PASSPORT!
-                </b>
-              </small>
-            </li>
-            <li id="anonymous-mode-li">
               <input
                 type="checkbox"
                 name="anonymous-mode-checkbox"
@@ -130,7 +80,7 @@
         </small>
         <br />
         <fieldset>
-          <div id="optimized-proxies-div">
+          <div>
             <input
               type="radio"
               name="proxy-mode"
