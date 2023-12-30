@@ -14,7 +14,7 @@ export default function getDefaultState() {
     optimizedProxies: isChromium
       ? ["chrome.api.cdn-perfprod.com:4023"]
       : ["firefox.api.cdn-perfprod.com:2023"],
-    optimizedProxiesEnabled: !isChromium,
+    optimizedProxiesEnabled: true,
     passportLevel: isChromium ? 0 : 1,
     streamStatuses: {},
     videoWeaverUrlsByChannel: {},

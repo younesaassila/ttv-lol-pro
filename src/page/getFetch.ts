@@ -19,6 +19,16 @@ const NATIVE_FETCH = self.fetch;
 // TODO: A lot of proxied requests are GQL requests with Client-Integrity header. -> Working on it (passport level).
 // TODO: Fix console log levels.
 
+// TODO: Optimizations
+// On slow computers, 3s might not be enough
+// On fast ones, 3s is too much
+
+// Page should measure message round trip time and adjust requested time for full mode
+// Starts at 3s
+// If round trip average takes 1s, asks for 4s
+
+// Other optimizations are possible like not asking for time when last request was less than 3s ago and successful
+
 export function getFetch(pageState: PageState): typeof fetch {
   let cachedPlaybackTokenRequestHeaders: Map<string, string> | null = null; // Cached by page script.
   let cachedPlaybackTokenRequestBody: string | null = null; // Cached by page script.
@@ -517,7 +527,8 @@ async function flagRequest(
         {
           type: MessageType.EnableFullMode,
         },
-        MessageType.EnableFullModeResponse
+        MessageType.EnableFullModeResponse,
+        3000
       );
     } catch (error) {
       console.error("[TTV LOL PRO] ❌ Failed to flag request:", error);

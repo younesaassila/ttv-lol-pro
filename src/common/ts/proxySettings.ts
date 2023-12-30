@@ -62,8 +62,6 @@ export function updateProxySettings(mode?: "limited" | "full") {
         proxies.toString() || "<empty>"
       } (${mode})`
     );
-    // FIXME: Lots of DNS requests in Chrome with optimizations turned on...
-    // What's the TTL??
     updateDnsResponses();
   });
 }

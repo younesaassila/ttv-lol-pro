@@ -106,9 +106,8 @@ window.addEventListener("message", event => {
           type: MessageType.GetStoreStateResponse,
           state: pageState.state,
         });
-      } else {
-        sendStoreStateToWorker = true;
       }
+      sendStoreStateToWorker = true;
       break;
     case MessageType.GetStoreStateResponse: // From Content
       console.log("[TTV LOL PRO] Received store state from content script.");
@@ -148,8 +147,9 @@ function onChannelChange(callback: (channelName: string) => void) {
     if (!url) return NATIVE_PUSH_STATE.call(window.history, data, unused);
     const fullUrl = toAbsoluteUrl(url.toString());
     const newChannelName = findChannelFromTwitchTvUrl(fullUrl);
-    // TODO: Check on m.twitch.tv if miniplayer is a thing too. -> It's not!!!!
-    // Btw also navigating to /videos cuts stream on mobile.
+    // FIXME: Check on m.twitch.tv if miniplayer is a thing too. -> It's not!!!!
+    // Miniplayer can be disabled on web too... need to detect if miniplayer is running.
+    // Btw also navigating to /videos cuts stream on mobile (doesn't affect web).
     if (newChannelName != null && newChannelName !== channelName) {
       channelName = newChannelName;
       callback(channelName);

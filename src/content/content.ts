@@ -1,6 +1,6 @@
 import pageScriptURL from "url:../page/page.ts";
 import workerScriptURL from "url:../page/worker.ts";
-import browser from "webextension-polyfill";
+import browser, { Storage } from "webextension-polyfill";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import isChromium from "../common/ts/isChromium";
 import { getStreamStatus, setStreamStatus } from "../common/ts/streamStatus";
@@ -82,14 +82,13 @@ function onPageMessage(event: MessageEvent) {
   switch (message.type) {
     case MessageType.GetStoreState:
       const sendStoreState = () => {
-        const message = {
+        window.postMessage({
           type: MessageType.PageScriptMessage,
           message: {
             type: MessageType.GetStoreStateResponse,
             state: JSON.parse(JSON.stringify(store.state)),
           },
-        };
-        window.postMessage(message);
+        });
       };
       if (store.readyState === "complete") sendStoreState();
       else store.addEventListener("load", sendStoreState);
@@ -119,3 +118,19 @@ function onPageMessage(event: MessageEvent) {
       break;
   }
 }
+
+store.addEventListener(
+  "change",
+  (changes: Record<string, Storage.StorageChange>) => {
+    const changedKeys = Object.keys(changes);
+    if (changedKeys.length === 1 && changedKeys[0] === "streamStatuses") return;
+    console.log("[TTV LOL PRO] 📦 Store changed.");
+    window.postMessage({
+      type: MessageType.PageScriptMessage,
+      message: {
+        type: MessageType.GetStoreStateResponse,
+        state: JSON.parse(JSON.stringify(store.state)),
+      },
+    });
+  }
+);

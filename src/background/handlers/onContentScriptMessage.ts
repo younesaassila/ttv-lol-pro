@@ -15,7 +15,7 @@ export default function onContentScriptMessage(
 ): true | void | Promise<any> {
   if (!sender.tab?.id) return;
   if (message.type === MessageType.EnableFullMode) {
-    console.log("[TTV LOL PRO] Received PAC script ready message.");
+    console.log("[TTV LOL PRO] Received EnableFullMode message");
     if (timeout) {
       clearTimeout(timeout);
     } else {
