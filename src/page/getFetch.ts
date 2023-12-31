@@ -343,7 +343,10 @@ export function getFetch(pageState: PageState): typeof fetch {
 
     //#endregion
 
-    request ??= new Request(input, init);
+    request ??= new Request(input, {
+      ...init,
+      headers: Object.fromEntries(headersMap),
+    });
     if (isFlaggedRequest) {
       request = await flagRequest(
         pageState.isChromium,
