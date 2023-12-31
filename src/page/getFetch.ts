@@ -343,10 +343,7 @@ export function getFetch(pageState: PageState): typeof fetch {
 
     //#endregion
 
-    request ??= new Request(input, {
-      ...init,
-      headers: Object.fromEntries(headersMap),
-    });
+    request ??= new Request(input, init);
     if (isFlaggedRequest) {
       request = await flagRequest(
         pageState.isChromium,
@@ -540,8 +537,7 @@ async function flagRequest(
     const accept = getHeaderFromMap(headersMap, "Accept");
     if (accept != null && accept.includes(acceptFlag)) return request;
     setHeaderToMap(headersMap, "Accept", `${accept || ""}${acceptFlag}`);
-    return new Request(request.url, {
-      ...request,
+    return new Request(request, {
       headers: Object.fromEntries(headersMap),
     });
   }
