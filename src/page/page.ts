@@ -3,7 +3,7 @@ import { MessageType } from "../types";
 import { getFetch } from "./getFetch";
 import type { PageState } from "./types";
 
-console.info("[TTV LOL PRO] 🚀 Page script running.");
+console.info("[TTV LOL PRO] Page script running.");
 
 const params = JSON.parse(document.currentScript!.dataset.params!);
 const pageState: PageState = {
@@ -35,9 +35,7 @@ window.Worker = class Worker extends NATIVE_WORKER {
     if (200 <= xhr.status && xhr.status < 300) {
       script = xhr.responseText;
     } else {
-      console.warn(
-        `[TTV LOL PRO] ❌ Failed to fetch script: ${xhr.statusText}`
-      );
+      console.warn(`[TTV LOL PRO] Failed to fetch script: ${xhr.statusText}`);
       script = `importScripts("${url}");`; // Will fail on Firefox Nightly.
     }
     // ---------------------------------------
@@ -50,7 +48,7 @@ window.Worker = class Worker extends NATIVE_WORKER {
       try {
         importScripts("${params.workerScriptURL}");
       } catch (error) {
-        console.error("[TTV LOL PRO] ❌ Failed to load worker script: ${
+        console.error("[TTV LOL PRO] Failed to load worker script: ${
           params.workerScriptURL
         }:", error);
       }
@@ -110,7 +108,13 @@ window.addEventListener("message", event => {
       sendStoreStateToWorker = true;
       break;
     case MessageType.GetStoreStateResponse: // From Content
-      console.log("[TTV LOL PRO] Received store state from content script.");
+      if (pageState.state == null) {
+        console.log("[TTV LOL PRO] Received store state from content script.");
+      } else {
+        console.debug(
+          "[TTV LOL PRO] Received store state from content script."
+        );
+      }
       const state = message.state;
       pageState.state = state;
       pageState.shouldWaitForStore = false;

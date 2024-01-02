@@ -2,7 +2,7 @@ import { MessageType } from "../types";
 import { getFetch } from "./getFetch";
 import type { PageState } from "./types";
 
-console.info("[TTV LOL PRO] 🚀 Worker script running.");
+console.info("[TTV LOL PRO] Worker script running.");
 
 declare let getParams: () => string;
 let params;
@@ -35,7 +35,11 @@ self.addEventListener("message", event => {
 
   switch (message.type) {
     case MessageType.GetStoreStateResponse: // From Page
-      console.log("[TTV LOL PRO] Received store state from page script.");
+      if (pageState.state == null) {
+        console.log("[TTV LOL PRO] Received store state from page script.");
+      } else {
+        console.debug("[TTV LOL PRO] Received store state from page script.");
+      }
       const state = message.state;
       pageState.state = state;
       pageState.shouldWaitForStore = false;

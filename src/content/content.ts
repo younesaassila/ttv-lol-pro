@@ -7,7 +7,7 @@ import { getStreamStatus, setStreamStatus } from "../common/ts/streamStatus";
 import store from "../store";
 import { MessageType } from "../types";
 
-console.info("[TTV LOL PRO] 🚀 Content script running.");
+console.info("[TTV LOL PRO] Content script running.");
 
 if (isChromium) injectPageScript();
 // Firefox uses FilterResponseData to inject the page script.
@@ -55,7 +55,9 @@ function clearStats() {
       notProxied: 0,
     };
   }
-  console.log(`[TTV LOL PRO] 📊 Stats cleared for channel: ${channelName}`);
+  console.log(
+    `[TTV LOL PRO] Cleared stats for channel '${channelName}' (content script).`
+  );
 }
 
 function onBackgroundMessage(message: any) {
@@ -124,7 +126,7 @@ store.addEventListener(
   (changes: Record<string, Storage.StorageChange>) => {
     const changedKeys = Object.keys(changes);
     if (changedKeys.length === 1 && changedKeys[0] === "streamStatuses") return;
-    console.log("[TTV LOL PRO] 📦 Store changed.");
+    console.log("[TTV LOL PRO] Store changed:", changes);
     window.postMessage({
       type: MessageType.PageScriptMessage,
       message: {

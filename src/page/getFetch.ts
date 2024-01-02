@@ -14,10 +14,11 @@ import { MessageType } from "../types";
 import type { PageState, PlaybackAccessToken, UsherManifest } from "./types";
 
 const NATIVE_FETCH = self.fetch;
+const VERBOSE = process.env.NODE_ENV == "development";
 
 // FIXME: Use rolling codes to secure the communication between the content, page, and worker scripts.
-// TODO: A lot of proxied requests are GQL requests with Client-Integrity header. -> Working on it (passport level).
-// TODO: Fix console log levels.
+// TODO: Fix passport levels (i.e. which requests get proxied, c.f. table).
+// TODO: Update previous settings to new settings format on update.
 
 // TODO: Optimizations
 // On slow computers, 3s might not be enough
@@ -63,7 +64,6 @@ export function getFetch(pageState: PageState): typeof fetch {
             type: MessageType.NewPlaybackAccessTokenResponse,
             newPlaybackAccessToken,
           };
-          console.log("[TTV LOL PRO] 💬 Sent message to worker", message);
           pageState.twitchWorker?.postMessage({
             type: MessageType.WorkerScriptMessage,
             message,
@@ -85,7 +85,7 @@ export function getFetch(pageState: PageState): typeof fetch {
 
     switch (message.type) {
       case MessageType.ClearStats:
-        console.log("[TTV LOL PRO] 📊 Fetch stats cleared.");
+        console.log("[TTV LOL PRO] Cleared stats (getFetch).");
         usherManifests = [];
         cachedPlaybackTokenRequestHeaders = null;
         cachedPlaybackTokenRequestBody = null;
@@ -132,8 +132,8 @@ export function getFetch(pageState: PageState): typeof fetch {
     const host = getHostFromUrl(url);
     const headersMap = getHeadersMap(input, init);
 
-    let isFlaggedRequest = false;
-    let request: Request | null = null;
+    let isFlaggedRequest = false; // Whether or not the request should be proxied.
+    let request: Request | null = null; // Request can be overwritten.
 
     // Reading the request body can be expensive, so we only do it if we need to.
     let requestBody: string | null | undefined = undefined;
@@ -146,7 +146,7 @@ export function getFetch(pageState: PageState): typeof fetch {
 
     // Twitch Passport requests.
     if (host != null && passportHostRegex.test(host)) {
-      console.log("[TTV LOL PRO] Flagging Passport request…");
+      console.debug("[TTV LOL PRO] Flagging Passport request…");
       isFlaggedRequest = true;
     }
 
@@ -269,7 +269,7 @@ export function getFetch(pageState: PageState): typeof fetch {
     // Twitch Usher requests.
     if (host != null && usherHostRegex.test(host)) {
       cachedUsherRequestUrl = url; // Cache the URL for later use.
-      console.log("[TTV LOL PRO] Flagging Usher request…");
+      console.debug("[TTV LOL PRO] Flagging Usher request…");
       isFlaggedRequest = true;
     }
 
@@ -293,9 +293,11 @@ export function getFetch(pageState: PageState): typeof fetch {
         )?.[0];
         if (videoQuality != null && manifest.replacementMap.has(videoQuality)) {
           videoWeaverUrl = manifest.replacementMap.get(videoQuality)!;
-          // console.debug(
-          //   `[TTV LOL PRO] Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}'.`
-          // );
+          if (VERBOSE) {
+            console.debug(
+              `[TTV LOL PRO] Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}'.`
+            );
+          }
         } else if (manifest.replacementMap.size > 0) {
           videoWeaverUrl = [...manifest.replacementMap.values()][0];
           console.warn(
@@ -368,16 +370,20 @@ export function getFetch(pageState: PageState): typeof fetch {
 
     // Usher responses.
     if (host != null && usherHostRegex.test(host)) {
-      console.log("[TTV LOL PRO] Received Usher response.");
       responseBody ??= await readResponseBody();
       const assignedMap = parseUsherManifest(responseBody);
       if (assignedMap != null) {
-        console.log(Object.fromEntries(assignedMap));
+        console.debug(
+          "[TTV LOL PRO] Received Usher response:",
+          Object.fromEntries(assignedMap)
+        );
         usherManifests.push({
           assignedMap: assignedMap,
           replacementMap: null,
           consecutiveMidrollResponses: 0,
         });
+      } else {
+        console.debug("[TTV LOL PRO] Received Usher response.");
       }
       // Send Video Weaver URLs to content script.
       const videoWeaverUrls = [...(assignedMap?.values() ?? [])];
@@ -531,7 +537,7 @@ async function flagRequest(
         3000
       );
     } catch (error) {
-      console.error("[TTV LOL PRO] ❌ Failed to flag request:", error);
+      console.error("[TTV LOL PRO] Failed to flag request:", error);
     }
     return request;
   } else {
@@ -828,9 +834,9 @@ async function updateVideoWeaverReplacementMap(
   cachedUsherRequestUrl: string | null,
   manifest: UsherManifest
 ): Promise<boolean> {
-  console.log("[TTV LOL PRO] 🔄 Getting replacement Video Weaver URLs…");
+  console.log("[TTV LOL PRO] Getting replacement Video Weaver URLs…");
   try {
-    console.log("[TTV LOL PRO] 🔄 (1/3) Getting new PlaybackAccessToken…");
+    console.log("[TTV LOL PRO] (1/3) Getting new PlaybackAccessToken…");
     const newPlaybackAccessTokenResponse =
       await sendMessageToPageScriptAndWaitForResponse(
         "worker",
@@ -842,29 +848,29 @@ async function updateVideoWeaverReplacementMap(
     const newPlaybackAccessToken: PlaybackAccessToken | undefined =
       newPlaybackAccessTokenResponse?.newPlaybackAccessToken;
     if (newPlaybackAccessToken == null) {
-      console.error("[TTV LOL PRO] ❌ Failed to get new PlaybackAccessToken.");
+      console.error("[TTV LOL PRO] Failed to get new PlaybackAccessToken.");
       return false;
     }
 
-    console.log("[TTV LOL PRO] 🔄 (2/3) Fetching new Usher manifest…");
+    console.log("[TTV LOL PRO] (2/3) Fetching new Usher manifest…");
     const newUsherManifest = await fetchReplacementUsherManifest(
       cachedUsherRequestUrl,
       newPlaybackAccessToken
     );
     if (newUsherManifest == null) {
-      console.error("[TTV LOL PRO] ❌ Failed to fetch new Usher manifest.");
+      console.error("[TTV LOL PRO] Failed to fetch new Usher manifest.");
       return false;
     }
 
-    console.log("[TTV LOL PRO] 🔄 (3/3) Parsing new Usher manifest…");
+    console.log("[TTV LOL PRO] (3/3) Parsing new Usher manifest…");
     const replacementMap = parseUsherManifest(newUsherManifest);
     if (replacementMap == null || replacementMap.size === 0) {
-      console.error("[TTV LOL PRO] ❌ Failed to parse new Usher manifest.");
+      console.error("[TTV LOL PRO] Failed to parse new Usher manifest.");
       return false;
     }
 
     console.log(
-      "[TTV LOL PRO] 🔄 Replacement Video Weaver URLs:",
+      "[TTV LOL PRO] Replacement Video Weaver URLs:",
       Object.fromEntries(replacementMap)
     );
     manifest.replacementMap = replacementMap;
@@ -884,7 +890,7 @@ async function updateVideoWeaverReplacementMap(
     return true;
   } catch (error) {
     console.error(
-      "[TTV LOL PRO] ❌ Failed to get replacement Video Weaver URLs:",
+      "[TTV LOL PRO] Failed to get replacement Video Weaver URLs:",
       error
     );
     return false;

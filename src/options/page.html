@@ -10,29 +10,85 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <header>
-      <img src="../images/brand/icon.png" alt="Icon of TTV LOL PRO" />
-      <h1>Options</h1>
-    </header>
+    <div class="wrapper">
+      <header>
+        <div class="title-container">
+          <img
+            src="../images/brand/icon.png"
+            alt="Icon of TTV LOL PRO"
+            class="icon"
+          />
+          <h1 class="title">Options</h1>
+        </div>
+        <div id="buttons-container">
+          <button id="export-button">Back up to file…</button>
+          <button id="import-button">Restore from file…</button>
+          <button id="reset-button">Reset to default settings…</button>
+          <button id="unset-pac-script-button">Unset PAC script</button>
+        </div>
+      </header>
 
-    <main>
-      <!-- Passport -->
-      <section class="section">
-        <h2>Passport</h2>
-        <div id="passport-container">
-          <img src="../images/passport.png" alt="TTV LOL PRO passport" />
-          <ul class="options-list">
-            <li>
+      <main>
+        <!-- Passport -->
+        <section class="section" id="passport">
+          <h2>Passport</h2>
+          <div id="passport-type-container">
+            <img
+              src="../images/passport.png"
+              alt="TTV LOL PRO passport"
+              id="passport-type-image"
+            />
+            <div id="passport-type-slider-container">
               <input
                 type="range"
-                name="passport-level-range"
-                id="passport-level-range"
+                name="passport-type-slider"
+                id="passport-type-slider"
                 min="0"
                 max="2"
-                value="0"
+                step="1"
+                list="passport-type-slider-datalist"
               />
-              <label for="passport-level-range">Passport level</label>
-            </li>
+              <datalist id="passport-type-slider-datalist">
+                <option value="0" label="Ordinary"></option>
+                <option value="1" label="Official"></option>
+                <option value="2" label="Diplomatic"></option>
+              </datalist>
+            </div>
+            <details id="passport-type-proxy-usage" data-usage="low">
+              <summary id="passport-type-proxy-usage-summary">
+                🙂 Low proxy usage
+              </summary>
+              <table id="passport-type-proxy-usage-table">
+                <tbody>
+                  <tr>
+                    <td>passport.twitch.tv</td>
+                    <td id="passport-type-proxy-usage-passport">All</td>
+                  </tr>
+                  <tr>
+                    <td>usher.ttvnw.net</td>
+                    <td id="passport-type-proxy-usage-usher">All</td>
+                  </tr>
+                  <tr>
+                    <td>video-weaver.*.hls.ttvnw.net</td>
+                    <td id="passport-type-proxy-usage-video-weaver">
+                      Containing ad
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>gql.twitch.tv</td>
+                    <td id="passport-type-proxy-usage-gql">
+                      PlaybackAccessToken
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>www.twitch.tv</td>
+                    <td id="passport-type-proxy-usage-www">None</td>
+                  </tr>
+                </tbody>
+              </table>
+            </details>
+          </div>
+          <ul class="options-list">
             <li>
               <input
                 type="checkbox"
@@ -40,106 +96,102 @@
                 id="anonymous-mode-checkbox"
               />
               <label for="anonymous-mode-checkbox">
-                Redact my passport information
+                Enable anonymous mode
               </label>
-              <span class="tag">Recommended</span>
               <br />
               <small>
                 Watch streams as if you were logged out. This option removes
                 authentication headers from requests to Twitch.
               </small>
             </li>
-            <small><b>Expiration date:</b> 2038-01-19T03:14:07.000Z</small>
           </ul>
-        </div>
-      </section>
+        </section>
 
-      <!-- Whitelisted channels -->
-      <section id="whitelisted-channels-section" class="section">
-        <h2>Whitelisted channels</h2>
-        <small>
-          Support your favorite content creators by whitelisting their channels.
-          On Chromium-based browsers, whitelisting only works when all opened
-          Twitch tabs are whitelisted channels.
-        </small>
-        <ul id="whitelisted-channels-list" class="store-list"></ul>
-      </section>
+        <!-- Whitelisted channels -->
+        <section class="section" id="whitelisted-channels">
+          <h2>Whitelisted channels</h2>
+          <small>
+            Support your favorite content creators by whitelisting their
+            channels. On Chromium-based browsers, whitelisting only works when
+            all opened Twitch tabs are whitelisted channels.
+          </small>
+          <ul id="whitelisted-channels-list" class="store-list"></ul>
+        </section>
 
-      <!-- Proxies -->
-      <section class="section">
-        <h2>Proxies</h2>
-        <small>
-          Proxies listed below must be HTTP proxies in the format
-          <code>hostname:port</code>. To provide authentication credentials, use
-          the format <code>username:password@hostname:port</code>.
-        </small>
-        <br />
-        <small>
-          IPv6 addresses must be enclosed in square brackets, for example
-          <code>[::1]:8080</code>.
-        </small>
-        <br />
-        <fieldset>
-          <div>
-            <input
-              type="radio"
-              name="proxy-mode"
-              id="optimized"
-              value="optimized"
-              checked
-            />
-            <label for="optimized">Proxy ad requests only</label>
-            <ol id="optimized-proxies-list" class="store-list" start="0"></ol>
-          </div>
-          <div>
-            <input type="radio" name="proxy-mode" id="normal" value="normal" />
-            <label for="normal">Proxy all requests</label>
-            <ol id="normal-proxies-list" class="store-list" start="0"></ol>
-          </div>
-        </fieldset>
-        <small>
-          Looking for other proxies? Check out the "<a
-            href="https://github.com/younesaassila/ttv-lol-pro/discussions/130"
-            target="_blank"
-            >List of other proxies</a
-          >" discussion on TTV LOL PRO's GitHub repository.
-        </small>
-      </section>
+        <!-- Proxies -->
+        <section class="section" id="proxies">
+          <h2>Proxies</h2>
+          <small>
+            Proxies listed below must be HTTP proxies in the format
+            <code>hostname:port</code>. To provide authentication credentials,
+            use the format <code>username:password@hostname:port</code>.
+          </small>
+          <br />
+          <small>
+            IPv6 addresses must be enclosed in square brackets, for example
+            <code>[::1]:8080</code>.
+          </small>
+          <br />
+          <fieldset>
+            <div>
+              <input
+                type="radio"
+                name="proxy-mode"
+                id="optimized"
+                value="optimized"
+                checked
+              />
+              <label for="optimized">Proxy ad requests only</label>
+              <ol id="optimized-proxies-list" class="store-list" start="0"></ol>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="proxy-mode"
+                id="normal"
+                value="normal"
+              />
+              <label for="normal">Proxy all requests</label>
+              <ol id="normal-proxies-list" class="store-list" start="0"></ol>
+            </div>
+          </fieldset>
+          <small>
+            Looking for other proxies? Check out the "<a
+              href="https://github.com/younesaassila/ttv-lol-pro/discussions/130"
+              target="_blank"
+              >List of other proxies</a
+            >" discussion on TTV LOL PRO's GitHub repository.
+          </small>
+        </section>
 
-      <!-- Ad log -->
-      <section id="ad-log-section" class="section">
-        <h2>Ad log</h2>
-        <small>
-          If enabled, TTV LOL PRO will log all ads that did not get blocked for
-          debugging purposes. Entries are automatically removed after 7 days.
-        </small>
-        <ul class="options-list">
-          <li>
-            <input
-              type="checkbox"
-              name="ad-log-enabled-checkbox"
-              id="ad-log-enabled-checkbox"
-            />
-            <label for="ad-log-enabled-checkbox">Enable ad log</label>
-          </li>
-        </ul>
-        <button id="ad-log-send-button" class="btn-primary">
-          Send ad log to developer…
-        </button>
-        <button id="ad-log-export-button">Export ad log…</button>
-        <button id="ad-log-clear-button">Clear ad log</button>
-      </section>
+        <!-- Ad log -->
+        <section id="ad-log" class="section">
+          <h2>Ad log</h2>
+          <small>
+            If enabled, TTV LOL PRO will log all ads that did not get blocked
+            for debugging purposes. Entries are automatically removed after 7
+            days.
+          </small>
+          <ul class="options-list">
+            <li>
+              <input
+                type="checkbox"
+                name="ad-log-enabled-checkbox"
+                id="ad-log-enabled-checkbox"
+              />
+              <label for="ad-log-enabled-checkbox">Enable ad log</label>
+            </li>
+          </ul>
+          <button id="ad-log-send-button" class="btn-primary">
+            Send ad log to developer…
+          </button>
+          <button id="ad-log-export-button">Export ad log…</button>
+          <button id="ad-log-clear-button">Clear ad log</button>
+        </section>
+      </main>
 
-      <hr />
-
-      <!-- Backup and restore -->
-      <section class="section">
-        <button id="export-button">Back up to file…</button>
-        <button id="import-button">Restore from file…</button>
-        <button id="reset-button">Reset to default settings…</button>
-        <button id="unset-pac-script-button">Unset PAC script</button>
-      </section>
-    </main>
+      <footer>Version 0.0.0</footer>
+    </div>
 
     <script type="module" src="./options.ts"></script>
   </body>

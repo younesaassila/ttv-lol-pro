@@ -33,19 +33,37 @@ type ListOptions = {
 //#region HTML Elements
 // Passport
 const passportLevelRangeElement = $(
-  "#passport-level-range"
+  "#passport-type-slider"
 ) as HTMLInputElement;
 const anonymousModeCheckboxElement = $(
   "#anonymous-mode-checkbox"
 ) as HTMLInputElement;
 // Whitelisted channels
-const whitelistedChannelsSectionElement = $(
-  "#whitelisted-channels-section"
-) as HTMLElement;
 const whitelistedChannelsListElement = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
-$;
+// Proxy usage
+const passportTypeProxyUsageElement = $(
+  "#passport-type-proxy-usage"
+) as HTMLDetailsElement;
+const passportTypeProxyUsageSummaryElement = $(
+  "#passport-type-proxy-usage-summary"
+) as HTMLElement;
+const passportTypeProxyUsagePassportElement = $(
+  "#passport-type-proxy-usage-passport"
+) as HTMLTableCellElement;
+const passportTypeProxyUsageUsherElement = $(
+  "#passport-type-proxy-usage-usher"
+) as HTMLTableCellElement;
+const passportTypeProxyUsageVideoWeaverElement = $(
+  "#passport-type-proxy-usage-video-weaver"
+) as HTMLTableCellElement;
+const passportTypeProxyUsageGqlElement = $(
+  "#passport-type-proxy-usage-gql"
+) as HTMLTableCellElement;
+const passportTypeProxyUsageWwwElement = $(
+  "#passport-type-proxy-usage-www"
+) as HTMLTableCellElement;
 // Proxies
 const optimizedProxiesInputElement = $("#optimized") as HTMLInputElement;
 const optimizedProxiesListElement = $(
@@ -54,7 +72,7 @@ const optimizedProxiesListElement = $(
 const normalProxiesInputElement = $("#normal") as HTMLInputElement;
 const normalProxiesListElement = $("#normal-proxies-list") as HTMLOListElement;
 // Ad log
-const adLogSectionElement = $("#ad-log-section") as HTMLElement;
+const adLogSectionElement = $("#ad-log") as HTMLElement;
 const adLogEnabledCheckboxElement = $(
   "#ad-log-enabled-checkbox"
 ) as HTMLInputElement;
@@ -91,11 +109,13 @@ else store.addEventListener("load", main);
 function main() {
   // Proxy settings
   passportLevelRangeElement.value = store.state.passportLevel.toString();
-  passportLevelRangeElement.addEventListener("change", () => {
+  updateProxyUsage();
+  passportLevelRangeElement.addEventListener("input", () => {
     store.state.passportLevel = parseInt(passportLevelRangeElement.value);
     if (isChromium && store.state.chromiumProxyActive) {
       updateProxySettings();
     }
+    updateProxyUsage();
   });
   anonymousModeCheckboxElement.checked = store.state.anonymousMode;
   anonymousModeCheckboxElement.addEventListener("change", () => {
@@ -113,6 +133,7 @@ function main() {
   else normalProxiesInputElement.checked = true;
   const onProxyTypeChange = () => {
     store.state.optimizedProxiesEnabled = optimizedProxiesInputElement.checked;
+    updateProxyUsage();
   };
   optimizedProxiesInputElement.addEventListener("change", onProxyTypeChange);
   normalProxiesInputElement.addEventListener("change", onProxyTypeChange);
@@ -124,6 +145,11 @@ function main() {
     },
     isAddAllowed: isOptimizedProxyUrlAllowed,
     isEditAllowed: isOptimizedProxyUrlAllowed,
+    onEdit() {
+      if (isChromium && store.state.chromiumProxyActive) {
+        updateProxySettings();
+      }
+    },
     hidePromptMarker: true,
     insertMode: "both",
   });
@@ -154,6 +180,72 @@ function main() {
   if (!isChromium) {
     unsetPacScriptButtonElement.style.display = "none";
   }
+}
+
+function updateProxyUsage() {
+  let usageScore = 0;
+  if (!store.state.optimizedProxiesEnabled) usageScore += 1;
+  if (
+    store.state.passportLevel >= 1 &&
+    !(
+      !isChromium &&
+      store.state.passportLevel == 1 &&
+      store.state.optimizedProxiesEnabled
+    )
+  ) {
+    usageScore += 1;
+  }
+  switch (usageScore) {
+    case 0:
+      passportTypeProxyUsageSummaryElement.textContent = "🙂 Low proxy usage";
+      passportTypeProxyUsageElement.dataset.usage = "low";
+      break;
+    case 1:
+      passportTypeProxyUsageSummaryElement.textContent =
+        "😐 Medium proxy usage";
+      passportTypeProxyUsageElement.dataset.usage = "medium";
+      break;
+    case 2:
+      passportTypeProxyUsageSummaryElement.textContent = "🙁 High proxy usage";
+      passportTypeProxyUsageElement.dataset.usage = "high";
+      break;
+  }
+
+  passportTypeProxyUsagePassportElement.textContent = "All";
+  passportTypeProxyUsageUsherElement.textContent = "All";
+  passportTypeProxyUsageVideoWeaverElement.textContent = store.state
+    .optimizedProxiesEnabled
+    ? "Containing ad"
+    : "All";
+  if (isChromium) {
+    if (store.state.passportLevel == 2) {
+      passportTypeProxyUsageGqlElement.textContent = store.state
+        .optimizedProxiesEnabled
+        ? "PlaybackAccessToken & Integrity"
+        : "All";
+    } else if (store.state.passportLevel == 1) {
+      passportTypeProxyUsageGqlElement.textContent =
+        "PlaybackAccessToken & Integrity";
+    } else {
+      passportTypeProxyUsageGqlElement.textContent = "None";
+    }
+  } else {
+    if (store.state.passportLevel == 2) {
+      passportTypeProxyUsageGqlElement.textContent = store.state
+        .optimizedProxiesEnabled
+        ? "PlaybackAccessToken & Integrity"
+        : "All";
+    } else if (store.state.passportLevel == 1) {
+      passportTypeProxyUsageGqlElement.textContent = store.state
+        .optimizedProxiesEnabled
+        ? "PlaybackAccessToken"
+        : "PlaybackAccessToken & Integrity";
+    } else {
+      passportTypeProxyUsageGqlElement.textContent = "None";
+    }
+  }
+  passportTypeProxyUsageWwwElement.textContent =
+    store.state.passportLevel >= 2 ? "All" : "None";
 }
 
 function isOptimizedProxyUrlAllowed(url: string): AllowedResult {
