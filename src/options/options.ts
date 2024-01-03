@@ -1,3 +1,4 @@
+import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
 import { readFile, saveFile } from "../common/ts/file";
 import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
@@ -31,17 +32,17 @@ type ListOptions = {
 //#endregion
 
 //#region HTML Elements
+// Import/Export
+const exportButtonElement = $("#export-button") as HTMLButtonElement;
+const importButtonElement = $("#import-button") as HTMLButtonElement;
+const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 // Passport
-const passportLevelRangeElement = $(
+const passportLevelSliderElement = $(
   "#passport-type-slider"
 ) as HTMLInputElement;
 const anonymousModeCheckboxElement = $(
   "#anonymous-mode-checkbox"
 ) as HTMLInputElement;
-// Whitelisted channels
-const whitelistedChannelsListElement = $(
-  "#whitelisted-channels-list"
-) as HTMLUListElement;
 // Proxy usage
 const passportTypeProxyUsageElement = $(
   "#passport-type-proxy-usage"
@@ -64,6 +65,10 @@ const passportTypeProxyUsageGqlElement = $(
 const passportTypeProxyUsageWwwElement = $(
   "#passport-type-proxy-usage-www"
 ) as HTMLTableCellElement;
+// Whitelisted channels
+const whitelistedChannelsListElement = $(
+  "#whitelisted-channels-list"
+) as HTMLUListElement;
 // Proxies
 const optimizedProxiesInputElement = $("#optimized") as HTMLInputElement;
 const optimizedProxiesListElement = $(
@@ -72,7 +77,6 @@ const optimizedProxiesListElement = $(
 const normalProxiesInputElement = $("#normal") as HTMLInputElement;
 const normalProxiesListElement = $("#normal-proxies-list") as HTMLOListElement;
 // Ad log
-const adLogSectionElement = $("#ad-log") as HTMLElement;
 const adLogEnabledCheckboxElement = $(
   "#ad-log-enabled-checkbox"
 ) as HTMLInputElement;
@@ -81,13 +85,12 @@ const adLogExportButtonElement = $(
   "#ad-log-export-button"
 ) as HTMLButtonElement;
 const adLogClearButtonElement = $("#ad-log-clear-button") as HTMLButtonElement;
-// Import/Export
-const exportButtonElement = $("#export-button") as HTMLButtonElement;
-const importButtonElement = $("#import-button") as HTMLButtonElement;
-const resetButtonElement = $("#reset-button") as HTMLButtonElement;
+// Troubleshooting
 const unsetPacScriptButtonElement = $(
   "#unset-pac-script-button"
 ) as HTMLButtonElement;
+// Footer
+const versionElement = $("#version") as HTMLParagraphElement;
 //#endregion
 
 const DEFAULT_STATE = Object.freeze(getDefaultState());
@@ -107,16 +110,20 @@ if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 
 function main() {
-  // Proxy settings
-  passportLevelRangeElement.value = store.state.passportLevel.toString();
-  updateProxyUsage();
-  passportLevelRangeElement.addEventListener("input", () => {
-    store.state.passportLevel = parseInt(passportLevelRangeElement.value);
+  // Remove elements that are only for Chromium or Firefox.
+  document
+    .querySelectorAll(isChromium ? ".firefox-only" : ".chromium-only")
+    .forEach(element => element.remove());
+  // Passport
+  passportLevelSliderElement.value = store.state.passportLevel.toString();
+  passportLevelSliderElement.addEventListener("input", () => {
+    store.state.passportLevel = parseInt(passportLevelSliderElement.value);
     if (isChromium && store.state.chromiumProxyActive) {
       updateProxySettings();
     }
     updateProxyUsage();
   });
+  updateProxyUsage();
   anonymousModeCheckboxElement.checked = store.state.anonymousMode;
   anonymousModeCheckboxElement.addEventListener("change", () => {
     store.state.anonymousMode = anonymousModeCheckboxElement.checked;
@@ -137,7 +144,6 @@ function main() {
   };
   optimizedProxiesInputElement.addEventListener("change", onProxyTypeChange);
   normalProxiesInputElement.addEventListener("change", onProxyTypeChange);
-  // }
   listInit(optimizedProxiesListElement, "optimizedProxies", {
     getPromptPlaceholder: insertMode => {
       if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
@@ -169,22 +175,22 @@ function main() {
     insertMode: "both",
   });
   // Ad log
-  if (isChromium) {
-    adLogSectionElement.style.display = "none";
-  } else {
-    adLogEnabledCheckboxElement.checked = store.state.adLogEnabled;
-    adLogEnabledCheckboxElement.addEventListener("change", () => {
-      store.state.adLogEnabled = adLogEnabledCheckboxElement.checked;
-    });
-  }
-  if (!isChromium) {
-    unsetPacScriptButtonElement.style.display = "none";
-  }
+  adLogEnabledCheckboxElement.checked = store.state.adLogEnabled;
+  adLogEnabledCheckboxElement.addEventListener("change", () => {
+    store.state.adLogEnabled = adLogEnabledCheckboxElement.checked;
+  });
+  // Footer
+  versionElement.textContent = `Version ${
+    browser.runtime.getManifest().version
+  }`;
 }
 
 function updateProxyUsage() {
+  // Proxy usage label.
   let usageScore = 0;
+  // "Proxy all requests" penalty.
   if (!store.state.optimizedProxiesEnabled) usageScore += 1;
+  // GraphQL integrity+ penalty.
   if (
     store.state.passportLevel >= 1 &&
     !(
@@ -211,21 +217,24 @@ function updateProxyUsage() {
       break;
   }
 
+  // Passport
   passportTypeProxyUsagePassportElement.textContent = "All";
+  // Usher
   passportTypeProxyUsageUsherElement.textContent = "All";
+  // Video Weaver
   passportTypeProxyUsageVideoWeaverElement.textContent = store.state
     .optimizedProxiesEnabled
-    ? "Containing ad"
+    ? "Few"
     : "All";
+  // GraphQL
   if (isChromium) {
     if (store.state.passportLevel == 2) {
       passportTypeProxyUsageGqlElement.textContent = store.state
         .optimizedProxiesEnabled
-        ? "PlaybackAccessToken & Integrity"
+        ? "Some"
         : "All";
     } else if (store.state.passportLevel == 1) {
-      passportTypeProxyUsageGqlElement.textContent =
-        "PlaybackAccessToken & Integrity";
+      passportTypeProxyUsageGqlElement.textContent = "Some";
     } else {
       passportTypeProxyUsageGqlElement.textContent = "None";
     }
@@ -233,17 +242,18 @@ function updateProxyUsage() {
     if (store.state.passportLevel == 2) {
       passportTypeProxyUsageGqlElement.textContent = store.state
         .optimizedProxiesEnabled
-        ? "PlaybackAccessToken & Integrity"
+        ? "Some"
         : "All";
     } else if (store.state.passportLevel == 1) {
       passportTypeProxyUsageGqlElement.textContent = store.state
         .optimizedProxiesEnabled
-        ? "PlaybackAccessToken"
-        : "PlaybackAccessToken & Integrity";
+        ? "Few"
+        : "Some";
     } else {
       passportTypeProxyUsageGqlElement.textContent = "None";
     }
   }
+  // www
   passportTypeProxyUsageWwwElement.textContent =
     store.state.passportLevel >= 2 ? "All" : "None";
 }
@@ -492,33 +502,6 @@ function _listPrompt(
   if (options.focusPrompt) promptInput.focus();
 }
 
-adLogSendButtonElement.addEventListener("click", async () => {
-  const success = await sendAdLog();
-  if (success === null) {
-    return alert("No log entries to send.");
-  }
-  if (!success) {
-    return alert("Failed to send log.");
-  }
-  alert("Log sent successfully.");
-});
-
-adLogExportButtonElement.addEventListener("click", () => {
-  saveFile(
-    "ttv-lol-pro_ad-log.json",
-    JSON.stringify(store.state.adLog),
-    "application/json;charset=utf-8"
-  );
-});
-
-adLogClearButtonElement.addEventListener("click", () => {
-  const confirmation = confirm(
-    "Are you sure you want to clear the ad log? This cannot be undone."
-  );
-  if (!confirmation) return;
-  store.state.adLog = [];
-});
-
 exportButtonElement.addEventListener("click", () => {
   saveFile(
     "ttv-lol-pro_backup.json",
@@ -584,6 +567,33 @@ resetButtonElement.addEventListener("click", () => {
   if (!confirmation) return;
   store.clear();
   window.location.reload(); // Reload page to update UI.
+});
+
+adLogSendButtonElement.addEventListener("click", async () => {
+  const success = await sendAdLog();
+  if (success === null) {
+    return alert("No log entries to send.");
+  }
+  if (!success) {
+    return alert("Failed to send log.");
+  }
+  alert("Log sent successfully.");
+});
+
+adLogExportButtonElement.addEventListener("click", () => {
+  saveFile(
+    "ttv-lol-pro_ad-log.json",
+    JSON.stringify(store.state.adLog),
+    "application/json;charset=utf-8"
+  );
+});
+
+adLogClearButtonElement.addEventListener("click", () => {
+  const confirmation = confirm(
+    "Are you sure you want to clear the ad log? This cannot be undone."
+  );
+  if (!confirmation) return;
+  store.state.adLog = [];
 });
 
 unsetPacScriptButtonElement.addEventListener("click", () => {

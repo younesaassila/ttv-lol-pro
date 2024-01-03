@@ -11,9 +11,7 @@ export default function getDefaultState() {
     dnsResponses: [],
     normalProxies: [],
     openedTwitchTabs: [],
-    optimizedProxies: isChromium
-      ? ["chrome.api.cdn-perfprod.com:4023"]
-      : ["firefox.api.cdn-perfprod.com:2023"],
+    optimizedProxies: ["firefox.api.cdn-perfprod.com:2023"],
     optimizedProxiesEnabled: true,
     passportLevel: isChromium ? 0 : 1,
     streamStatuses: {},

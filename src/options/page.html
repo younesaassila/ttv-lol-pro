@@ -24,13 +24,12 @@
           <button id="export-button">Back up to file…</button>
           <button id="import-button">Restore from file…</button>
           <button id="reset-button">Reset to default settings…</button>
-          <button id="unset-pac-script-button">Unset PAC script</button>
         </div>
       </header>
 
       <main>
         <!-- Passport -->
-        <section class="section" id="passport">
+        <section id="passport" class="section">
           <h2>Passport</h2>
           <div id="passport-type-container">
             <img
@@ -54,35 +53,29 @@
                 <option value="2" label="Diplomatic"></option>
               </datalist>
             </div>
-            <details id="passport-type-proxy-usage" data-usage="low">
-              <summary id="passport-type-proxy-usage-summary">
-                🙂 Low proxy usage
-              </summary>
+            <details id="passport-type-proxy-usage">
+              <summary id="passport-type-proxy-usage-summary"></summary>
               <table id="passport-type-proxy-usage-table">
                 <tbody>
                   <tr>
                     <td>passport.twitch.tv</td>
-                    <td id="passport-type-proxy-usage-passport">All</td>
+                    <td id="passport-type-proxy-usage-passport"></td>
                   </tr>
                   <tr>
                     <td>usher.ttvnw.net</td>
-                    <td id="passport-type-proxy-usage-usher">All</td>
+                    <td id="passport-type-proxy-usage-usher"></td>
                   </tr>
                   <tr>
                     <td>video-weaver.*.hls.ttvnw.net</td>
-                    <td id="passport-type-proxy-usage-video-weaver">
-                      Containing ad
-                    </td>
+                    <td id="passport-type-proxy-usage-video-weaver"></td>
                   </tr>
                   <tr>
                     <td>gql.twitch.tv</td>
-                    <td id="passport-type-proxy-usage-gql">
-                      PlaybackAccessToken
-                    </td>
+                    <td id="passport-type-proxy-usage-gql"></td>
                   </tr>
                   <tr>
                     <td>www.twitch.tv</td>
-                    <td id="passport-type-proxy-usage-www">None</td>
+                    <td id="passport-type-proxy-usage-www"></td>
                   </tr>
                 </tbody>
               </table>
@@ -108,18 +101,22 @@
         </section>
 
         <!-- Whitelisted channels -->
-        <section class="section" id="whitelisted-channels">
+        <section id="whitelisted-channels" class="section">
           <h2>Whitelisted channels</h2>
           <small>
             Support your favorite content creators by whitelisting their
-            channels. On Chromium-based browsers, whitelisting only works when
-            all opened Twitch tabs are whitelisted channels.
+            channels.
+          </small>
+          <br class="chromium-only" />
+          <small class="chromium-only">
+            On Chromium-based browsers, whitelisting only works when all opened
+            Twitch tabs are whitelisted channels.
           </small>
           <ul id="whitelisted-channels-list" class="store-list"></ul>
         </section>
 
         <!-- Proxies -->
-        <section class="section" id="proxies">
+        <section id="proxies" class="section">
           <h2>Proxies</h2>
           <small>
             Proxies listed below must be HTTP proxies in the format
@@ -165,7 +162,7 @@
         </section>
 
         <!-- Ad log -->
-        <section id="ad-log" class="section">
+        <section id="ad-log" class="firefox-only section">
           <h2>Ad log</h2>
           <small>
             If enabled, TTV LOL PRO will log all ads that did not get blocked
@@ -188,9 +185,26 @@
           <button id="ad-log-export-button">Export ad log…</button>
           <button id="ad-log-clear-button">Clear ad log</button>
         </section>
+
+        <!-- Troubleshooting -->
+        <section id="troubleshooting" class="chromium-only section">
+          <h2>Troubleshooting</h2>
+          <br />
+          <button id="unset-pac-script-button">Unset PAC script</button>
+        </section>
       </main>
 
-      <footer>Version 0.0.0</footer>
+      <footer>
+        <small>
+          <a
+            href="https://github.com/younesaassila/ttv-lol-pro"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Contribute on GitHub</a
+          >
+        </small>
+        <small id="version"></small>
+      </footer>
     </div>
 
     <script type="module" src="./options.ts"></script>

@@ -20,6 +20,7 @@
   --input-border-color: #353840;
   --input-text-primary: #c3c4ca;
   --input-text-secondary: #7a8085;
+  --input-max-width: 450px;
 
   --button-background-color: #353840;
   --button-background-color-hover: #464953;
@@ -38,19 +39,27 @@
   --high-bg-color: #241e1e;
 }
 
-body {
-  margin: 0;
-  background-color: var(--body-background-color);
-  color: var(--text-primary);
-  accent-color: var(--brand-color);
-  font-size: 100%;
-  font-family: var(--font-primary);
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 ::-moz-selection,
 ::selection {
   background-color: var(--brand-color);
   color: #ffffff;
+}
+
+body {
+  margin: 0;
+  background-image: url("../images/options_bg.png");
+  background-repeat: repeat;
+  background-color: var(--body-background-color);
+  color: var(--text-primary);
+  accent-color: var(--brand-color);
+  font-size: 100%;
+  font-family: var(--font-primary);
 }
 
 .wrapper {
@@ -101,35 +110,9 @@ header > #buttons-container {
 footer {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: 1.5rem;
   border-top: 1px solid var(--input-border-color);
-}
-
-@media screen and (max-width: 1000px) {
-  header {
-    flex-direction: column;
-  }
-}
-
-@media screen and (max-width: 800px) {
-  main {
-    padding: 1.25rem;
-  }
-  header > #buttons-container {
-    flex-direction: column;
-    width: 100%;
-    max-width: 400px;
-    gap: 0.25rem;
-  }
-  header > #buttons-container > button {
-    width: 100%;
-  }
-}
-
-fieldset {
-  margin-top: 1rem;
-  border: 0;
 }
 
 a,
@@ -138,7 +121,6 @@ a:visited {
   text-decoration: none;
   transition: color 100ms ease-in-out;
 }
-
 a:hover,
 a:visited:hover {
   color: var(--link-hover);
@@ -154,12 +136,10 @@ select {
   color: var(--input-text-primary);
   vertical-align: middle;
 }
-
 input[type="text"]:disabled {
   background-color: var(--input-background-color-disabled);
   color: var(--input-text-secondary);
 }
-
 input[type="text"]::placeholder {
   font-style: italic;
 }
@@ -175,7 +155,6 @@ button {
   cursor: pointer;
   transition: background-color 100ms ease-in-out;
 }
-
 input[type="button"]:hover,
 button:hover {
   background-color: var(--button-background-color-hover);
@@ -185,13 +164,22 @@ button:hover {
   background-color: var(--brand-color);
   color: #ffffff;
 }
-
 .btn-primary:hover {
   background-color: var(--link-hover);
 }
 
 input[type="checkbox"]:disabled + label {
   opacity: 0.7;
+}
+
+fieldset {
+  margin-top: 1rem;
+  border: 0;
+}
+
+small {
+  color: var(--text-secondary);
+  font-size: 9pt;
 }
 
 hr {
@@ -204,14 +192,14 @@ hr {
   margin: 0 0 3rem 0;
 }
 
+.section:last-child {
+  margin-bottom: 0;
+}
+
 .section > h2 {
   margin-top: 0;
   margin-bottom: 0.25rem;
   font-size: 1.3rem;
-}
-
-.section:last-child {
-  margin-bottom: 0;
 }
 
 .tag {
@@ -225,13 +213,9 @@ hr {
   text-transform: uppercase;
 }
 
-small {
-  color: var(--text-secondary);
-  font-size: 9pt;
-}
-
 .store-list > li > input {
-  min-width: 400px;
+  width: 100%;
+  max-width: var(--input-max-width);
   margin-bottom: 0.25rem;
 }
 
@@ -244,12 +228,10 @@ li.hide-marker::marker {
   margin-bottom: 0;
   list-style-type: none;
 }
-
 .options-list > li {
   position: relative;
   margin-bottom: 1rem;
 }
-
 .options-list > li > input[type="checkbox"] {
   position: absolute;
   left: -1.6rem;
@@ -280,7 +262,7 @@ li.hide-marker::marker {
 
 #passport-type-slider {
   width: 100%;
-  max-width: 400px;
+  max-width: var(--input-max-width);
   margin: 0;
 }
 
@@ -288,7 +270,7 @@ li.hide-marker::marker {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   width: 100%;
-  max-width: 400px;
+  max-width: var(--input-max-width);
   text-align: center;
 }
 #passport-type-slider-datalist > option:first-child {
@@ -301,8 +283,9 @@ li.hide-marker::marker {
 #passport-type-proxy-usage {
   grid-area: usage;
   width: 100%;
-  max-width: 400px;
-  padding: 0.5rem;
+  max-width: var(--input-max-width);
+  padding: 0;
+  overflow: hidden;
   border: 1px solid var(--input-border-color);
   border-radius: 18px;
   background-color: var(--input-background-color);
@@ -322,18 +305,73 @@ li.hide-marker::marker {
 
 #passport-type-proxy-usage-summary {
   margin: 0;
+  padding: 0.5rem;
   font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 100ms ease-in-out, color 100ms ease-in-out;
 }
 #passport-type-proxy-usage-summary::marker {
   content: none;
 }
+#passport-type-proxy-usage-summary::after {
+  display: block;
+  float: right;
+  transform: translateY(-15%) rotate(-45deg);
+  content: "∟";
+  text-align: right;
+}
+#passport-type-proxy-usage[open] #passport-type-proxy-usage-summary::after {
+  display: block;
+  float: right;
+  transform: translateY(30%) rotate(135deg);
+  content: "∟";
+  text-align: right;
+}
+#passport-type-proxy-usage[data-usage="low"]
+  #passport-type-proxy-usage-summary:hover {
+  background-color: var(--low-color);
+  color: #000000;
+}
+#passport-type-proxy-usage[data-usage="medium"]
+  #passport-type-proxy-usage-summary:hover {
+  background-color: var(--medium-color);
+  color: #000000;
+}
+#passport-type-proxy-usage[data-usage="high"]
+  #passport-type-proxy-usage-summary:hover {
+  background-color: var(--high-color);
+  color: #000000;
+}
 
 #passport-type-proxy-usage-table {
   width: 100%;
-  margin-top: 0.5rem;
+  margin: 0;
+  padding: 0.5rem;
   font-size: 0.7rem;
 }
 #passport-type-proxy-usage-table > tbody > tr > td:nth-child(2) {
   color: var(--text-secondary);
   text-align: right;
+}
+
+@media screen and (max-width: 800px) {
+  header {
+    flex-direction: column;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  main {
+    padding: 1.25rem;
+  }
+
+  header > #buttons-container {
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+    gap: 0.25rem;
+  }
+  header > #buttons-container > button {
+    width: 100%;
+  }
 }
