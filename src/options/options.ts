@@ -1,7 +1,9 @@
 import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
 import { readFile, saveFile } from "../common/ts/file";
+import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
+import isChannelWhitelisted from "../common/ts/isChannelWhitelisted";
 import isChromium from "../common/ts/isChromium";
 import {
   clearProxySettings,
@@ -86,6 +88,9 @@ const adLogExportButtonElement = $(
 ) as HTMLButtonElement;
 const adLogClearButtonElement = $("#ad-log-clear-button") as HTMLButtonElement;
 // Troubleshooting
+const twitchTabsReportButtonElement = $(
+  "#twitch-tabs-report-button"
+) as HTMLButtonElement;
 const unsetPacScriptButtonElement = $(
   "#unset-pac-script-button"
 ) as HTMLButtonElement;
@@ -594,6 +599,127 @@ adLogClearButtonElement.addEventListener("click", () => {
   );
   if (!confirmation) return;
   store.state.adLog = [];
+});
+
+twitchTabsReportButtonElement.addEventListener("click", async () => {
+  let report = "--- Twitch Tabs report ---\n\n";
+
+  const extensionInfo = await browser.management.getSelf();
+  report += `Extension: ${extensionInfo.name} v${extensionInfo.version} (${extensionInfo.installType})\n`;
+  report += `User agent: ${window.navigator.userAgent}\n\n`;
+
+  const openedTabs = await browser.tabs.query({
+    url: ["https://www.twitch.tv/*", "https://m.twitch.tv/*"],
+  });
+  const detectedTabs = store.state.openedTwitchTabs;
+
+  // Print all opened tabs.
+  report += `Opened Twitch tabs (${openedTabs.length}):\n`;
+  for (const tab of openedTabs) {
+    report += `- ${tab.url} (id: ${tab.id}, windowId: ${tab.windowId})\n`;
+  }
+  report += "\n";
+
+  // Whitelisted tabs in `openedTabs`.
+  const openedWhitelistedTabs = openedTabs.filter(tab => {
+    const url = tab.url || tab.pendingUrl;
+    if (!url) return false;
+    const channelName = findChannelFromTwitchTvUrl(url);
+    const isWhitelisted = channelName
+      ? isChannelWhitelisted(channelName)
+      : false;
+    return isWhitelisted;
+  });
+  report += `Out of the ${openedTabs.length} opened Twitch tabs, ${
+    openedWhitelistedTabs.length
+  } ${openedWhitelistedTabs.length === 1 ? "is" : "are"} whitelisted:\n`;
+  for (const tab of openedWhitelistedTabs) {
+    report += `- ${tab.url} (id: ${tab.id}, windowId: ${tab.windowId})\n`;
+  }
+  report += "\n";
+
+  // Check for missing tabs in `detectedTabs`.
+  const missingTabs = openedTabs.filter(
+    tab => !detectedTabs.some(extensionTab => extensionTab.id === tab.id)
+  );
+  if (missingTabs.length > 0) {
+    report += `The following Twitch tabs are missing from \`store.state.openedTwitchTabs\`:\n`;
+    for (const tab of missingTabs) {
+      report += `- ${tab.url} (id: ${tab.id}, windowId: ${tab.windowId})\n`;
+    }
+    report += "\n";
+  } else {
+    report +=
+      "All opened Twitch tabs are present in `store.state.openedTwitchTabs`.\n\n";
+  }
+
+  // Check for extra tabs in `detectedTabs`.
+  const extraTabs = detectedTabs.filter(
+    extensionTab => !openedTabs.some(tab => tab.id === extensionTab.id)
+  );
+  if (extraTabs.length > 0) {
+    report += `The following Twitch tabs are extra in \`store.state.openedTwitchTabs\`:\n`;
+    for (const tab of extraTabs) {
+      report += `- ${tab.url} (id: ${tab.id}, windowId: ${tab.windowId})\n`;
+    }
+    report += "\n";
+  } else {
+    report += "No extra Twitch tabs in `store.state.openedTwitchTabs`.\n\n";
+  }
+
+  // Whitelisted tabs in `detectedTabs`.
+  const detectedWhitelistedTabs = detectedTabs.filter(tab => {
+    const url = tab.url || tab.pendingUrl;
+    if (!url) return false;
+    const channelName = findChannelFromTwitchTvUrl(url);
+    const isWhitelisted = channelName
+      ? isChannelWhitelisted(channelName)
+      : false;
+    return isWhitelisted;
+  });
+  report += `Out of the ${
+    detectedTabs.length
+  } Twitch tabs in \`store.state.openedTwitchTabs\`, ${
+    detectedWhitelistedTabs.length
+  } ${detectedWhitelistedTabs.length === 1 ? "is" : "are"} whitelisted:\n`;
+  for (const tab of detectedWhitelistedTabs) {
+    report += `- ${tab.url} (id: ${tab.id}, windowId: ${tab.windowId})\n`;
+  }
+  report += "\n";
+
+  // Should the PAC script be set?
+  const allTabsAreWhitelisted =
+    openedWhitelistedTabs.length === openedTabs.length;
+  const shouldSetPacScript = openedTabs.length > 0 && !allTabsAreWhitelisted;
+  report += `Should the PAC script be set? ${
+    shouldSetPacScript ? "Yes" : "No"
+  }\n`;
+  report += `Is the PAC script set? ${
+    store.state.chromiumProxyActive ? "Yes" : "No"
+  }\n`;
+  report += "\n";
+
+  let fixed = false;
+  if (shouldSetPacScript && !store.state.chromiumProxyActive) {
+    store.state.openedTwitchTabs = openedTabs;
+    updateProxySettings();
+    fixed = true;
+    report += "Fixed issue by setting the PAC script.\n\n";
+  } else if (!shouldSetPacScript && store.state.chromiumProxyActive) {
+    store.state.openedTwitchTabs = openedTabs;
+    clearProxySettings();
+    fixed = true;
+    report += "Fixed issue by unsetting the PAC script.\n\n";
+  }
+
+  report += "--- End of report ---\n";
+
+  saveFile("ttv-lol-pro_tabs-report.txt", report, "text/plain;charset=utf-8");
+  alert(
+    `Report saved ${
+      fixed ? "and issue fixed " : ""
+    }successfully. Please send the report to the developer (on Discord or GitHub).`
+  );
 });
 
 unsetPacScriptButtonElement.addEventListener("click", () => {
