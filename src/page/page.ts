@@ -9,7 +9,6 @@ const params = JSON.parse(document.currentScript!.dataset.params!);
 const pageState: PageState = {
   isChromium: params.isChromium,
   scope: "page",
-  shouldWaitForStore: true,
   state: undefined,
   twitchWorker: undefined,
 };
@@ -117,7 +116,6 @@ window.addEventListener("message", event => {
       }
       const state = message.state;
       pageState.state = state;
-      pageState.shouldWaitForStore = false;
       if (sendStoreStateToWorker) {
         sendMessageToWorkerScript({
           type: MessageType.GetStoreStateResponse,

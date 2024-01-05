@@ -15,7 +15,6 @@ getParams = undefined as any;
 const pageState: PageState = {
   isChromium: params.isChromium,
   scope: "worker",
-  shouldWaitForStore: true,
 };
 
 self.fetch = getFetch(pageState);
@@ -42,7 +41,6 @@ self.addEventListener("message", event => {
       }
       const state = message.state;
       pageState.state = state;
-      pageState.shouldWaitForStore = false;
       break;
   }
 });

@@ -18,8 +18,10 @@ export default function onContentScriptMessage(
     console.log("[TTV LOL PRO] Received EnableFullMode message");
     if (timeout) {
       clearTimeout(timeout);
-    } else {
+    } else if (store.state.chromiumProxyActive) {
       updateProxySettings("full");
+    } else {
+      clearProxySettings();
     }
     timeout = setTimeout(() => {
       if (store.state.chromiumProxyActive) {

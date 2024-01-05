@@ -131,16 +131,23 @@ main > * {
 /* Proxy status reason */
 #stream-status #reason {
   grid-area: middle-right;
-  margin: 2px 0 0 0;
+  margin: 4px 0 0 0;
   font-size: 9pt;
   opacity: 0.8;
 }
 /* Proxy status info */
-#stream-status #info {
+#stream-status #info-container {
   display: none;
   grid-area: bottom-right;
-  margin: 4px 0 0 0;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  margin: 6px 0 0 0;
+  gap: 2px;
+}
+#stream-status .info {
   font-size: 7pt;
+  text-overflow: ellipsis;
   opacity: 0.7;
 }
 /* Whitelist status */

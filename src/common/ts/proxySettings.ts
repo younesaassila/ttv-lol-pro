@@ -22,8 +22,8 @@ export function updateProxySettings(mode?: "limited" | "full") {
   const proxyPassportRequests = passportLevel >= 0;
   const proxyUsherRequests = passportLevel >= 0;
   const proxyGraphQLRequests = mode === "full" && passportLevel >= 1;
-  const proxyTwitchWebpageRequests = mode === "full" && passportLevel >= 2;
-  const proxyVideoWeaverRequests = mode === "full";
+  const proxyTwitchWebpageRequests = passportLevel >= 2;
+  const proxyVideoWeaverRequests = mode === "full" && passportLevel >= 0;
 
   const config = {
     mode: "pac_script",

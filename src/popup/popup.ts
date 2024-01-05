@@ -6,6 +6,7 @@ import {
   anonymizeIpAddresses,
 } from "../common/ts/anonymizeIpAddress";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
+import isChannelWhitelisted from "../common/ts/isChannelWhitelisted";
 import isChromium from "../common/ts/isChromium";
 import store from "../store";
 import type { StreamStatus } from "../types";
@@ -23,7 +24,7 @@ const streamStatusElement = $("#stream-status") as HTMLDivElement;
 const proxiedElement = $("#proxied") as HTMLDivElement;
 const channelNameElement = $("#channel-name") as HTMLHeadingElement;
 const reasonElement = $("#reason") as HTMLParagraphElement;
-const infoElement = $("#info") as HTMLElement;
+const infoContainerElement = $("#info-container") as HTMLDivElement;
 const whitelistStatusElement = $("#whitelist-status") as HTMLDivElement;
 const whitelistToggleElement = $("#whitelist-toggle") as HTMLInputElement;
 const copyDebugInfoButtonElement = $(
@@ -84,6 +85,7 @@ function setStreamStatusElement(channelName: string) {
 }
 
 function setProxyStatus(channelNameLower: string, status: StreamStatus) {
+  const isWhitelisted = isChannelWhitelisted(channelNameLower);
   // Proxied
   if (status.proxied) {
     proxiedElement.classList.remove("error");
@@ -93,7 +95,8 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
     !status.proxied &&
     status.proxyHost &&
     store.state.optimizedProxiesEnabled &&
-    store.state.optimizedProxies.length > 0
+    store.state.optimizedProxies.length > 0 &&
+    !isWhitelisted
   ) {
     proxiedElement.classList.remove("error");
     proxiedElement.classList.remove("success");
@@ -123,9 +126,14 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
   if (store.state.optimizedProxiesEnabled) {
     messages.push("Optimized proxies enabled");
   }
-  if (messages.length > 0) {
-    infoElement.textContent = messages.join(", ");
-    infoElement.style.display = "block";
+  infoContainerElement.innerHTML = "";
+  infoContainerElement.style.display = "none";
+  for (const message of messages) {
+    const smallElement = document.createElement("small");
+    smallElement.textContent = message;
+    smallElement.className = "info";
+    infoContainerElement.appendChild(smallElement);
+    infoContainerElement.style.display = "flex";
   }
 }
 

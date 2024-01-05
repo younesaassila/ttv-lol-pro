@@ -60,7 +60,7 @@ export default function onResponseStarted(
         proxied: false,
         proxyHost: streamStatus?.proxyHost ? streamStatus.proxyHost : undefined,
         proxyCountry: streamStatus?.proxyCountry,
-        reason: `Proxied: ${stats.proxied} | [Not proxied]: ${stats.notProxied}`,
+        reason: `Proxied: ${stats.proxied} | Not proxied: ${stats.notProxied}`,
         stats,
       });
       console.log(
@@ -73,7 +73,7 @@ export default function onResponseStarted(
       proxied: true,
       proxyHost: proxy,
       proxyCountry: streamStatus?.proxyCountry,
-      reason: `[Proxied]: ${stats.proxied} | Not proxied: ${stats.notProxied}`,
+      reason: `Proxied: ${stats.proxied} | Not proxied: ${stats.notProxied}`,
       stats,
     });
     console.log(

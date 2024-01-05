@@ -5,7 +5,6 @@ import findChannelFromUsherUrl from "../common/ts/findChannelFromUsherUrl";
 import generateRandomString from "../common/ts/generateRandomString";
 import getHostFromUrl from "../common/ts/getHostFromUrl";
 import {
-  passportHostRegex,
   twitchGqlHostRegex,
   usherHostRegex,
   videoWeaverHostRegex,
@@ -38,12 +37,7 @@ export function getFetch(pageState: PageState): typeof fetch {
   let usherManifests: UsherManifest[] = [];
   let videoWeaverUrlsProxiedCount = new Map<string, number>(); // Used to count how many times each Video Weaver URL was proxied.
 
-  if (pageState.shouldWaitForStore) {
-    setTimeout(() => {
-      pageState.shouldWaitForStore = false;
-    }, 5000);
-  }
-
+  // Listen for NewPlaybackAccessToken messages from the worker script.
   if (pageState.scope === "page") {
     self.addEventListener("message", async event => {
       if (event.data?.type !== MessageType.PageScriptMessage) return;
@@ -56,6 +50,7 @@ export function getFetch(pageState: PageState): typeof fetch {
           const newPlaybackAccessToken =
             await fetchReplacementPlaybackAccessToken(
               pageState.isChromium,
+              pageState.state?.optimizedProxiesEnabled === true,
               pageState.scope,
               cachedPlaybackTokenRequestHeaders,
               cachedPlaybackTokenRequestBody
@@ -73,12 +68,14 @@ export function getFetch(pageState: PageState): typeof fetch {
     });
   }
 
+  // Listen for ClearStats messages from the page script.
   self.addEventListener("message", event => {
     if (
       event.data?.type !== MessageType.PageScriptMessage &&
       event.data?.type !== MessageType.WorkerScriptMessage
-    )
+    ) {
       return;
+    }
 
     const message = event.data?.message;
     if (!message) return;
@@ -94,12 +91,7 @@ export function getFetch(pageState: PageState): typeof fetch {
     }
   });
 
-  // TODO: Maybe implement some kind of retry that sends message to content script to get store state?
-  async function waitForStore() {
-    while (pageState.shouldWaitForStore) await sleep(100);
-  }
-
-  // // TEST CODE
+  // // TODO: REMOVE THIS TEST CODE
   // if (pageState.scope === "worker") {
   //   setTimeout(
   //     () =>
@@ -144,12 +136,6 @@ export function getFetch(pageState: PageState): typeof fetch {
 
     //#region Requests
 
-    // Twitch Passport requests.
-    if (host != null && passportHostRegex.test(host)) {
-      console.debug("[TTV LOL PRO] Flagging Passport request…");
-      isFlaggedRequest = true;
-    }
-
     // Twitch GraphQL requests.
     graphql: if (host != null && twitchGqlHostRegex.test(host)) {
       //#region GraphQL integrity requests.
@@ -157,14 +143,14 @@ export function getFetch(pageState: PageState): typeof fetch {
       const isIntegrityRequest = url === "https://gql.twitch.tv/integrity";
       const isIntegrityHeaderRequest = integrityHeader != null;
       if (isIntegrityRequest || isIntegrityHeaderRequest) {
-        await waitForStore();
-        // TODO: These `shouldFlagRequest` should be for all types of requests (like weaver)
-        // once the waitForStore is refactored to be cleaner!
+        await waitForStore(pageState);
+        const passportLevel = pageState.state?.passportLevel ?? 0;
+        const optimizedMinPassportLevel = pageState.isChromium ? 1 : 2;
         const shouldFlagRequest =
           (pageState.state?.optimizedProxiesEnabled === true &&
-            pageState.state?.passportLevel === 2) ||
+            passportLevel >= optimizedMinPassportLevel) ||
           (pageState.state?.optimizedProxiesEnabled === false &&
-            pageState.state?.passportLevel === 1); // Level 2 proxies all GQL requests.
+            passportLevel >= 1); // Level 2 proxies all GQL requests.
         if (shouldFlagRequest) {
           if (isIntegrityRequest) {
             console.debug("[TTV LOL PRO] Flagging GraphQL integrity request…");
@@ -188,7 +174,7 @@ export function getFetch(pageState: PageState): typeof fetch {
         cachedPlaybackTokenRequestBody = requestBody;
 
         // Check if this is a livestream and if it's whitelisted.
-        await waitForStore();
+        await waitForStore(pageState);
         let graphQlBody = null;
         try {
           graphQlBody = JSON.parse(requestBody);
@@ -225,11 +211,13 @@ export function getFetch(pageState: PageState): typeof fetch {
         const isTemplateRequest = requestBody.includes(
           "PlaybackAccessToken_Template"
         );
+        const passportLevel = pageState.state?.passportLevel ?? 0;
+        const optimizedMinPassportLevel = pageState.isChromium ? 1 : 2;
         const areIntegrityRequestsProxied =
           (pageState.state?.optimizedProxiesEnabled === true &&
-            pageState.state?.passportLevel === 2) ||
+            passportLevel >= optimizedMinPassportLevel) ||
           (pageState.state?.optimizedProxiesEnabled === false &&
-            pageState.state?.passportLevel === 1);
+            passportLevel >= 1);
         // "PlaybackAccessToken" requests contain a Client-Integrity header.
         // Thus, if integrity requests are not proxied, we can't proxy this request.
         const willFailIntegrityCheckIfProxied =
@@ -269,8 +257,7 @@ export function getFetch(pageState: PageState): typeof fetch {
     // Twitch Usher requests.
     if (host != null && usherHostRegex.test(host)) {
       cachedUsherRequestUrl = url; // Cache the URL for later use.
-      console.debug("[TTV LOL PRO] Flagging Usher request…");
-      isFlaggedRequest = true;
+      console.debug("[TTV LOL PRO] Detected Usher request.");
     }
 
     // Twitch Video Weaver requests.
@@ -350,8 +337,10 @@ export function getFetch(pageState: PageState): typeof fetch {
       headers: Object.fromEntries(headersMap),
     });
     if (isFlaggedRequest) {
+      await waitForStore(pageState);
       request = await flagRequest(
         pageState.isChromium,
+        pageState.state?.optimizedProxiesEnabled === true,
         pageState.scope,
         request
       );
@@ -371,6 +360,7 @@ export function getFetch(pageState: PageState): typeof fetch {
     // Usher responses.
     if (host != null && usherHostRegex.test(host)) {
       responseBody ??= await readResponseBody();
+      const channelName = findChannelFromUsherUrl(url);
       const assignedMap = parseUsherManifest(responseBody);
       if (assignedMap != null) {
         console.debug(
@@ -378,6 +368,7 @@ export function getFetch(pageState: PageState): typeof fetch {
           Object.fromEntries(assignedMap)
         );
         usherManifests.push({
+          channelName,
           assignedMap: assignedMap,
           replacementMap: null,
           consecutiveMidrollResponses: 0,
@@ -390,7 +381,7 @@ export function getFetch(pageState: PageState): typeof fetch {
       videoWeaverUrls.forEach(url => videoWeaverUrlsProxiedCount.delete(url)); // Shouldn't be necessary, but just in case.
       sendMessageToContentScript({
         type: MessageType.UsherResponse,
-        channel: findChannelFromUsherUrl(url),
+        channel: channelName,
         videoWeaverUrls,
         proxyCountry:
           /USER-COUNTRY="([A-Z]+)"/i.exec(responseBody)?.[1] || undefined,
@@ -417,9 +408,19 @@ export function getFetch(pageState: PageState): typeof fetch {
       ) {
         console.log("[TTV LOL PRO] Midroll ad detected.");
         manifest.consecutiveMidrollResponses += 1;
+        await waitForStore(pageState);
+        const whitelistedChannelsLower =
+          pageState.state?.whitelistedChannels.map(channel =>
+            channel.toLowerCase()
+          );
+        const isWhitelisted =
+          manifest.channelName != null &&
+          whitelistedChannelsLower != null &&
+          whitelistedChannelsLower.includes(manifest.channelName.toLowerCase());
         if (
           pageState.state?.optimizedProxiesEnabled === true &&
-          manifest.consecutiveMidrollResponses <= 2 // Avoid infinite loop.
+          manifest.consecutiveMidrollResponses <= 2 && // Avoid infinite loop.
+          !isWhitelisted
         ) {
           const success = await updateVideoWeaverReplacementMap(
             cachedUsherRequestUrl,
@@ -523,10 +524,12 @@ function removeHeaderFromMap(headersMap: Map<string, string>, name: string) {
 
 async function flagRequest(
   isChromium: boolean,
+  optimizedProxiesEnabled: boolean,
   scope: "page" | "worker",
   request: Request
 ): Promise<Request> {
   if (isChromium) {
+    if (!optimizedProxiesEnabled) return request;
     try {
       await sendMessageToContentScriptAndWaitForResponse(
         scope,
@@ -534,7 +537,7 @@ async function flagRequest(
           type: MessageType.EnableFullMode,
         },
         MessageType.EnableFullModeResponse,
-        3000
+        2500
       );
     } catch (error) {
       console.error("[TTV LOL PRO] Failed to flag request:", error);
@@ -660,6 +663,22 @@ async function sendMessageToPageScriptAndWaitForResponse(
 
 //#endregion
 
+async function waitForStore(pageState: PageState) {
+  if (pageState.state != null) return;
+  try {
+    const message = await sendMessageToContentScriptAndWaitForResponse(
+      pageState.scope,
+      {
+        type: MessageType.GetStoreState,
+      },
+      MessageType.GetStoreStateResponse
+    );
+    pageState.state = message.state;
+  } catch (error) {
+    console.error("[TTV LOL PRO] Failed to get store state:", error);
+  }
+}
+
 //#region Video Weaver URL replacement
 
 /**
@@ -720,6 +739,7 @@ async function getDefaultPlaybackAccessTokenRequest(
  */
 async function fetchReplacementPlaybackAccessToken(
   isChromium: boolean,
+  optimizedProxiesEnabled: boolean,
   scope: "page" | "worker",
   cachedPlaybackTokenRequestHeaders: Map<string, string> | null,
   cachedPlaybackTokenRequestBody: string | null,
@@ -742,7 +762,12 @@ async function fetchReplacementPlaybackAccessToken(
   }
   if (request == null) return null;
 
-  request = await flagRequest(isChromium, scope, request);
+  request = await flagRequest(
+    isChromium,
+    optimizedProxiesEnabled,
+    scope,
+    request
+  );
 
   try {
     const response = await NATIVE_FETCH(request);
