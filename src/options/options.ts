@@ -616,7 +616,9 @@ twitchTabsReportButtonElement.addEventListener("click", async () => {
   // Print all opened tabs.
   report += `Opened Twitch tabs (${openedTabs.length}):\n`;
   for (const tab of openedTabs) {
-    report += `- ${tab.url} (id: ${tab.id}, windowId: ${tab.windowId})\n`;
+    report += `- ${tab.url || tab.pendingUrl} (id: ${tab.id}, windowId: ${
+      tab.windowId
+    })\n`;
   }
   report += "\n";
 
@@ -634,7 +636,9 @@ twitchTabsReportButtonElement.addEventListener("click", async () => {
     openedWhitelistedTabs.length
   } ${openedWhitelistedTabs.length === 1 ? "is" : "are"} whitelisted:\n`;
   for (const tab of openedWhitelistedTabs) {
-    report += `- ${tab.url} (id: ${tab.id}, windowId: ${tab.windowId})\n`;
+    report += `- ${tab.url || tab.pendingUrl} (id: ${tab.id}, windowId: ${
+      tab.windowId
+    })\n`;
   }
   report += "\n";
 
@@ -645,7 +649,9 @@ twitchTabsReportButtonElement.addEventListener("click", async () => {
   if (missingTabs.length > 0) {
     report += `The following Twitch tabs are missing from \`store.state.openedTwitchTabs\`:\n`;
     for (const tab of missingTabs) {
-      report += `- ${tab.url} (id: ${tab.id}, windowId: ${tab.windowId})\n`;
+      report += `- ${tab.url || tab.pendingUrl} (id: ${tab.id}, windowId: ${
+        tab.windowId
+      })\n`;
     }
     report += "\n";
   } else {
@@ -660,7 +666,9 @@ twitchTabsReportButtonElement.addEventListener("click", async () => {
   if (extraTabs.length > 0) {
     report += `The following Twitch tabs are extra in \`store.state.openedTwitchTabs\`:\n`;
     for (const tab of extraTabs) {
-      report += `- ${tab.url} (id: ${tab.id}, windowId: ${tab.windowId})\n`;
+      report += `- ${tab.url || tab.pendingUrl} (id: ${tab.id}, windowId: ${
+        tab.windowId
+      })\n`;
     }
     report += "\n";
   } else {
@@ -683,7 +691,9 @@ twitchTabsReportButtonElement.addEventListener("click", async () => {
     detectedWhitelistedTabs.length
   } ${detectedWhitelistedTabs.length === 1 ? "is" : "are"} whitelisted:\n`;
   for (const tab of detectedWhitelistedTabs) {
-    report += `- ${tab.url} (id: ${tab.id}, windowId: ${tab.windowId})\n`;
+    report += `- ${tab.url || tab.pendingUrl} (id: ${tab.id}, windowId: ${
+      tab.windowId
+    })\n`;
   }
   report += "\n";
 
