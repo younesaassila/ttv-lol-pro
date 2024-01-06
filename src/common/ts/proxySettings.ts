@@ -21,9 +21,9 @@ export function updateProxySettings(mode?: "limited" | "full") {
 
   const proxyPassportRequests = passportLevel >= 0;
   const proxyUsherRequests = passportLevel >= 0;
+  const proxyVideoWeaverRequests = mode === "full" && passportLevel >= 0;
   const proxyGraphQLRequests = mode === "full" && passportLevel >= 1;
   const proxyTwitchWebpageRequests = passportLevel >= 2;
-  const proxyVideoWeaverRequests = mode === "full" && passportLevel >= 0;
 
   const config = {
     mode: "pac_script",
@@ -38,16 +38,16 @@ export function updateProxySettings(mode?: "limited" | "full") {
           if (${proxyUsherRequests} && ${usherHostRegex}.test(host)) {
             return "${proxyInfoString}";
           }
+          // Video Weaver requests.
+          if (${proxyVideoWeaverRequests} && ${videoWeaverHostRegex}.test(host)) {
+            return "${proxyInfoString}";
+          }
           // GraphQL requests.
           if (${proxyGraphQLRequests} && ${twitchGqlHostRegex}.test(host)) {
             return "${proxyInfoString}";
           }
           // Twitch webpage requests.
           if (${proxyTwitchWebpageRequests} && ${twitchTvHostRegex}.test(host)) {
-            return "${proxyInfoString}";
-          }
-          // Video Weaver requests.
-          if (${proxyVideoWeaverRequests} && ${videoWeaverHostRegex}.test(host)) {
             return "${proxyInfoString}";
           }
           return "DIRECT";
