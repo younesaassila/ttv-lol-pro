@@ -12,30 +12,34 @@ import {
 import { MessageType } from "../types";
 import type { PageState, PlaybackAccessToken, UsherManifest } from "./types";
 
-const NATIVE_FETCH = self.fetch;
-const VERBOSE = process.env.NODE_ENV == "development";
+// TODO:
+// shouldProxy(isChromium, passportLevel, optimizedProxiesEnabled) {
+
+// }
+
+//     .usher == true
 
 // FIXME: Use rolling codes to secure the communication between the content, page, and worker scripts.
 // TODO: Fix passport levels (i.e. which requests get proxied, c.f. table).
-// TODO: Update previous settings to new settings format on update.
 
 // TODO: Optimizations
-// On slow computers, 3s might not be enough
-// On fast ones, 3s is too much
-
+// On slow computers, 2.5s might not be enough
+// On fast ones, 2.5s is too much
 // Page should measure message round trip time and adjust requested time for full mode
-// Starts at 3s
+// Starts at 2.5s
 // If round trip average takes 1s, asks for 4s
+// Other optimizations are possible like not asking for time when last request was less than 2.5s ago and successful
 
-// Other optimizations are possible like not asking for time when last request was less than 3s ago and successful
+const NATIVE_FETCH = self.fetch;
+const VERBOSE = process.env.NODE_ENV == "development";
 
 export function getFetch(pageState: PageState): typeof fetch {
+  let usherManifests: UsherManifest[] = [];
+  let videoWeaverUrlsProxiedCount = new Map<string, number>(); // Used to count how many times each Video Weaver URL was proxied.
+
   let cachedPlaybackTokenRequestHeaders: Map<string, string> | null = null; // Cached by page script.
   let cachedPlaybackTokenRequestBody: string | null = null; // Cached by page script.
   let cachedUsherRequestUrl: string | null = null; // Cached by worker script.
-
-  let usherManifests: UsherManifest[] = [];
-  let videoWeaverUrlsProxiedCount = new Map<string, number>(); // Used to count how many times each Video Weaver URL was proxied.
 
   // Listen for NewPlaybackAccessToken messages from the worker script.
   if (pageState.scope === "page") {
@@ -47,6 +51,7 @@ export function getFetch(pageState: PageState): typeof fetch {
 
       switch (message.type) {
         case MessageType.NewPlaybackAccessToken:
+          await waitForStore(pageState);
           const newPlaybackAccessToken =
             await fetchReplacementPlaybackAccessToken(
               pageState.isChromium,
@@ -174,7 +179,6 @@ export function getFetch(pageState: PageState): typeof fetch {
         cachedPlaybackTokenRequestBody = requestBody;
 
         // Check if this is a livestream and if it's whitelisted.
-        await waitForStore(pageState);
         let graphQlBody = null;
         try {
           graphQlBody = JSON.parse(requestBody);
@@ -184,6 +188,7 @@ export function getFetch(pageState: PageState): typeof fetch {
             error
           );
         }
+        await waitForStore(pageState);
         const channelName = graphQlBody?.variables?.login as string | undefined;
         const isLivestream = graphQlBody?.variables?.isLive as
           | boolean
@@ -357,7 +362,7 @@ export function getFetch(pageState: PageState): typeof fetch {
 
     //#region Responses
 
-    // Usher responses.
+    // Twitch Usher responses.
     if (host != null && usherHostRegex.test(host)) {
       responseBody ??= await readResponseBody();
       const channelName = findChannelFromUsherUrl(url);
@@ -388,7 +393,7 @@ export function getFetch(pageState: PageState): typeof fetch {
       });
     }
 
-    // Video Weaver responses.
+    // Twitch Video Weaver responses.
     if (host != null && videoWeaverHostRegex.test(host)) {
       const manifest = usherManifests.find(manifest =>
         [...manifest.assignedMap.values()].includes(url)
