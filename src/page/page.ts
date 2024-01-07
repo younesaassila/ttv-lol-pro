@@ -149,9 +149,6 @@ function onChannelChange(callback: (channelName: string) => void) {
     if (!url) return NATIVE_PUSH_STATE.call(window.history, data, unused);
     const fullUrl = toAbsoluteUrl(url.toString());
     const newChannelName = findChannelFromTwitchTvUrl(fullUrl);
-    // FIXME: Check on m.twitch.tv if miniplayer is a thing too. -> It's not!!!!
-    // Miniplayer can be disabled on web too... need to detect if miniplayer is running.
-    // Btw also navigating to /videos cuts stream on mobile (doesn't affect web).
     if (newChannelName != null && newChannelName !== channelName) {
       channelName = newChannelName;
       callback(channelName);

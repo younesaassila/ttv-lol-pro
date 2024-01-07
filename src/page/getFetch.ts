@@ -13,11 +13,9 @@ import { MessageType } from "../types";
 import type { PageState, PlaybackAccessToken, UsherManifest } from "./types";
 
 // TODO:
-// shouldProxy(isChromium, passportLevel, optimizedProxiesEnabled) {
+// shouldProxyRequestType(isChromium, passportLevel, optimizedProxiesEnabled, type) {
 
-// }
-
-//     .usher == true
+// } -> boolean
 
 // FIXME: Use rolling codes to secure the communication between the content, page, and worker scripts.
 // TODO: Fix passport levels (i.e. which requests get proxied, c.f. table).
