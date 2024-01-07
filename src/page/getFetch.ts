@@ -18,7 +18,6 @@ import type { PageState, PlaybackAccessToken, UsherManifest } from "./types";
 // } -> boolean
 
 // FIXME: Use rolling codes to secure the communication between the content, page, and worker scripts.
-// TODO: Fix passport levels (i.e. which requests get proxied, c.f. table).
 
 // TODO: Optimizations for Chromium:
 // On slow computers, 2.5s might not be enough
