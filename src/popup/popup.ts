@@ -91,6 +91,7 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
     proxiedElement.classList.remove("error");
     proxiedElement.classList.remove("idle");
     proxiedElement.classList.add("success");
+    proxiedElement.title = "Last request proxied";
   } else if (
     !status.proxied &&
     status.proxyHost &&
@@ -101,10 +102,12 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
     proxiedElement.classList.remove("error");
     proxiedElement.classList.remove("success");
     proxiedElement.classList.add("idle");
+    proxiedElement.title = "Idle (optimized proxies enabled)";
   } else {
     proxiedElement.classList.remove("success");
     proxiedElement.classList.remove("idle");
     proxiedElement.classList.add("error");
+    proxiedElement.title = "Last request not proxied";
   }
   // Channel name
   channelNameElement.textContent = channelNameLower;
@@ -122,9 +125,6 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
   }
   if (status.proxyCountry) {
     messages.push(`Country: ${status.proxyCountry}`);
-  }
-  if (store.state.optimizedProxiesEnabled) {
-    messages.push("Optimized proxies enabled");
   }
   infoContainerElement.innerHTML = "";
   infoContainerElement.style.display = "none";

@@ -76,6 +76,13 @@ function sendMessageToContentScript(message: any) {
   });
 }
 
+function sendMessageToPageScript(message: any) {
+  window.postMessage({
+    type: MessageType.PageScriptMessage,
+    message,
+  });
+}
+
 function sendMessageToWorkerScript(message: any) {
   pageState.twitchWorker?.postMessage({
     type: MessageType.WorkerScriptMessage,
@@ -185,6 +192,7 @@ function onChannelChange(callback: (channelName: string) => void) {
 
 onChannelChange(() => {
   sendMessageToContentScript({ type: MessageType.ClearStats });
+  sendMessageToPageScript({ type: MessageType.ClearStats });
   sendMessageToWorkerScript({ type: MessageType.ClearStats });
 });
 

@@ -112,6 +112,7 @@ main > * {
   align-items: center;
   justify-content: center;
   margin-right: 10px;
+  cursor: help;
 }
 #stream-status #proxied.success {
   color: var(--success-color);

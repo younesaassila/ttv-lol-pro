@@ -361,7 +361,7 @@ export function getFetch(pageState: PageState): typeof fetch {
     //#region Responses
 
     // Twitch Usher responses.
-    if (host != null && usherHostRegex.test(host)) {
+    if (host != null && usherHostRegex.test(host) && response.status < 400) {
       responseBody ??= await readResponseBody();
       const channelName = findChannelFromUsherUrl(url);
       const assignedMap = parseUsherManifest(responseBody);
@@ -392,7 +392,11 @@ export function getFetch(pageState: PageState): typeof fetch {
     }
 
     // Twitch Video Weaver responses.
-    if (host != null && videoWeaverHostRegex.test(host)) {
+    if (
+      host != null &&
+      videoWeaverHostRegex.test(host) &&
+      response.status < 400
+    ) {
       const manifest = usherManifests.find(manifest =>
         [...manifest.assignedMap.values()].includes(url)
       );
