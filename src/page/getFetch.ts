@@ -299,6 +299,8 @@ export function getFetch(pageState: PageState): typeof fetch {
         }
       }
 
+      // TODO: Possible optimization: only proxy first request to weaver group (i.e. usher manifest).
+      // This is great for users using "Auto" quality.
       // Flag first request to each Video Weaver URL.
       const proxiedCount = videoWeaverUrlsProxiedCount.get(videoWeaverUrl) ?? 0;
       if (proxiedCount < 1) {
