@@ -133,7 +133,11 @@ store.addEventListener(
   "change",
   (changes: Record<string, Storage.StorageChange>) => {
     const changedKeys = Object.keys(changes) as (keyof State)[];
+    // This is mainly to reduce the amount of messages sent to the page script.
+    // (Also to reduce the number of console logs.)
     const ignoredKeys: (keyof State)[] = [
+      "dnsResponses",
+      "openedTwitchTabs",
       "streamStatuses",
       "videoWeaverUrlsByChannel",
     ];
