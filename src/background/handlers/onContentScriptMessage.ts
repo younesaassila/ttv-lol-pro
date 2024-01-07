@@ -14,8 +14,10 @@ export default function onContentScriptMessage(
   sendResponse: () => void
 ): true | void | Promise<any> {
   if (!sender.tab?.id) return;
+
   if (message.type === MessageType.EnableFullMode) {
     console.log("[TTV LOL PRO] Received EnableFullMode message");
+
     if (timeout) {
       clearTimeout(timeout);
     } else if (store.state.chromiumProxyActive) {
@@ -23,6 +25,7 @@ export default function onContentScriptMessage(
     } else {
       clearProxySettings();
     }
+
     timeout = setTimeout(() => {
       if (store.state.chromiumProxyActive) {
         updateProxySettings();
@@ -31,8 +34,16 @@ export default function onContentScriptMessage(
       }
       timeout = undefined;
     }, 5000);
-    browser.tabs.sendMessage(sender.tab.id, {
-      type: MessageType.EnableFullModeResponse,
-    });
+
+    try {
+      browser.tabs.sendMessage(sender.tab.id, {
+        type: MessageType.EnableFullModeResponse,
+      });
+    } catch (error) {
+      console.error(
+        "[TTV LOL PRO] Failed to send EnableFullModeResponse message",
+        error
+      );
+    }
   }
 }

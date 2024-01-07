@@ -5,6 +5,7 @@ import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl"
 import isChromium from "../common/ts/isChromium";
 import { getStreamStatus, setStreamStatus } from "../common/ts/streamStatus";
 import store from "../store";
+import { State } from "../store/types";
 import { MessageType } from "../types";
 
 console.info("[TTV LOL PRO] Content script running.");
@@ -97,9 +98,16 @@ function onPageMessage(event: MessageEvent) {
       break;
     case MessageType.EnableFullMode:
       // Send message to background script to update proxy settings.
-      browser.runtime.sendMessage({
-        type: MessageType.EnableFullMode,
-      });
+      try {
+        browser.runtime.sendMessage({
+          type: MessageType.EnableFullMode,
+        });
+      } catch (error) {
+        console.error(
+          "[TTV LOL PRO] Failed to send EnableFullMode message",
+          error
+        );
+      }
       break;
     case MessageType.UsherResponse:
       const { channel, videoWeaverUrls, proxyCountry } = message;
@@ -124,8 +132,12 @@ function onPageMessage(event: MessageEvent) {
 store.addEventListener(
   "change",
   (changes: Record<string, Storage.StorageChange>) => {
-    const changedKeys = Object.keys(changes);
-    if (changedKeys.length === 1 && changedKeys[0] === "streamStatuses") return;
+    const changedKeys = Object.keys(changes) as (keyof State)[];
+    const ignoredKeys: (keyof State)[] = [
+      "streamStatuses",
+      "videoWeaverUrlsByChannel",
+    ];
+    if (changedKeys.every(key => ignoredKeys.includes(key))) return;
     console.log("[TTV LOL PRO] Store changed:", changes);
     window.postMessage({
       type: MessageType.PageScriptMessage,

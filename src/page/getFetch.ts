@@ -828,6 +828,7 @@ async function fetchReplacementUsherManifest(
     );
     if (newUsherUrl == null) return null;
     const response = await NATIVE_FETCH(newUsherUrl);
+    if (response.status >= 400) return null;
     const text = await response.text();
     return text;
   } catch {

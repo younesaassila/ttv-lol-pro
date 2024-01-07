@@ -145,6 +145,9 @@ function main() {
   else normalProxiesInputElement.checked = true;
   const onProxyTypeChange = () => {
     store.state.optimizedProxiesEnabled = optimizedProxiesInputElement.checked;
+    if (isChromium && store.state.chromiumProxyActive) {
+      updateProxySettings();
+    }
     updateProxyUsage();
   };
   optimizedProxiesInputElement.addEventListener("change", onProxyTypeChange);
