@@ -1,10 +1,15 @@
 import browser, { Runtime } from "webextension-polyfill";
-import {
-  clearProxySettings,
-  updateProxySettings,
-} from "../../common/ts/proxySettings";
+import { updateProxySettings } from "../../common/ts/proxySettings";
 import store from "../../store";
 import { MessageType } from "../../types";
+
+// TODO: Optimizations for Chromium:
+// On slow computers, 3s might not be enough
+// On fast ones, 3s is too much
+// Page should measure message round trip time and adjust requested time for full mode
+// Starts at 3s
+// If round trip average takes 1s, asks for 4s
+// Other optimizations are possible like not asking for time when last request was less than 3s ago and successful
 
 let timeout: string | number | NodeJS.Timeout | undefined;
 
@@ -22,18 +27,14 @@ export default function onContentScriptMessage(
       clearTimeout(timeout);
     } else if (store.state.chromiumProxyActive) {
       updateProxySettings("full");
-    } else {
-      clearProxySettings();
     }
 
     timeout = setTimeout(() => {
       if (store.state.chromiumProxyActive) {
         updateProxySettings();
-      } else {
-        clearProxySettings();
       }
       timeout = undefined;
-    }, 5000);
+    }, 3000);
 
     try {
       browser.tabs.sendMessage(sender.tab.id, {

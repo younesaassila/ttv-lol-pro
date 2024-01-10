@@ -19,14 +19,6 @@ import type { PageState, PlaybackAccessToken, UsherManifest } from "./types";
 
 // FIXME: Use rolling codes to secure the communication between the content, page, and worker scripts.
 
-// TODO: Optimizations for Chromium:
-// On slow computers, 2.5s might not be enough
-// On fast ones, 2.5s is too much
-// Page should measure message round trip time and adjust requested time for full mode
-// Starts at 2.5s
-// If round trip average takes 1s, asks for 4s
-// Other optimizations are possible like not asking for time when last request was less than 2.5s ago and successful
-
 const NATIVE_FETCH = self.fetch;
 const VERBOSE = process.env.NODE_ENV == "development";
 
@@ -545,7 +537,7 @@ async function flagRequest(
           type: MessageType.EnableFullMode,
         },
         MessageType.EnableFullModeResponse,
-        2500
+        5000 // FIXME: On slow computers, this isn't enough...
       );
     } catch (error) {
       console.error("[TTV LOL PRO] Failed to flag request:", error);
