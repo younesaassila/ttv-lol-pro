@@ -39,9 +39,10 @@ const exportButtonElement = $("#export-button") as HTMLButtonElement;
 const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 // Passport
-const passportLevelSliderElement = $(
+const passportTypeSliderElement = $(
   "#passport-type-slider"
 ) as HTMLInputElement;
+const passportTypeWarningElement = $("#passport-type-warning") as HTMLElement;
 const anonymousModeCheckboxElement = $(
   "#anonymous-mode-checkbox"
 ) as HTMLInputElement;
@@ -120,9 +121,9 @@ function main() {
     .querySelectorAll(isChromium ? ".firefox-only" : ".chromium-only")
     .forEach(element => element.remove());
   // Passport
-  passportLevelSliderElement.value = store.state.passportLevel.toString();
-  passportLevelSliderElement.addEventListener("input", () => {
-    store.state.passportLevel = parseInt(passportLevelSliderElement.value);
+  passportTypeSliderElement.value = store.state.passportLevel.toString();
+  passportTypeSliderElement.addEventListener("input", () => {
+    store.state.passportLevel = parseInt(passportTypeSliderElement.value);
     if (isChromium && store.state.chromiumProxyActive) {
       updateProxySettings();
     }
@@ -194,11 +195,13 @@ function main() {
 }
 
 function updateProxyUsage() {
+  passportTypeWarningElement.style.display = "none";
+
   // Proxy usage label.
   let usageScore = 0;
   // "Proxy all requests" penalty.
   if (!store.state.optimizedProxiesEnabled) usageScore += 1;
-  // GraphQL integrity+ penalty.
+  // GraphQL integrity+ penalty and warning.
   if (
     store.state.passportLevel >= 1 &&
     !(
@@ -208,6 +211,7 @@ function updateProxyUsage() {
     )
   ) {
     usageScore += 1;
+    passportTypeWarningElement.style.display = "block";
   }
   switch (usageScore) {
     case 0:
