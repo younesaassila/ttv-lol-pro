@@ -126,6 +126,9 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
   if (status.proxyCountry) {
     messages.push(`Country: ${status.proxyCountry}`);
   }
+  if (store.state.optimizedProxiesEnabled) {
+    messages.push("Using optimized proxies");
+  }
   infoContainerElement.innerHTML = "";
   infoContainerElement.style.display = "none";
   for (const message of messages) {
