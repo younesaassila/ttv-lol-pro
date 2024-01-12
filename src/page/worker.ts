@@ -4,7 +4,7 @@ import type { PageState } from "./types";
 
 console.info("[TTV LOL PRO] Worker script running.");
 
-declare let getParams: () => string;
+declare var getParams: () => string;
 let params;
 try {
   params = JSON.parse(getParams()!);

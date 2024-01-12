@@ -43,7 +43,7 @@ window.Worker = class Worker extends NATIVE_WORKER {
     // Please note that this does NOT involve remote code execution. The injected script is bundled
     // with the extension. Additionally, there is no custom Content Security Policy (CSP) in use.
     const newScript = `
-      let getParams = () => '${JSON.stringify(params)}';
+      var getParams = () => '${JSON.stringify(params)}';
       try {
         importScripts("${params.workerScriptURL}");
       } catch (error) {
