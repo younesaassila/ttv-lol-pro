@@ -139,6 +139,18 @@ function main() {
     getAlreadyExistsAlertMessage: channelName =>
       `'${channelName}' is already whitelisted`,
     getPromptPlaceholder: () => "Enter a channel name…",
+    isAddAllowed(text) {
+      if (!/^[a-z0-9_]+$/i.test(text)) {
+        return [false, `'${text}' is not a valid channel name`];
+      }
+      return [true];
+    },
+    isEditAllowed(text) {
+      if (!/^[a-z0-9_]+$/i.test(text)) {
+        return [false, `'${text}' is not a valid channel name`];
+      }
+      return [true];
+    },
   });
   // Proxies
   if (store.state.optimizedProxiesEnabled)
