@@ -551,7 +551,7 @@ async function flagRequest(
     return request;
   } else {
     // Change the Accept header to include the flag.
-    const headersMap = getHeadersMap(request.url, request);
+    const headersMap = getHeadersMap(request);
     const accept = getHeaderFromMap(headersMap, "Accept");
     if (accept != null && accept.includes(acceptFlag)) return request;
     setHeaderToMap(headersMap, "Accept", `${accept || ""}${acceptFlag}`);
