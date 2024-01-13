@@ -5,6 +5,7 @@ import {
   anonymizeIpAddress,
   anonymizeIpAddresses,
 } from "../common/ts/anonymizeIpAddress";
+import { alpha2 } from "../common/ts/countryCodes";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import isChannelWhitelisted from "../common/ts/isChannelWhitelisted";
 import isChromium from "../common/ts/isChromium";
@@ -124,7 +125,12 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
     messages.push(`Proxy: ${anonymizeIpAddress(status.proxyHost)}`);
   }
   if (status.proxyCountry) {
-    messages.push(`Country: ${status.proxyCountry}`);
+    messages.push(
+      `Country: ${
+        (alpha2 as Record<string, string>)[status.proxyCountry] ??
+        status.proxyCountry
+      }`
+    );
   }
   if (store.state.optimizedProxiesEnabled) {
     messages.push("Using optimized proxies");
