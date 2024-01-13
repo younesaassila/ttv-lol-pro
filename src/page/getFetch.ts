@@ -341,13 +341,7 @@ export function getFetch(pageState: PageState): typeof fetch {
         request
       );
     }
-    const response =
-      input instanceof Request
-        ? await NATIVE_FETCH(request)
-        : await NATIVE_FETCH(
-            request.url,
-            await getRequestInitFromRequest(request)
-          );
+    const response = await NATIVE_FETCH(request);
 
     // Reading the response body can be expensive, so we only do it if we need to.
     let responseBody: string | undefined = undefined;
@@ -559,46 +553,6 @@ async function flagRequest(
       headers: Object.fromEntries(headersMap),
     });
   }
-}
-
-async function getRequestInitFromRequest(
-  request: Request
-): Promise<RequestInit> {
-  let body: Uint8Array | undefined = undefined;
-
-  // Convert the ReadableStream body back to a Uint8Array.
-  // This is because fetch() throws an error when the body is a ReadableStream.
-  if (request.body != null) {
-    const reader = request.body.getReader();
-    await reader
-      .read()
-      .then(function processResult(
-        result: ReadableStreamReadResult<Uint8Array>
-      ): any {
-        if (result.done) return;
-        const newBody = new Uint8Array(
-          (body ? body.length : 0) + result.value.length
-        );
-        if (body) newBody.set(body, 0);
-        newBody.set(result.value, body ? body.length : 0);
-        body = newBody;
-        return reader.read().then(processResult);
-      });
-  }
-
-  return {
-    method: request.method,
-    keepalive: request.keepalive,
-    headers: request.headers,
-    body: body,
-    redirect: request.redirect,
-    integrity: request.integrity,
-    signal: request.signal,
-    credentials: request.credentials,
-    mode: request.mode,
-    referrer: request.referrer,
-    referrerPolicy: request.referrerPolicy,
-  };
 }
 
 function cancelRequest(): never {
@@ -816,10 +770,7 @@ async function fetchReplacementPlaybackAccessToken(
   );
 
   try {
-    const response = await NATIVE_FETCH(
-      request.url,
-      await getRequestInitFromRequest(request)
-    );
+    const response = await NATIVE_FETCH(request);
     const json = await response.json();
     const newPlaybackAccessToken = json?.data?.streamPlaybackAccessToken;
     if (newPlaybackAccessToken == null) return null;
