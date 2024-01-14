@@ -342,6 +342,15 @@ export function getFetch(pageState: PageState): typeof fetch {
       );
     }
     const response = await NATIVE_FETCH(request);
+    if (
+      isFlaggedRequest &&
+      pageState.isChromium &&
+      pageState.state?.optimizedProxiesEnabled
+    ) {
+      sendMessageToContentScript({
+        type: MessageType.DisableFullMode,
+      });
+    }
 
     // Reading the response body can be expensive, so we only do it if we need to.
     let responseBody: string | undefined = undefined;
@@ -535,6 +544,7 @@ async function flagRequest(
         scope,
         {
           type: MessageType.EnableFullMode,
+          timestamp: Date.now(),
         },
         MessageType.EnableFullModeResponse,
         5000 // FIXME: On slow computers, this isn't enough...

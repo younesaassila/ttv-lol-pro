@@ -97,14 +97,21 @@ function onPageMessage(event: MessageEvent) {
       else store.addEventListener("load", sendStoreState);
       break;
     case MessageType.EnableFullMode:
-      // Send message to background script to update proxy settings.
       try {
-        browser.runtime.sendMessage({
-          type: MessageType.EnableFullMode,
-        });
+        browser.runtime.sendMessage(message);
       } catch (error) {
         console.error(
           "[TTV LOL PRO] Failed to send EnableFullMode message",
+          error
+        );
+      }
+      break;
+    case MessageType.DisableFullMode:
+      try {
+        browser.runtime.sendMessage(message);
+      } catch (error) {
+        console.error(
+          "[TTV LOL PRO] Failed to send DisableFullMode message",
           error
         );
       }
