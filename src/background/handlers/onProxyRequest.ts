@@ -6,6 +6,7 @@ import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
 import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import isFlaggedRequest from "../../common/ts/isFlaggedRequest";
+import isRequestTypeProxied from "../../common/ts/isRequestTypeProxied";
 import {
   passportHostRegex,
   twitchGqlHostRegex,
@@ -48,28 +49,39 @@ export default async function onProxyRequest(
     : store.state.normalProxies;
   const proxyInfoArray = getProxyInfoArrayFromUrls(proxies);
 
-  // Twitch webpage requests.
-  if (store.state.passportLevel >= 2 && twitchTvHostRegex.test(host)) {
-    console.log(`⌛ Proxying ${details.url} through one of: <empty>`);
-    return proxyInfoArray;
-  }
-
-  // Twitch GraphQL requests.
-  if (
-    store.state.passportLevel >= 1 &&
-    isFlagged &&
-    twitchGqlHostRegex.test(host)
-  ) {
-    console.log(
-      `⌛ Proxying ${details.url} through one of: ${
-        proxies.toString() || "<empty>"
-      }`
-    );
-    return proxyInfoArray;
-  }
+  const proxyPassportRequest = isRequestTypeProxied("passport", {
+    isChromium: false,
+    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
+    passportLevel: store.state.passportLevel,
+    isFlagged: isFlagged,
+  });
+  const proxyUsherRequest = isRequestTypeProxied("usher", {
+    isChromium: false,
+    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
+    passportLevel: store.state.passportLevel,
+    isFlagged: isFlagged,
+  });
+  const proxyVideoWeaverRequest = isRequestTypeProxied("weaver", {
+    isChromium: false,
+    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
+    passportLevel: store.state.passportLevel,
+    isFlagged: isFlagged,
+  });
+  const proxyGraphQLRequest = isRequestTypeProxied("gql", {
+    isChromium: false,
+    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
+    passportLevel: store.state.passportLevel,
+    isFlagged: isFlagged,
+  });
+  const proxyTwitchWebpageRequest = isRequestTypeProxied("www", {
+    isChromium: false,
+    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
+    passportLevel: store.state.passportLevel,
+    isFlagged: isFlagged,
+  });
 
   // Passport requests.
-  if (store.state.passportLevel >= 0 && passportHostRegex.test(host)) {
+  if (proxyPassportRequest && passportHostRegex.test(host)) {
     console.log(
       `⌛ Proxying ${details.url} through one of: ${
         proxies.toString() || "<empty>"
@@ -79,7 +91,7 @@ export default async function onProxyRequest(
   }
 
   // Usher requests.
-  if (store.state.passportLevel >= 0 && usherHostRegex.test(host)) {
+  if (proxyUsherRequest && usherHostRegex.test(host)) {
     // Don't proxy Usher requests from non-supported hosts.
     if (!isFromTwitchTvHost) {
       console.log(
@@ -107,7 +119,7 @@ export default async function onProxyRequest(
   }
 
   // Video Weaver requests.
-  if (videoWeaverHostRegex.test(host) && isFlagged) {
+  if (proxyVideoWeaverRequest && videoWeaverHostRegex.test(host)) {
     // Don't proxy Video Weaver requests from non-supported hosts.
     if (!isFromTwitchTvHost) {
       console.log(
@@ -128,6 +140,22 @@ export default async function onProxyRequest(
         channelName ?? "unknown"
       }) through one of: ${proxies.toString() || "<empty>"}`
     );
+    return proxyInfoArray;
+  }
+
+  // Twitch GraphQL requests.
+  if (proxyGraphQLRequest && twitchGqlHostRegex.test(host)) {
+    console.log(
+      `⌛ Proxying ${details.url} through one of: ${
+        proxies.toString() || "<empty>"
+      }`
+    );
+    return proxyInfoArray;
+  }
+
+  // Twitch webpage requests.
+  if (proxyTwitchWebpageRequest && twitchTvHostRegex.test(host)) {
+    console.log(`⌛ Proxying ${details.url} through one of: <empty>`);
     return proxyInfoArray;
   }
 

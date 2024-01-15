@@ -5,6 +5,7 @@ import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl"
 import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
 import isChannelWhitelisted from "../common/ts/isChannelWhitelisted";
 import isChromium from "../common/ts/isChromium";
+import isRequestTypeProxied from "../common/ts/isRequestTypeProxied";
 import {
   clearProxySettings,
   updateProxySettings,
@@ -209,18 +210,19 @@ function main() {
 function updateProxyUsage() {
   passportTypeWarningElement.style.display = "none";
 
+  // TODO: Use isRequestTypeProxied().
+
   // Proxy usage label.
   let usageScore = 0;
   // "Proxy all requests" penalty.
   if (!store.state.optimizedProxiesEnabled) usageScore += 1;
-  // GraphQL integrity+ penalty and warning.
+  // GraphQL integrity penalty and warning.
   if (
-    store.state.passportLevel >= 1 &&
-    !(
-      !isChromium &&
-      store.state.passportLevel == 1 &&
-      store.state.optimizedProxiesEnabled
-    )
+    isRequestTypeProxied("gqlIntegrity", {
+      isChromium: isChromium,
+      optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
+      passportLevel: store.state.passportLevel,
+    })
   ) {
     usageScore += 1;
     passportTypeWarningElement.style.display = "block";

@@ -3,6 +3,10 @@ import { updateProxySettings } from "../../common/ts/proxySettings";
 import store from "../../store";
 import { MessageType } from "../../types";
 
+// FIXME: EnableFullMode should specify allowed request type.
+// That way, a full mode enabled by a weaver request can't let some
+// GQL requests get through.
+
 let timeout: string | number | NodeJS.Timeout | undefined;
 
 export default function onContentScriptMessage(

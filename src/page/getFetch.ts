@@ -4,6 +4,7 @@ import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl"
 import findChannelFromUsherUrl from "../common/ts/findChannelFromUsherUrl";
 import generateRandomString from "../common/ts/generateRandomString";
 import getHostFromUrl from "../common/ts/getHostFromUrl";
+import isRequestTypeProxied from "../common/ts/isRequestTypeProxied";
 import {
   twitchGqlHostRegex,
   usherHostRegex,
@@ -12,10 +13,7 @@ import {
 import { MessageType } from "../types";
 import type { PageState, PlaybackAccessToken, UsherManifest } from "./types";
 
-// TODO:
-// shouldProxyRequestType(isChromium, passportLevel, optimizedProxiesEnabled, type) {
-
-// } -> boolean
+// TODO: Use isRequestTypeProxied()??????
 
 // FIXME: Use rolling codes to secure the communication between the content, page, and worker scripts.
 
@@ -138,13 +136,12 @@ export function getFetch(pageState: PageState): typeof fetch {
       const isIntegrityHeaderRequest = integrityHeader != null;
       if (isIntegrityRequest || isIntegrityHeaderRequest) {
         await waitForStore(pageState);
-        const passportLevel = pageState.state?.passportLevel ?? 0;
-        const optimizedMinPassportLevel = pageState.isChromium ? 1 : 2;
-        const shouldFlagRequest =
-          (pageState.state?.optimizedProxiesEnabled === true &&
-            passportLevel >= optimizedMinPassportLevel) ||
-          (pageState.state?.optimizedProxiesEnabled === false &&
-            passportLevel >= 1); // Level 2 proxies all GQL requests.
+        const shouldFlagRequest = isRequestTypeProxied("gqlIntegrity", {
+          isChromium: pageState.isChromium,
+          optimizedProxiesEnabled:
+            pageState.state?.optimizedProxiesEnabled ?? true,
+          passportLevel: pageState.state?.passportLevel ?? 0,
+        });
         if (shouldFlagRequest) {
           if (isIntegrityRequest) {
             console.debug("[TTV LOL PRO] Flagging GraphQL integrity request…");
@@ -192,9 +189,12 @@ export function getFetch(pageState: PageState): typeof fetch {
           whitelistedChannelsLower.includes(channelName.toLowerCase());
 
         // Check if we should flag this request.
-        const shouldFlagRequest =
-          pageState.state?.passportLevel === 1 ||
-          pageState.state?.passportLevel === 2;
+        const shouldFlagRequest = isRequestTypeProxied("gqlToken", {
+          isChromium: pageState.isChromium,
+          optimizedProxiesEnabled:
+            pageState.state?.optimizedProxiesEnabled ?? true,
+          passportLevel: pageState.state?.passportLevel ?? 0,
+        });
         if (!isLivestream || isWhitelisted) {
           console.log(
             "[TTV LOL PRO] Not flagging PlaybackAccessToken request: not a livestream or is whitelisted."
@@ -205,13 +205,15 @@ export function getFetch(pageState: PageState): typeof fetch {
         const isTemplateRequest = requestBody.includes(
           "PlaybackAccessToken_Template"
         );
-        const passportLevel = pageState.state?.passportLevel ?? 0;
-        const optimizedMinPassportLevel = pageState.isChromium ? 1 : 2;
-        const areIntegrityRequestsProxied =
-          (pageState.state?.optimizedProxiesEnabled === true &&
-            passportLevel >= optimizedMinPassportLevel) ||
-          (pageState.state?.optimizedProxiesEnabled === false &&
-            passportLevel >= 1);
+        const areIntegrityRequestsProxied = isRequestTypeProxied(
+          "gqlIntegrity",
+          {
+            isChromium: pageState.isChromium,
+            optimizedProxiesEnabled:
+              pageState.state?.optimizedProxiesEnabled ?? true,
+            passportLevel: pageState.state?.passportLevel ?? 0,
+          }
+        );
         // "PlaybackAccessToken" requests contain a Client-Integrity header.
         // Thus, if integrity requests are not proxied, we can't proxy this request.
         const willFailIntegrityCheckIfProxied =
