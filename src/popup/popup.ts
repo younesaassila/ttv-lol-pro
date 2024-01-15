@@ -44,8 +44,8 @@ async function main() {
     ? store.state.optimizedProxies
     : store.state.normalProxies;
 
-  // TODO: Is this code still needed?
-  const isLimitedProxy = false;
+  // TODO: Limited proxy should show an informatory message instead of a warning banner.
+  const isLimitedProxy = false; // TODO: Should be true if using the default proxy.
   if (proxies.length === 0) {
     setWarningBanner("noProxies");
   } else if (isLimitedProxy) {

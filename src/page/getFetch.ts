@@ -13,12 +13,10 @@ import {
 import { MessageType } from "../types";
 import type { PageState, PlaybackAccessToken, UsherManifest } from "./types";
 
-// TODO: Use isRequestTypeProxied()??????
-
 // FIXME: Use rolling codes to secure the communication between the content, page, and worker scripts.
 
+const IS_DEVELOPMENT = process.env.NODE_ENV == "development";
 const NATIVE_FETCH = self.fetch;
-const VERBOSE = process.env.NODE_ENV == "development";
 
 export function getFetch(pageState: PageState): typeof fetch {
   let usherManifests: UsherManifest[] = [];
@@ -83,8 +81,8 @@ export function getFetch(pageState: PageState): typeof fetch {
     }
   });
 
-  // // TODO: REMOVE THIS TEST CODE
-  // if (pageState.scope === "worker") {
+  // // Test Video Weaver URL replacement.
+  // if (IS_DEVELOPMENT && pageState.scope === "worker") {
   //   setTimeout(
   //     () =>
   //       updateVideoWeaverReplacementMap(
@@ -276,7 +274,7 @@ export function getFetch(pageState: PageState): typeof fetch {
         )?.[0];
         if (videoQuality != null && manifest.replacementMap.has(videoQuality)) {
           videoWeaverUrl = manifest.replacementMap.get(videoQuality)!;
-          if (VERBOSE) {
+          if (IS_DEVELOPMENT) {
             console.debug(
               `[TTV LOL PRO] Replaced Video Weaver URL '${url}' with '${videoWeaverUrl}'.`
             );
@@ -292,6 +290,8 @@ export function getFetch(pageState: PageState): typeof fetch {
           );
         }
       }
+
+      // TODO: Use isRequestTypeProxied().
 
       // TODO: Possible optimization: only proxy first request to weaver group (i.e. usher manifest).
       // This is great for users using "Auto" quality.
