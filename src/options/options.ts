@@ -208,24 +208,24 @@ function main() {
 }
 
 function updateProxyUsage() {
-  passportTypeWarningElement.style.display = "none";
-
-  // TODO: Use isRequestTypeProxied().
+  const requestParams = {
+    isChromium: isChromium,
+    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
+    passportLevel: store.state.passportLevel,
+    fullModeEnabled: false,
+    isFlagged: false,
+  };
 
   // Proxy usage label.
   let usageScore = 0;
-  // "Proxy all requests" penalty.
+  // Unoptimized mode penalty.
   if (!store.state.optimizedProxiesEnabled) usageScore += 1;
   // GraphQL integrity penalty and warning.
-  if (
-    isRequestTypeProxied("gqlIntegrity", {
-      isChromium: isChromium,
-      optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-      passportLevel: store.state.passportLevel,
-    })
-  ) {
+  if (isRequestTypeProxied("gqlIntegrity", requestParams)) {
     usageScore += 1;
     passportTypeWarningElement.style.display = "block";
+  } else {
+    passportTypeWarningElement.style.display = "none";
   }
   switch (usageScore) {
     case 0:
@@ -244,44 +244,39 @@ function updateProxyUsage() {
   }
 
   // Passport
-  passportTypeProxyUsagePassportElement.textContent = "All";
-  // Usher
-  passportTypeProxyUsageUsherElement.textContent = "All";
-  // Video Weaver
-  passportTypeProxyUsageVideoWeaverElement.textContent = store.state
-    .optimizedProxiesEnabled
-    ? "Few"
-    : "All";
-  // GraphQL
-  if (isChromium) {
-    if (store.state.passportLevel == 2) {
-      passportTypeProxyUsageGqlElement.textContent = store.state
-        .optimizedProxiesEnabled
-        ? "Some"
-        : "All";
-    } else if (store.state.passportLevel == 1) {
-      passportTypeProxyUsageGqlElement.textContent = "Some";
-    } else {
-      passportTypeProxyUsageGqlElement.textContent = "None";
-    }
+  if (isRequestTypeProxied("passport", requestParams)) {
+    passportTypeProxyUsagePassportElement.textContent = "All";
   } else {
-    if (store.state.passportLevel == 2) {
-      passportTypeProxyUsageGqlElement.textContent = store.state
-        .optimizedProxiesEnabled
-        ? "Some"
-        : "All";
-    } else if (store.state.passportLevel == 1) {
-      passportTypeProxyUsageGqlElement.textContent = store.state
-        .optimizedProxiesEnabled
-        ? "Few"
-        : "Some";
-    } else {
-      passportTypeProxyUsageGqlElement.textContent = "None";
-    }
+    passportTypeProxyUsagePassportElement.textContent = "None";
   }
-  // www
-  passportTypeProxyUsageWwwElement.textContent =
-    store.state.passportLevel >= 2 ? "All" : "None";
+  // Usher
+  if (isRequestTypeProxied("usher", requestParams)) {
+    passportTypeProxyUsageUsherElement.textContent = "All";
+  } else {
+    passportTypeProxyUsageUsherElement.textContent = "None";
+  }
+  // Video Weaver
+  if (isRequestTypeProxied("weaver", requestParams)) {
+    passportTypeProxyUsageVideoWeaverElement.textContent = "All";
+  } else {
+    passportTypeProxyUsageVideoWeaverElement.textContent = "Few";
+  }
+  // GraphQL
+  if (isRequestTypeProxied("gql", requestParams)) {
+    passportTypeProxyUsageGqlElement.textContent = "All";
+  } else if (isRequestTypeProxied("gqlIntegrity", requestParams)) {
+    passportTypeProxyUsageGqlElement.textContent = "Some";
+  } else if (isRequestTypeProxied("gqlToken", requestParams)) {
+    passportTypeProxyUsageGqlElement.textContent = "Few";
+  } else {
+    passportTypeProxyUsageGqlElement.textContent = "None";
+  }
+  // WWW
+  if (isRequestTypeProxied("www", requestParams)) {
+    passportTypeProxyUsageWwwElement.textContent = "All";
+  } else {
+    passportTypeProxyUsageWwwElement.textContent = "None";
+  }
 }
 
 function isOptimizedProxyUrlAllowed(url: string): AllowedResult {
