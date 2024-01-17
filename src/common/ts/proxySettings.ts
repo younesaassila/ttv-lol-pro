@@ -11,7 +11,7 @@ import {
 import updateDnsResponses from "./updateDnsResponses";
 
 export function updateProxySettings(mode?: "limited" | "full") {
-  const { optimizedProxiesEnabled } = store.state;
+  const { optimizedProxiesEnabled, passportLevel } = store.state;
 
   mode ??= optimizedProxiesEnabled ? "limited" : "full";
 
@@ -22,32 +22,32 @@ export function updateProxySettings(mode?: "limited" | "full") {
 
   const proxyPassportRequests = isRequestTypeProxied("passport", {
     isChromium: true,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
+    optimizedProxiesEnabled: optimizedProxiesEnabled,
+    passportLevel: passportLevel,
     fullModeEnabled: mode === "full",
   });
   const proxyUsherRequests = isRequestTypeProxied("usher", {
     isChromium: true,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
+    optimizedProxiesEnabled: optimizedProxiesEnabled,
+    passportLevel: passportLevel,
     fullModeEnabled: mode === "full",
   });
   const proxyVideoWeaverRequests = isRequestTypeProxied("weaver", {
     isChromium: true,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
+    optimizedProxiesEnabled: optimizedProxiesEnabled,
+    passportLevel: passportLevel,
     fullModeEnabled: mode === "full",
   });
   const proxyGraphQLRequests = isRequestTypeProxied("gql", {
     isChromium: true,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
+    optimizedProxiesEnabled: optimizedProxiesEnabled,
+    passportLevel: passportLevel,
     fullModeEnabled: mode === "full",
   });
   const proxyTwitchWebpageRequests = isRequestTypeProxied("www", {
     isChromium: true,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
+    optimizedProxiesEnabled: optimizedProxiesEnabled,
+    passportLevel: passportLevel,
     fullModeEnabled: mode === "full",
   });
 
