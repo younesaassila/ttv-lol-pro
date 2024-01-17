@@ -19,23 +19,23 @@ window.fetch = getFetch(pageState);
 
 window.Worker = class Worker extends NATIVE_WORKER {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
-    const isTwitchWorker = scriptURL.toString().includes("twitch.tv");
+    const fullUrl = toAbsoluteUrl(scriptURL.toString());
+    const isTwitchWorker = fullUrl.includes(".twitch.tv");
     if (!isTwitchWorker) {
       super(scriptURL, options);
       return;
     }
-    const url = scriptURL.toString();
     let script = "";
     // Fetch Twitch's script, since Firefox Nightly errors out when trying to
     // import a blob URL directly.
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", url, false);
+    xhr.open("GET", fullUrl, false);
     xhr.send();
     if (200 <= xhr.status && xhr.status < 300) {
       script = xhr.responseText;
     } else {
       console.warn(`[TTV LOL PRO] Failed to fetch script: ${xhr.statusText}`);
-      script = `importScripts("${url}");`; // Will fail on Firefox Nightly.
+      script = `importScripts("${fullUrl}");`; // Will fail on Firefox Nightly.
     }
     // ---------------------------------------
     // 🦊 Attention Firefox Addon Reviewer 🦊
