@@ -30,7 +30,7 @@ export default function onBeforeTwitchTvRequest(
     // Additionally, there is no custom Content Security Policy (CSP) in use.
     (document.head || document.documentElement).prepend(script);
     return (
-      (document.compatMode === "CSS1Compat" ? "<!DOCTYPE html>" : "") +
+      (document.compatMode === "BackCompat" ? "" : "<!DOCTYPE html>") +
       document.documentElement.outerHTML
     );
   });
