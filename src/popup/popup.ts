@@ -8,7 +8,6 @@ import {
 import { alpha2 } from "../common/ts/countryCodes";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import isChannelWhitelisted from "../common/ts/isChannelWhitelisted";
-import isChromium from "../common/ts/isChromium";
 import store from "../store";
 import type { StreamStatus } from "../types";
 
@@ -173,47 +172,69 @@ function setWhitelistStatus(channelNameLower: string) {
 copyDebugInfoButtonElement.addEventListener("click", async e => {
   const extensionInfo = await browser.management.getSelf();
   const userAgentParser = Bowser.getParser(window.navigator.userAgent);
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  const activeTab = tabs[0];
+  const channelName =
+    activeTab?.url != null ? findChannelFromTwitchTvUrl(activeTab.url) : null;
+  const channelNameLower =
+    channelName != null ? channelName.toLowerCase() : null;
+  const status =
+    channelNameLower != null
+      ? store.state.streamStatuses[channelNameLower]
+      : null;
+  const isWhitelisted =
+    channelNameLower != null ? isChannelWhitelisted(channelNameLower) : null;
 
   const debugInfo = [
-    `${extensionInfo.name} v${extensionInfo.version}`,
-    `- Install type: ${extensionInfo.installType}`,
-    `- Browser: ${userAgentParser.getBrowserName()} ${userAgentParser.getBrowserVersion()}`,
-    `- OS: ${userAgentParser.getOSName()} ${userAgentParser.getOSVersion()}`,
-    `- Passport level: ${store.state.passportLevel}`,
-    `- Anonymous mode: ${store.state.anonymousMode}`,
-    `- Optimized proxies enabled: ${store.state.optimizedProxiesEnabled}`,
-    `- Optimized proxies: ${JSON.stringify(
-      e.shiftKey
-        ? store.state.optimizedProxies
-        : anonymizeIpAddresses(store.state.optimizedProxies)
-    )}`,
-    `- Normal proxies: ${JSON.stringify(
-      e.shiftKey
-        ? store.state.normalProxies
-        : anonymizeIpAddresses(store.state.normalProxies)
-    )}`,
-    isChromium
-      ? `- Should extension be active: ${store.state.chromiumProxyActive}`
+    `**Debug Info**\n`,
+    `Extension: ${extensionInfo.name} v${extensionInfo.version} (${extensionInfo.installType})\n`,
+    `Browser: ${userAgentParser.getBrowserName()} ${userAgentParser.getBrowserVersion()} (${userAgentParser.getOSName()} ${userAgentParser.getOSVersion()})\n`,
+    `Options:\n`,
+    `- Passport level: ${store.state.passportLevel}\n`,
+    `- Anonymous mode: ${store.state.anonymousMode}\n`,
+    store.state.optimizedProxiesEnabled
+      ? `- Using optimized proxies: ${JSON.stringify(
+          e.shiftKey
+            ? store.state.optimizedProxies
+            : anonymizeIpAddresses(store.state.optimizedProxies)
+        )}\n`
+      : `- Using normal proxies: ${JSON.stringify(
+          e.shiftKey
+            ? store.state.normalProxies
+            : anonymizeIpAddresses(store.state.normalProxies)
+        )}\n`,
+    channelName != null
+      ? [
+          `Channel name: ${channelName}\n`,
+          `Stream status:\n`,
+          status != null
+            ? [
+                `- Proxied: ${status.stats?.proxied ?? "N/A"}, Not proxied: ${
+                  status.stats?.notProxied ?? "N/A"
+                }\n`,
+                `- Proxy: ${
+                  status.proxyHost != null
+                    ? anonymizeIpAddress(status.proxyHost)
+                    : "N/A"
+                }\n`,
+                `- Country: ${status.proxyCountry ?? "N/A"}\n`,
+              ].join("")
+            : "",
+          `Whitelisted: ${isWhitelisted ?? "N/A"}\n`,
+        ].join("")
       : "",
-    isChromium
-      ? `- Number of opened Twitch tabs: ${store.state.openedTwitchTabs.length}`
+    store.state.adLog.length > 0
+      ? `Latest ad log entry: ${JSON.stringify({
+          ...store.state.adLog[store.state.adLog.length - 1],
+          videoWeaverUrl: undefined,
+        })}\n`
       : "",
-    `- Last ad log entry: ${
-      store.state.adLog.length
-        ? JSON.stringify({
-            ...store.state.adLog[store.state.adLog.length - 1],
-            videoWeaverUrl: undefined,
-          })
-        : "N/A"
-    }`,
-  ].join("\n");
+  ].join("");
 
   try {
     await navigator.clipboard.writeText(debugInfo);
     copyDebugInfoButtonDescriptionElement.textContent = "Copied to clipboard!";
   } catch (error) {
-    console.error(error);
-    copyDebugInfoButtonDescriptionElement.textContent =
-      "Failed to copy to clipboard.";
+    copyDebugInfoButtonDescriptionElement.textContent = `Failed to copy to clipboard: ${error}`;
   }
 });

@@ -1,3 +1,4 @@
+import Bowser from "bowser";
 import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
 import { readFile, saveFile } from "../common/ts/file";
@@ -618,11 +619,12 @@ adLogClearButtonElement.addEventListener("click", () => {
 });
 
 twitchTabsReportButtonElement.addEventListener("click", async () => {
-  let report = "--- Twitch Tabs report ---\n\n";
+  let report = "**Twitch Tabs Report**\n\n";
 
   const extensionInfo = await browser.management.getSelf();
+  const userAgentParser = Bowser.getParser(window.navigator.userAgent);
   report += `Extension: ${extensionInfo.name} v${extensionInfo.version} (${extensionInfo.installType})\n`;
-  report += `User agent: ${window.navigator.userAgent}\n\n`;
+  report += `Browser: ${userAgentParser.getBrowserName()} ${userAgentParser.getBrowserVersion()} (${userAgentParser.getOSName()} ${userAgentParser.getOSVersion()})\n\n`;
 
   const openedTabs = await browser.tabs.query({
     url: ["https://www.twitch.tv/*", "https://m.twitch.tv/*"],
@@ -730,15 +732,13 @@ twitchTabsReportButtonElement.addEventListener("click", async () => {
     store.state.openedTwitchTabs = openedTabs;
     updateProxySettings();
     fixed = true;
-    report += "Fixed issue by setting the PAC script.\n\n";
+    report += "Fixed issue by setting the PAC script.\n";
   } else if (!shouldSetPacScript && store.state.chromiumProxyActive) {
     store.state.openedTwitchTabs = openedTabs;
     clearProxySettings();
     fixed = true;
-    report += "Fixed issue by unsetting the PAC script.\n\n";
+    report += "Fixed issue by unsetting the PAC script.\n";
   }
-
-  report += "--- End of report ---\n";
 
   saveFile("ttv-lol-pro_tabs-report.txt", report, "text/plain;charset=utf-8");
   alert(

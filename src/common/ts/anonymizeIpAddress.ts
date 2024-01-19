@@ -29,7 +29,7 @@ export function anonymizeIpAddress(url: string): string {
 
   if (withinBrackets) proxyHost = `[${proxyHost}]`;
 
-  return `${proxyHost}:${proxyInfo.port}`;
+  return proxyHost;
 }
 
 /**
