@@ -20,7 +20,7 @@ const NATIVE_FETCH = self.fetch;
 
 export function getFetch(pageState: PageState): typeof fetch {
   let usherManifests: UsherManifest[] = [];
-  let videoWeaverUrlsProxiedCount = new Map<string, number>(); // Used to count how many times each Video Weaver URL was proxied.
+  let fallbackProxiedCount = new Map<string, number>(); // Used to count how many times each Video Weaver URL was proxied.
 
   let cachedPlaybackTokenRequestHeaders: Map<string, string> | null = null; // Cached by page script.
   let cachedPlaybackTokenRequestBody: string | null = null; // Cached by page script.
@@ -293,12 +293,29 @@ export function getFetch(pageState: PageState): typeof fetch {
 
       // TODO: Use isRequestTypeProxied().
 
-      // TODO: Possible optimization: only proxy first request to weaver group (i.e. usher manifest).
-      // This is great for users using "Auto" quality.
-      // Flag first request to each Video Weaver URL.
-      const proxiedCount = videoWeaverUrlsProxiedCount.get(videoWeaverUrl) ?? 0;
+      let proxiedCount = 0;
+      if (manifest != null) {
+        proxiedCount =
+          videoWeaverUrl !== url
+            ? manifest.replacementProxiedCount
+            : manifest.assignedProxiedCount;
+      } else {
+        proxiedCount = fallbackProxiedCount.get(videoWeaverUrl) ?? 0;
+      }
+
+      // Flag first request to each Usher manifest (fallback to Video Weaver URL).
       if (proxiedCount < 1) {
-        videoWeaverUrlsProxiedCount.set(videoWeaverUrl, proxiedCount + 1);
+        if (manifest != null) {
+          if (videoWeaverUrl !== url) {
+            manifest.replacementProxiedCount += 1;
+          } else {
+            manifest.assignedProxiedCount += 1;
+          }
+        }
+        fallbackProxiedCount.set(
+          videoWeaverUrl,
+          (fallbackProxiedCount.get(videoWeaverUrl) ?? 0) + 1
+        );
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/PluralRules/PluralRules#using_options
         const pr = new Intl.PluralRules("en-US", { type: "ordinal" });
         const suffixes = new Map([
@@ -378,6 +395,8 @@ export function getFetch(pageState: PageState): typeof fetch {
           channelName,
           assignedMap: assignedMap,
           replacementMap: null,
+          assignedProxiedCount: 0,
+          replacementProxiedCount: 0,
           consecutiveMidrollResponses: 0,
         });
       } else {
@@ -385,7 +404,6 @@ export function getFetch(pageState: PageState): typeof fetch {
       }
       // Send Video Weaver URLs to content script.
       const videoWeaverUrls = [...(assignedMap?.values() ?? [])];
-      videoWeaverUrls.forEach(url => videoWeaverUrlsProxiedCount.delete(url)); // Shouldn't be necessary, but just in case.
       sendMessageToContentScript({
         type: MessageType.UsherResponse,
         channel: channelName,
