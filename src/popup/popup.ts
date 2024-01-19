@@ -205,7 +205,9 @@ copyDebugInfoButtonElement.addEventListener("click", async e => {
         )}\n`,
     channelName != null
       ? [
-          `Channel name: ${channelName}\n`,
+          `Channel name: ${channelName}${
+            isWhitelisted ? " (whitelisted)" : ""
+          }\n`,
           `Stream status:\n`,
           status != null
             ? [
@@ -220,7 +222,6 @@ copyDebugInfoButtonElement.addEventListener("click", async e => {
                 `- Country: ${status.proxyCountry ?? "N/A"}\n`,
               ].join("")
             : "",
-          `Channel is whitelisted: ${isWhitelisted ?? "N/A"}\n`,
         ].join("")
       : "",
     store.state.adLog.length > 0
