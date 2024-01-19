@@ -291,7 +291,14 @@ export function getFetch(pageState: PageState): typeof fetch {
         }
       }
 
-      // TODO: Use isRequestTypeProxied().
+      // Not needed for now (always returns `true`).
+      // await waitForStore(pageState);
+      // const shouldFlagRequest = isRequestTypeProxied("weaver", {
+      //   isChromium: pageState.isChromium,
+      //   optimizedProxiesEnabled:
+      //     pageState.state?.optimizedProxiesEnabled ?? true,
+      //   passportLevel: pageState.state?.passportLevel ?? 0,
+      // });
 
       let proxiedCount = 0;
       if (manifest != null) {
@@ -566,8 +573,7 @@ async function flagRequest(
           type: MessageType.EnableFullMode,
           timestamp: Date.now(),
         },
-        MessageType.EnableFullModeResponse,
-        5000 // FIXME: On slow computers, this isn't enough...
+        MessageType.EnableFullModeResponse
       );
     } catch (error) {
       console.error("[TTV LOL PRO] Failed to flag request:", error);
