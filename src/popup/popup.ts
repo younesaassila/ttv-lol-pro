@@ -220,7 +220,7 @@ copyDebugInfoButtonElement.addEventListener("click", async e => {
                 `- Country: ${status.proxyCountry ?? "N/A"}\n`,
               ].join("")
             : "",
-          `Whitelisted: ${isWhitelisted ?? "N/A"}\n`,
+          `Channel is whitelisted: ${isWhitelisted ?? "N/A"}\n`,
         ].join("")
       : "",
     store.state.adLog.length > 0
