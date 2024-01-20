@@ -91,11 +91,6 @@ export default async function onProxyRequest(
       );
       return { type: "direct" };
     }
-    // Don't proxy VOD requests.
-    if (details.url.includes("/vod/")) {
-      console.log(`✋ '${details.url}' is a VOD request.`);
-      return { type: "direct" };
-    }
     // Don't proxy whitelisted channels.
     const channelName = findChannelFromUsherUrl(details.url);
     if (isChannelWhitelisted(channelName)) {

@@ -255,12 +255,25 @@ export function getFetch(pageState: PageState): typeof fetch {
       //#endregion
     }
 
-    // FIXME: Flag Usher requests for streams (to avoid proxying VODs).
     // Twitch Usher requests.
-    if (host != null && usherHostRegex.test(host)) {
+    usher: if (host != null && usherHostRegex.test(host)) {
       cachedUsherRequestUrl = url; // Cache the URL for later use.
       requestType = ProxyRequestType.Usher;
-      console.debug("[TTV LOL PRO] Detected Usher request.");
+      if (url.includes("/vod/")) {
+        console.debug("[TTV LOL PRO] Not flagging VOD Usher request.");
+        break usher;
+      }
+      await waitForStore(pageState);
+      const shouldFlagRequest = isRequestTypeProxied(ProxyRequestType.Usher, {
+        isChromium: pageState.isChromium,
+        optimizedProxiesEnabled:
+          pageState.state?.optimizedProxiesEnabled ?? true,
+        passportLevel: pageState.state?.passportLevel ?? 0,
+      });
+      if (shouldFlagRequest) {
+        console.debug("[TTV LOL PRO] Flagging Usher request…");
+        isFlaggedRequest = true;
+      }
     }
 
     // Twitch Video Weaver requests.

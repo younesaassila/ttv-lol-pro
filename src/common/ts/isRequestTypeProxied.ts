@@ -9,12 +9,12 @@ export default function isRequestTypeProxied(
   }
 
   if (type === ProxyRequestType.Usher) {
-    // if (params.isChromium && params.fullModeEnabled === false) {
-    //   return false;
-    // }
-    // if (!params.isChromium && params.isFlagged === false) {
-    //   return false;
-    // }
+    if (params.isChromium && params.fullModeEnabled === false) {
+      return false;
+    }
+    if (!params.isChromium && params.isFlagged === false) {
+      return false;
+    }
     return params.passportLevel >= 0;
   }
 
