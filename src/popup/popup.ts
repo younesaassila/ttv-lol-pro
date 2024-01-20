@@ -91,7 +91,7 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
     proxiedElement.classList.remove("error");
     proxiedElement.classList.remove("idle");
     proxiedElement.classList.add("success");
-    proxiedElement.title = "Last request proxied";
+    proxiedElement.title = "Proxied";
   } else if (
     !status.proxied &&
     status.proxyHost &&
@@ -102,12 +102,12 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
     proxiedElement.classList.remove("error");
     proxiedElement.classList.remove("success");
     proxiedElement.classList.add("idle");
-    proxiedElement.title = "Idle (optimized proxies enabled)";
+    proxiedElement.title = "Idle";
   } else {
     proxiedElement.classList.remove("success");
     proxiedElement.classList.remove("idle");
     proxiedElement.classList.add("error");
-    proxiedElement.title = "Last request not proxied";
+    proxiedElement.title = "Not proxied";
   }
   // Channel name
   channelNameElement.textContent = channelNameLower;

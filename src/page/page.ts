@@ -1,4 +1,5 @@
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
+import toAbsoluteUrl from "../common/ts/toAbsoluteUrl";
 import { MessageType } from "../types";
 import { getFetch } from "./getFetch";
 import type { PageState } from "./types";
@@ -134,15 +135,6 @@ window.addEventListener("message", event => {
 });
 
 sendMessageToContentScript({ type: MessageType.GetStoreState });
-
-function toAbsoluteUrl(url: string) {
-  try {
-    const Url = new URL(url, location.href);
-    return Url.href;
-  } catch {
-    return url;
-  }
-}
 
 function onChannelChange(callback: (channelName: string) => void) {
   let channelName: string | null = findChannelFromTwitchTvUrl(location.href);

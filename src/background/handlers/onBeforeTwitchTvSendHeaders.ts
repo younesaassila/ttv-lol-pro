@@ -6,11 +6,18 @@ import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import isChromium from "../../common/ts/isChromium";
 import { twitchTvHostRegex } from "../../common/ts/regexes";
 
-export default function onBeforeTwitchTvRequest(
-  details: WebRequest.OnBeforeRequestDetailsType
+export default function onBeforeTwitchTvSendHeaders(
+  details: WebRequest.OnBeforeSendHeadersDetailsType
 ): void | WebRequest.BlockingResponseOrPromise {
   const host = getHostFromUrl(details.url);
   if (!host || !twitchTvHostRegex.test(host)) return;
+
+  // Ignore requests for non-HTML resources.
+  const acceptHeader = details.requestHeaders?.find(
+    header => header.name.toLowerCase() === "accept"
+  );
+  if (!acceptHeader || !acceptHeader.value) return;
+  if (!acceptHeader.value.toLowerCase().includes("text/html")) return;
 
   filterResponseDataWrapper(details, text => {
     const parser = new DOMParser();

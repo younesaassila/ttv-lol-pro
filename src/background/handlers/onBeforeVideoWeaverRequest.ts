@@ -44,23 +44,17 @@ export default function onBeforeVideoWeaverRequest(
         ? `${details.proxyInfo.host}:${details.proxyInfo.port}`
         : null;
 
-    const adLog = store.state.adLog.filter(
-      entry => details.timeStamp - entry.timestamp < 1000 * 60 * 60 * 24 * 7 // 7 days
-    );
-    store.state.adLog = [
-      ...adLog,
-      {
-        adType: isMidroll ? AdType.MIDROLL : AdType.PREROLL,
-        isPurpleScreen,
-        proxy,
-        channel: channelName,
-        passportLevel: store.state.passportLevel,
-        anonymousMode: store.state.anonymousMode,
-        timestamp: details.timeStamp,
-        videoWeaverHost: host,
-        videoWeaverUrl: details.url,
-      },
-    ];
+    store.state.adLog.push({
+      adType: isMidroll ? AdType.MIDROLL : AdType.PREROLL,
+      isPurpleScreen,
+      proxy,
+      channel: channelName,
+      passportLevel: store.state.passportLevel,
+      anonymousMode: store.state.anonymousMode,
+      timestamp: details.timeStamp,
+      videoWeaverHost: host,
+      videoWeaverUrl: details.url,
+    });
     console.log(`📝 Ad log updated (${store.state.adLog.length} entries).`);
     console.log(text);
 
