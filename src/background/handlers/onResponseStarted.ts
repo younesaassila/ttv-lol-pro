@@ -14,7 +14,7 @@ import {
 } from "../../common/ts/regexes";
 import { getStreamStatus, setStreamStatus } from "../../common/ts/streamStatus";
 import store from "../../store";
-import type { ProxyInfo } from "../../types";
+import { ProxyInfo, ProxyRequestType } from "../../types";
 
 export default function onResponseStarted(
   details: WebRequest.OnResponseStartedDetailsType & {
@@ -26,16 +26,31 @@ export default function onResponseStarted(
 
   const proxy = getProxyFromDetails(details);
 
-  const params = {
-    isChromium: false,
+  const requestParams = {
+    isChromium: isChromium,
     optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
     passportLevel: store.state.passportLevel,
   };
-  const proxiedPassportRequest = isRequestTypeProxied("passport", params);
-  const proxiedUsherRequest = isRequestTypeProxied("usher", params);
-  const proxiedVideoWeaverRequest = isRequestTypeProxied("weaver", params);
-  const proxiedGraphQLRequest = isRequestTypeProxied("gql", params);
-  const proxiedTwitchWebpageRequest = isRequestTypeProxied("www", params);
+  const proxiedPassportRequest = isRequestTypeProxied(
+    ProxyRequestType.Passport,
+    requestParams
+  );
+  const proxiedUsherRequest = isRequestTypeProxied(
+    ProxyRequestType.Usher,
+    requestParams
+  );
+  const proxiedVideoWeaverRequest = isRequestTypeProxied(
+    ProxyRequestType.VideoWeaver,
+    requestParams
+  );
+  const proxiedGraphQLRequest = isRequestTypeProxied(
+    ProxyRequestType.GraphQL,
+    requestParams
+  );
+  const proxiedTwitchWebpageRequest = isRequestTypeProxied(
+    ProxyRequestType.TwitchWebpage,
+    requestParams
+  );
 
   // Passport requests.
   if (proxiedPassportRequest && passportHostRegex.test(host)) {

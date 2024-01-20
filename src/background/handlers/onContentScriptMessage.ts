@@ -1,67 +1,73 @@
 import browser, { Runtime } from "webextension-polyfill";
 import { updateProxySettings } from "../../common/ts/proxySettings";
 import store from "../../store";
-import { MessageType } from "../../types";
+import { MessageType, ProxyRequestType } from "../../types";
 
-// FIXME: EnableFullMode should specify allowed request type.
-// That way, a full mode enabled by a weaver request can't let some
-// GQL requests get through.
+type Timeout = string | number | NodeJS.Timeout | undefined;
 
-let timeout: string | number | NodeJS.Timeout | undefined;
+const requestTypeToTimeoutMs: Map<ProxyRequestType, Timeout> = new Map();
 
 export default function onContentScriptMessage(
   message: any,
   sender: Runtime.MessageSender,
   sendResponse: () => void
 ): true | void | Promise<any> {
-  switch (message.type) {
-    case MessageType.EnableFullMode:
-      if (!sender.tab?.id) return;
+  if (message.type === MessageType.EnableFullMode) {
+    if (!sender.tab?.id) return;
 
-      if (timeout) {
-        clearTimeout(timeout);
-      } else {
+    const requestType = message.requestType as ProxyRequestType;
+    if (requestTypeToTimeoutMs.has(requestType)) {
+      clearTimeout(requestTypeToTimeoutMs.get(requestType));
+    }
+
+    const minTimeoutMs = 3000; // Time for fetch to be called.
+    const replyTimeoutMs = Date.now() - message.timestamp; // Time for reply to be received.
+    requestTypeToTimeoutMs.set(
+      requestType,
+      setTimeout(() => {
+        console.log("[TTV LOL PRO] Disabling full mode (timeout)");
+        requestTypeToTimeoutMs.delete(requestType);
         if (store.state.chromiumProxyActive) {
-          updateProxySettings("full");
+          console.log(requestTypeToTimeoutMs);
+          updateProxySettings([...requestTypeToTimeoutMs.keys()]);
         }
-      }
+      }, minTimeoutMs + replyTimeoutMs)
+    );
+    if (store.state.chromiumProxyActive) {
+      console.log(requestTypeToTimeoutMs);
+      updateProxySettings([...requestTypeToTimeoutMs.keys()]);
+    }
 
-      const minTimeoutMs = 3000; // Time for fetch to be called.
-      const replyTimeoutMs = Date.now() - message.timestamp; // Time for reply to be received.
-      timeout = setTimeout(() => {
-        if (store.state.chromiumProxyActive) {
-          updateProxySettings();
-        }
-        timeout = undefined;
-      }, minTimeoutMs + replyTimeoutMs);
+    console.log(
+      `[TTV LOL PRO] Enabling full mode for ${
+        minTimeoutMs + replyTimeoutMs
+      }ms (request type: ${requestType})`
+    );
 
-      console.log(
-        `[TTV LOL PRO] Enabling full mode for ${
-          minTimeoutMs + replyTimeoutMs
-        }ms`
+    try {
+      browser.tabs.sendMessage(sender.tab.id, {
+        type: MessageType.EnableFullModeResponse,
+        timestamp: Date.now(),
+        timeout: minTimeoutMs + replyTimeoutMs,
+      });
+    } catch (error) {
+      console.error(
+        "[TTV LOL PRO] Failed to send EnableFullModeResponse message",
+        error
       );
+    }
+  }
 
-      try {
-        browser.tabs.sendMessage(sender.tab.id, {
-          type: MessageType.EnableFullModeResponse,
-          timestamp: Date.now(),
-          timeout: minTimeoutMs + replyTimeoutMs,
-        });
-      } catch (error) {
-        console.error(
-          "[TTV LOL PRO] Failed to send EnableFullModeResponse message",
-          error
-        );
-      }
-      break;
-    case MessageType.DisableFullMode:
-      console.log("[TTV LOL PRO] Disabling full mode");
-
-      if (timeout) clearTimeout(timeout);
-      if (store.state.chromiumProxyActive) {
-        updateProxySettings();
-      }
-      timeout = undefined;
-      break;
+  if (message.type === MessageType.DisableFullMode) {
+    console.log("[TTV LOL PRO] Disabling full mode");
+    const requestType = message.requestType as ProxyRequestType;
+    if (requestTypeToTimeoutMs.has(requestType)) {
+      clearTimeout(requestTypeToTimeoutMs.get(requestType));
+      requestTypeToTimeoutMs.delete(requestType);
+    }
+    if (store.state.chromiumProxyActive) {
+      console.log(requestTypeToTimeoutMs);
+      updateProxySettings([...requestTypeToTimeoutMs.keys()]);
+    }
   }
 }

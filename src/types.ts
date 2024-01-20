@@ -65,3 +65,27 @@ export const enum MessageType {
   NewPlaybackAccessTokenResponse = "TLP_NewPlaybackAccessTokenResponse",
   ClearStats = "TLP_ClearStats",
 }
+
+export const enum ProxyRequestType {
+  Passport = "passport",
+  Usher = "usher",
+  VideoWeaver = "videoWeaver",
+  GraphQL = "graphQL",
+  GraphQLToken = "graphQLToken",
+  GraphQLIntegrity = "graphQLIntegrity",
+  TwitchWebpage = "twitchWebpage",
+}
+
+export type ProxyRequestParams =
+  | {
+      isChromium: true;
+      optimizedProxiesEnabled: boolean;
+      passportLevel: number;
+      fullModeEnabled?: boolean;
+    }
+  | {
+      isChromium: false;
+      optimizedProxiesEnabled: boolean;
+      passportLevel: number;
+      isFlagged?: boolean;
+    };

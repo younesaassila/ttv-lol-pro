@@ -10,7 +10,7 @@ import {
   usherHostRegex,
   videoWeaverHostRegex,
 } from "../common/ts/regexes";
-import { MessageType } from "../types";
+import { MessageType, ProxyRequestType } from "../types";
 import type { PageState, PlaybackAccessToken, UsherManifest } from "./types";
 
 // FIXME: Use rolling codes to secure the communication between the content, page, and worker scripts.
@@ -39,9 +39,7 @@ export function getFetch(pageState: PageState): typeof fetch {
           await waitForStore(pageState);
           const newPlaybackAccessToken =
             await fetchReplacementPlaybackAccessToken(
-              pageState.isChromium,
-              pageState.state?.optimizedProxiesEnabled === true,
-              pageState.scope,
+              pageState,
               cachedPlaybackTokenRequestHeaders,
               cachedPlaybackTokenRequestBody
             );
@@ -116,6 +114,7 @@ export function getFetch(pageState: PageState): typeof fetch {
 
     let isFlaggedRequest = false; // Whether or not the request should be proxied.
     let request: Request | null = null; // Request can be overwritten.
+    let requestType: ProxyRequestType | null = null;
 
     // Reading the request body can be expensive, so we only do it if we need to.
     let requestBody: string | null | undefined = undefined;
@@ -128,18 +127,23 @@ export function getFetch(pageState: PageState): typeof fetch {
 
     // Twitch GraphQL requests.
     graphql: if (host != null && twitchGqlHostRegex.test(host)) {
+      requestType = ProxyRequestType.GraphQL;
+
       //#region GraphQL integrity requests.
       const integrityHeader = getHeaderFromMap(headersMap, "Client-Integrity");
       const isIntegrityRequest = url === "https://gql.twitch.tv/integrity";
       const isIntegrityHeaderRequest = integrityHeader != null;
       if (isIntegrityRequest || isIntegrityHeaderRequest) {
         await waitForStore(pageState);
-        const shouldFlagRequest = isRequestTypeProxied("gqlIntegrity", {
-          isChromium: pageState.isChromium,
-          optimizedProxiesEnabled:
-            pageState.state?.optimizedProxiesEnabled ?? true,
-          passportLevel: pageState.state?.passportLevel ?? 0,
-        });
+        const shouldFlagRequest = isRequestTypeProxied(
+          ProxyRequestType.GraphQLIntegrity,
+          {
+            isChromium: pageState.isChromium,
+            optimizedProxiesEnabled:
+              pageState.state?.optimizedProxiesEnabled ?? true,
+            passportLevel: pageState.state?.passportLevel ?? 0,
+          }
+        );
         if (shouldFlagRequest) {
           if (isIntegrityRequest) {
             console.debug("[TTV LOL PRO] Flagging GraphQL integrity request…");
@@ -187,12 +191,15 @@ export function getFetch(pageState: PageState): typeof fetch {
           whitelistedChannelsLower.includes(channelName.toLowerCase());
 
         // Check if we should flag this request.
-        const shouldFlagRequest = isRequestTypeProxied("gqlToken", {
-          isChromium: pageState.isChromium,
-          optimizedProxiesEnabled:
-            pageState.state?.optimizedProxiesEnabled ?? true,
-          passportLevel: pageState.state?.passportLevel ?? 0,
-        });
+        const shouldFlagRequest = isRequestTypeProxied(
+          ProxyRequestType.GraphQLToken,
+          {
+            isChromium: pageState.isChromium,
+            optimizedProxiesEnabled:
+              pageState.state?.optimizedProxiesEnabled ?? true,
+            passportLevel: pageState.state?.passportLevel ?? 0,
+          }
+        );
         if (!isLivestream || isWhitelisted) {
           console.log(
             "[TTV LOL PRO] Not flagging PlaybackAccessToken request: not a livestream or is whitelisted."
@@ -204,7 +211,7 @@ export function getFetch(pageState: PageState): typeof fetch {
           "PlaybackAccessToken_Template"
         );
         const areIntegrityRequestsProxied = isRequestTypeProxied(
-          "gqlIntegrity",
+          ProxyRequestType.GraphQLIntegrity,
           {
             isChromium: pageState.isChromium,
             optimizedProxiesEnabled:
@@ -252,11 +259,14 @@ export function getFetch(pageState: PageState): typeof fetch {
     // Twitch Usher requests.
     if (host != null && usherHostRegex.test(host)) {
       cachedUsherRequestUrl = url; // Cache the URL for later use.
+      requestType = ProxyRequestType.Usher;
       console.debug("[TTV LOL PRO] Detected Usher request.");
     }
 
     // Twitch Video Weaver requests.
     if (host != null && videoWeaverHostRegex.test(host)) {
+      requestType = ProxyRequestType.VideoWeaver;
+
       //#region Video Weaver requests.
       const manifest = usherManifests.find(manifest =>
         [...manifest.assignedMap.values()].includes(url)
@@ -294,7 +304,7 @@ export function getFetch(pageState: PageState): typeof fetch {
 
       // Not needed for now (always returns `true`).
       // await waitForStore(pageState);
-      // const shouldFlagRequest = isRequestTypeProxied("weaver", {
+      // const shouldFlagRequest = isRequestTypeProxied(ProxyRequestType.VideoWeaver, {
       //   isChromium: pageState.isChromium,
       //   optimizedProxiesEnabled:
       //     pageState.state?.optimizedProxiesEnabled ?? true,
@@ -342,12 +352,7 @@ export function getFetch(pageState: PageState): typeof fetch {
     });
     if (isFlaggedRequest) {
       await waitForStore(pageState);
-      request = await flagRequest(
-        pageState.isChromium,
-        pageState.state?.optimizedProxiesEnabled === true,
-        pageState.scope,
-        request
-      );
+      request = await flagRequest(request, requestType!, pageState);
     }
     const response = await NATIVE_FETCH(request);
     if (
@@ -357,6 +362,8 @@ export function getFetch(pageState: PageState): typeof fetch {
     ) {
       sendMessageToContentScript({
         type: MessageType.DisableFullMode,
+        timestamp: Date.now(),
+        requestType,
       });
     }
 
@@ -540,19 +547,19 @@ function removeHeaderFromMap(headersMap: Map<string, string>, name: string) {
 }
 
 async function flagRequest(
-  isChromium: boolean,
-  optimizedProxiesEnabled: boolean,
-  scope: "page" | "worker",
-  request: Request
+  request: Request,
+  requestType: ProxyRequestType,
+  pageState: PageState
 ): Promise<Request> {
-  if (isChromium) {
-    if (!optimizedProxiesEnabled) return request;
+  if (pageState.isChromium) {
+    if (pageState.state?.optimizedProxiesEnabled !== true) return request;
     try {
       await sendMessageToContentScriptAndWaitForResponse(
-        scope,
+        pageState.scope,
         {
           type: MessageType.EnableFullMode,
           timestamp: Date.now(),
+          requestType,
         },
         MessageType.EnableFullModeResponse
       );
@@ -755,12 +762,9 @@ async function getDefaultPlaybackAccessTokenRequest(
  * @returns
  */
 async function fetchReplacementPlaybackAccessToken(
-  isChromium: boolean,
-  optimizedProxiesEnabled: boolean,
-  scope: "page" | "worker",
+  pageState: PageState,
   cachedPlaybackTokenRequestHeaders: Map<string, string> | null,
-  cachedPlaybackTokenRequestBody: string | null,
-  anonymousMode: boolean = false
+  cachedPlaybackTokenRequestBody: string | null
 ): Promise<PlaybackAccessToken | null> {
   let request: Request | null = null;
   if (
@@ -775,16 +779,14 @@ async function fetchReplacementPlaybackAccessToken(
   } else {
     // This fallback request is used when Twitch doesn't send a PlaybackAccessToken request.
     // This can happen when the user refreshes the page.
-    request = await getDefaultPlaybackAccessTokenRequest(null, anonymousMode);
+    request = await getDefaultPlaybackAccessTokenRequest(
+      null,
+      pageState.state?.anonymousMode === true
+    );
   }
   if (request == null) return null;
 
-  request = await flagRequest(
-    isChromium,
-    optimizedProxiesEnabled,
-    scope,
-    request
-  );
+  request = await flagRequest(request, ProxyRequestType.GraphQL, pageState);
 
   try {
     const response = await NATIVE_FETCH(request);

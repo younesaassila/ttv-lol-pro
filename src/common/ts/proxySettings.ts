@@ -1,4 +1,5 @@
 import store from "../../store";
+import { ProxyRequestType } from "../../types";
 import getProxyInfoFromUrl from "./getProxyInfoFromUrl";
 import isRequestTypeProxied from "./isRequestTypeProxied";
 import {
@@ -10,46 +11,42 @@ import {
 } from "./regexes";
 import updateDnsResponses from "./updateDnsResponses";
 
-export function updateProxySettings(mode?: "limited" | "full") {
+export function updateProxySettings(requestFilter?: ProxyRequestType[]) {
   const { optimizedProxiesEnabled, passportLevel } = store.state;
-
-  mode ??= optimizedProxiesEnabled ? "limited" : "full";
 
   const proxies = optimizedProxiesEnabled
     ? store.state.optimizedProxies
     : store.state.normalProxies;
   const proxyInfoString = getProxyInfoStringFromUrls(proxies);
 
-  const proxyPassportRequests = isRequestTypeProxied("passport", {
+  const getRequestParams = (requestType: ProxyRequestType) => ({
     isChromium: true,
     optimizedProxiesEnabled: optimizedProxiesEnabled,
     passportLevel: passportLevel,
-    fullModeEnabled: mode === "full",
+    fullModeEnabled:
+      !optimizedProxiesEnabled ||
+      (requestFilter != null && requestFilter.includes(requestType)),
   });
-  const proxyUsherRequests = isRequestTypeProxied("usher", {
-    isChromium: true,
-    optimizedProxiesEnabled: optimizedProxiesEnabled,
-    passportLevel: passportLevel,
-    fullModeEnabled: mode === "full",
-  });
-  const proxyVideoWeaverRequests = isRequestTypeProxied("weaver", {
-    isChromium: true,
-    optimizedProxiesEnabled: optimizedProxiesEnabled,
-    passportLevel: passportLevel,
-    fullModeEnabled: mode === "full",
-  });
-  const proxyGraphQLRequests = isRequestTypeProxied("gql", {
-    isChromium: true,
-    optimizedProxiesEnabled: optimizedProxiesEnabled,
-    passportLevel: passportLevel,
-    fullModeEnabled: mode === "full",
-  });
-  const proxyTwitchWebpageRequests = isRequestTypeProxied("www", {
-    isChromium: true,
-    optimizedProxiesEnabled: optimizedProxiesEnabled,
-    passportLevel: passportLevel,
-    fullModeEnabled: mode === "full",
-  });
+  const proxyPassportRequests = isRequestTypeProxied(
+    ProxyRequestType.Passport,
+    getRequestParams(ProxyRequestType.Passport)
+  );
+  const proxyUsherRequests = isRequestTypeProxied(
+    ProxyRequestType.Usher,
+    getRequestParams(ProxyRequestType.Usher)
+  );
+  const proxyVideoWeaverRequests = isRequestTypeProxied(
+    ProxyRequestType.VideoWeaver,
+    getRequestParams(ProxyRequestType.VideoWeaver)
+  );
+  const proxyGraphQLRequests = isRequestTypeProxied(
+    ProxyRequestType.GraphQL,
+    getRequestParams(ProxyRequestType.GraphQL)
+  );
+  const proxyTwitchWebpageRequests = isRequestTypeProxied(
+    ProxyRequestType.TwitchWebpage,
+    getRequestParams(ProxyRequestType.TwitchWebpage)
+  );
 
   const config = {
     mode: "pac_script",
@@ -84,9 +81,7 @@ export function updateProxySettings(mode?: "limited" | "full") {
 
   chrome.proxy.settings.set({ value: config, scope: "regular" }, function () {
     console.log(
-      `⚙️ Proxying requests through one of: ${
-        proxies.toString() || "<empty>"
-      } (${mode})`
+      `⚙️ Proxying requests through one of: ${proxies.toString() || "<empty>"}`
     );
     store.state.chromiumProxyActive = true;
     updateDnsResponses();

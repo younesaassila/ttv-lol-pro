@@ -15,7 +15,7 @@ import {
   videoWeaverHostRegex,
 } from "../../common/ts/regexes";
 import store from "../../store";
-import type { ProxyInfo } from "../../types";
+import { ProxyInfo, ProxyRequestType } from "../../types";
 
 export default async function onProxyRequest(
   details: Proxy.OnRequestDetailsType
@@ -45,17 +45,32 @@ export default async function onProxyRequest(
     : store.state.normalProxies;
   const proxyInfoArray = getProxyInfoArrayFromUrls(proxies);
 
-  const params = {
+  const requestParams = {
     isChromium: false,
     optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
     passportLevel: store.state.passportLevel,
     isFlagged: isFlaggedRequest(details.requestHeaders),
   };
-  const proxyPassportRequest = isRequestTypeProxied("passport", params);
-  const proxyUsherRequest = isRequestTypeProxied("usher", params);
-  const proxyVideoWeaverRequest = isRequestTypeProxied("weaver", params);
-  const proxyGraphQLRequest = isRequestTypeProxied("gql", params);
-  const proxyTwitchWebpageRequest = isRequestTypeProxied("www", params);
+  const proxyPassportRequest = isRequestTypeProxied(
+    ProxyRequestType.Passport,
+    requestParams
+  );
+  const proxyUsherRequest = isRequestTypeProxied(
+    ProxyRequestType.Usher,
+    requestParams
+  );
+  const proxyVideoWeaverRequest = isRequestTypeProxied(
+    ProxyRequestType.VideoWeaver,
+    requestParams
+  );
+  const proxyGraphQLRequest = isRequestTypeProxied(
+    ProxyRequestType.GraphQL,
+    requestParams
+  );
+  const proxyTwitchWebpageRequest = isRequestTypeProxied(
+    ProxyRequestType.TwitchWebpage,
+    requestParams
+  );
 
   // Passport requests.
   if (proxyPassportRequest && passportHostRegex.test(host)) {

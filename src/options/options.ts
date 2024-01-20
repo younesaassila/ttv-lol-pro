@@ -15,7 +15,7 @@ import sendAdLog from "../common/ts/sendAdLog";
 import store from "../store";
 import getDefaultState from "../store/getDefaultState";
 import type { State } from "../store/types";
-import type { KeyOfType } from "../types";
+import { KeyOfType, ProxyRequestType } from "../types";
 
 //#region Types
 type AllowedResult = [boolean, string?];
@@ -222,7 +222,7 @@ function updateProxyUsage() {
   // Unoptimized mode penalty.
   if (!store.state.optimizedProxiesEnabled) usageScore += 1;
   // GraphQL integrity penalty and warning.
-  if (isRequestTypeProxied("gqlIntegrity", requestParams)) {
+  if (isRequestTypeProxied(ProxyRequestType.GraphQLIntegrity, requestParams)) {
     usageScore += 1;
     passportTypeWarningElement.style.display = "block";
   } else {
@@ -245,35 +245,39 @@ function updateProxyUsage() {
   }
 
   // Passport
-  if (isRequestTypeProxied("passport", requestParams)) {
+  if (isRequestTypeProxied(ProxyRequestType.Passport, requestParams)) {
     passportTypeProxyUsagePassportElement.textContent = "All";
   } else {
     passportTypeProxyUsagePassportElement.textContent = "None";
   }
   // Usher
-  if (isRequestTypeProxied("usher", requestParams)) {
+  if (isRequestTypeProxied(ProxyRequestType.Usher, requestParams)) {
     passportTypeProxyUsageUsherElement.textContent = "All";
   } else {
     passportTypeProxyUsageUsherElement.textContent = "None";
   }
   // Video Weaver
-  if (isRequestTypeProxied("weaver", requestParams)) {
+  if (isRequestTypeProxied(ProxyRequestType.VideoWeaver, requestParams)) {
     passportTypeProxyUsageVideoWeaverElement.textContent = "All";
   } else {
     passportTypeProxyUsageVideoWeaverElement.textContent = "Few";
   }
   // GraphQL
-  if (isRequestTypeProxied("gql", requestParams)) {
+  if (isRequestTypeProxied(ProxyRequestType.GraphQL, requestParams)) {
     passportTypeProxyUsageGqlElement.textContent = "All";
-  } else if (isRequestTypeProxied("gqlIntegrity", requestParams)) {
+  } else if (
+    isRequestTypeProxied(ProxyRequestType.GraphQLIntegrity, requestParams)
+  ) {
     passportTypeProxyUsageGqlElement.textContent = "Some";
-  } else if (isRequestTypeProxied("gqlToken", requestParams)) {
+  } else if (
+    isRequestTypeProxied(ProxyRequestType.GraphQLToken, requestParams)
+  ) {
     passportTypeProxyUsageGqlElement.textContent = "Few";
   } else {
     passportTypeProxyUsageGqlElement.textContent = "None";
   }
   // WWW
-  if (isRequestTypeProxied("www", requestParams)) {
+  if (isRequestTypeProxied(ProxyRequestType.TwitchWebpage, requestParams)) {
     passportTypeProxyUsageWwwElement.textContent = "All";
   } else {
     passportTypeProxyUsageWwwElement.textContent = "None";

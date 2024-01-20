@@ -1,39 +1,24 @@
-type RequestType =
-  | "passport"
-  | "usher"
-  | "weaver"
-  | "gqlToken"
-  | "gqlIntegrity"
-  | "gql"
-  | "www";
-
-type Params =
-  | {
-      isChromium: true;
-      optimizedProxiesEnabled: boolean;
-      passportLevel: number;
-      fullModeEnabled?: boolean;
-    }
-  | {
-      isChromium: false;
-      optimizedProxiesEnabled: boolean;
-      passportLevel: number;
-      isFlagged?: boolean;
-    };
+import { ProxyRequestParams, ProxyRequestType } from "../../types";
 
 export default function isRequestTypeProxied(
-  requestType: RequestType,
-  params: Params
+  type: ProxyRequestType,
+  params: ProxyRequestParams
 ): boolean {
-  if (requestType === "passport") {
+  if (type === ProxyRequestType.Passport) {
     return params.passportLevel >= 0;
   }
 
-  if (requestType === "usher") {
+  if (type === ProxyRequestType.Usher) {
+    // if (params.isChromium && params.fullModeEnabled === false) {
+    //   return false;
+    // }
+    // if (!params.isChromium && params.isFlagged === false) {
+    //   return false;
+    // }
     return params.passportLevel >= 0;
   }
 
-  if (requestType === "weaver") {
+  if (type === ProxyRequestType.VideoWeaver) {
     if (params.optimizedProxiesEnabled) {
       if (params.isChromium && params.fullModeEnabled === false) {
         return false;
@@ -45,11 +30,11 @@ export default function isRequestTypeProxied(
     return true;
   }
 
-  if (requestType === "gqlToken") {
+  if (type === ProxyRequestType.GraphQLToken) {
     return params.passportLevel >= 1;
   }
 
-  if (requestType === "gqlIntegrity") {
+  if (type === ProxyRequestType.GraphQLIntegrity) {
     if (params.optimizedProxiesEnabled) {
       return params.passportLevel >= 2;
     } else {
@@ -57,7 +42,7 @@ export default function isRequestTypeProxied(
     }
   }
 
-  if (requestType === "gql") {
+  if (type === ProxyRequestType.GraphQL) {
     // Proxy all GQL requests when passport is unoptimized official+ (Chromium)
     // or unoptimized diplomatic (Firefox).
     if (
@@ -84,7 +69,7 @@ export default function isRequestTypeProxied(
     return params.passportLevel >= 1;
   }
 
-  if (requestType === "www") {
+  if (type === ProxyRequestType.TwitchWebpage) {
     return params.passportLevel >= 2;
   }
 
