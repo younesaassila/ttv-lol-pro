@@ -51,9 +51,9 @@ export default function onBeforeVideoWeaverRequest(
       ...adLog,
       {
         adType: isMidroll ? AdType.MIDROLL : AdType.PREROLL,
-        channel: channelName,
         isPurpleScreen,
         proxy,
+        channel: channelName,
         passportLevel: store.state.passportLevel,
         anonymousMode: store.state.anonymousMode,
         timestamp: details.timeStamp,

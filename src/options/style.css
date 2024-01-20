@@ -113,6 +113,17 @@ footer {
   justify-content: space-between;
   padding: 1.5rem;
   border-top: 1px solid var(--input-border-color);
+  font-size: 9pt;
+}
+footer > nav > ul {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
+  gap: 1.5rem;
+  list-style-type: none;
 }
 
 a,
@@ -381,5 +392,9 @@ li.hide-marker::marker {
   }
   header > #buttons-container > button {
     width: 100%;
+  }
+
+  footer > nav > ul {
+    gap: 0.5rem;
   }
 }

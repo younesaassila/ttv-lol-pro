@@ -12,6 +12,10 @@ export default function onStartupStoreCleanup(): void {
   if (store.readyState !== "complete")
     return store.addEventListener("load", onStartupStoreCleanup);
 
+  const now = Date.now();
+  store.state.adLog = store.state.adLog.filter(
+    entry => now - entry.timestamp < 1000 * 60 * 60 * 24 * 7 // 7 days
+  );
   store.state.chromiumProxyActive = false;
   store.state.dnsResponses = [];
   store.state.openedTwitchTabs = [];

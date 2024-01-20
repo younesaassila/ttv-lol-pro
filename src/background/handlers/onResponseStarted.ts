@@ -26,31 +26,16 @@ export default function onResponseStarted(
 
   const proxy = getProxyFromDetails(details);
 
-  const proxiedPassportRequest = isRequestTypeProxied("passport", {
+  const params = {
     isChromium: false,
     optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
     passportLevel: store.state.passportLevel,
-  });
-  const proxiedUsherRequest = isRequestTypeProxied("usher", {
-    isChromium: false,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
-  });
-  const proxiedVideoWeaverRequest = isRequestTypeProxied("weaver", {
-    isChromium: false,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
-  });
-  const proxiedGraphQLRequest = isRequestTypeProxied("gql", {
-    isChromium: false,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
-  });
-  const proxiedTwitchWebpageRequest = isRequestTypeProxied("www", {
-    isChromium: false,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
-  });
+  };
+  const proxiedPassportRequest = isRequestTypeProxied("passport", params);
+  const proxiedUsherRequest = isRequestTypeProxied("usher", params);
+  const proxiedVideoWeaverRequest = isRequestTypeProxied("weaver", params);
+  const proxiedGraphQLRequest = isRequestTypeProxied("gql", params);
+  const proxiedTwitchWebpageRequest = isRequestTypeProxied("www", params);
 
   // Passport requests.
   if (proxiedPassportRequest && passportHostRegex.test(host)) {

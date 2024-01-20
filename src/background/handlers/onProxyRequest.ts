@@ -40,45 +40,22 @@ export default async function onProxyRequest(
     });
   }
 
-  const isFlagged =
-    (store.state.optimizedProxiesEnabled &&
-      isFlaggedRequest(details.requestHeaders)) ||
-    !store.state.optimizedProxiesEnabled;
   const proxies = store.state.optimizedProxiesEnabled
     ? store.state.optimizedProxies
     : store.state.normalProxies;
   const proxyInfoArray = getProxyInfoArrayFromUrls(proxies);
 
-  const proxyPassportRequest = isRequestTypeProxied("passport", {
+  const params = {
     isChromium: false,
     optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
     passportLevel: store.state.passportLevel,
-    isFlagged: isFlagged,
-  });
-  const proxyUsherRequest = isRequestTypeProxied("usher", {
-    isChromium: false,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
-    isFlagged: isFlagged,
-  });
-  const proxyVideoWeaverRequest = isRequestTypeProxied("weaver", {
-    isChromium: false,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
-    isFlagged: isFlagged,
-  });
-  const proxyGraphQLRequest = isRequestTypeProxied("gql", {
-    isChromium: false,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
-    isFlagged: isFlagged,
-  });
-  const proxyTwitchWebpageRequest = isRequestTypeProxied("www", {
-    isChromium: false,
-    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-    passportLevel: store.state.passportLevel,
-    isFlagged: isFlagged,
-  });
+    isFlagged: isFlaggedRequest(details.requestHeaders),
+  };
+  const proxyPassportRequest = isRequestTypeProxied("passport", params);
+  const proxyUsherRequest = isRequestTypeProxied("usher", params);
+  const proxyVideoWeaverRequest = isRequestTypeProxied("weaver", params);
+  const proxyGraphQLRequest = isRequestTypeProxied("gql", params);
+  const proxyTwitchWebpageRequest = isRequestTypeProxied("www", params);
 
   // Passport requests.
   if (proxyPassportRequest && passportHostRegex.test(host)) {

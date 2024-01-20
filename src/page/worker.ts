@@ -9,7 +9,7 @@ let params;
 try {
   params = JSON.parse(getParams()!);
 } catch (error) {
-  console.error("[TTV LOL PRO] ❌ Failed to parse params:", error);
+  console.error("[TTV LOL PRO] Failed to parse params:", error);
 }
 getParams = undefined as any;
 const pageState: PageState = {
