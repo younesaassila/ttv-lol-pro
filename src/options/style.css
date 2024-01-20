@@ -65,7 +65,7 @@ body {
 .wrapper {
   position: relative;
   left: 50%;
-  width: min(100%, 1200px);
+  width: min(100%, 1000px);
   transform: translateX(-50%);
   background-color: var(--wrapper-background-color);
   box-shadow: 0 0 32px var(--wrapper-box-shadow-color);
