@@ -248,6 +248,7 @@ export function getFetch(pageState: PageState): typeof fetch {
       //#endregion
     }
 
+    // FIXME: Flag Usher requests for streams (to avoid proxying VODs).
     // Twitch Usher requests.
     if (host != null && usherHostRegex.test(host)) {
       cachedUsherRequestUrl = url; // Cache the URL for later use.

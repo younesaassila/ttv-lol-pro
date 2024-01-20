@@ -143,6 +143,7 @@ store.addEventListener(
     // This is mainly to reduce the amount of messages sent to the page script.
     // (Also to reduce the number of console logs.)
     const ignoredKeys: (keyof State)[] = [
+      "adLog",
       "dnsResponses",
       "openedTwitchTabs",
       "streamStatuses",
