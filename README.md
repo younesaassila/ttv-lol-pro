@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img alt="Icon" src="src/images/brand/icon.png" height="100" width="100" />
+  <img alt="Icon" src="src/common/images/brand/icon.png" height="100" width="100" />
   <br />
   TTV LOL PRO
   <br />
@@ -48,14 +48,14 @@
   >
     <img
       alt="Chrome Web Store"
-      src="src/images/badges/chrome_web_store.png"
+      src="src/common/images/badges/chrome_web_store.png"
       height="50"
     />
   </a>
   <a href="https://addons.mozilla.org/addon/ttv-lol-pro/">
     <img
       alt="Firefox Add-ons"
-      src="src/images/badges/firefox_addons.png"
+      src="src/common/images/badges/firefox_addons.png"
       height="50"
     />
   </a>
