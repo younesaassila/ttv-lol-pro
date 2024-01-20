@@ -36,9 +36,9 @@
     "web-extension",
     "adblocker"
   ],
-  "author": "TTV-LOL (https://github.com/TTV-LOL)",
+  "author": "Younes Aassila (https://github.com/younesaassila)",
   "contributors": [
-    "Younes Aassila (https://github.com/younesaassila)"
+    "Marc Gómez (https://github.com/zGato)"
   ],
   "license": "GPL-3.0",
   "dependencies": {
