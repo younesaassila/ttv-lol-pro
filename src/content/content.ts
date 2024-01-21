@@ -160,3 +160,56 @@ store.addEventListener(
     });
   }
 );
+
+async function waitForElm(selector: string): Promise<Element | null> {
+  return new Promise(resolve => {
+    if (document.querySelector(selector)) {
+      return resolve(document.querySelector(selector));
+    }
+
+    const observer = new MutationObserver(mutations => {
+      if (document.querySelector(selector)) {
+        observer.disconnect();
+        resolve(document.querySelector(selector));
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+  });
+}
+
+// FIXME: Listen to channel change event and renew observer.
+waitForElm(".video-player__overlay").then((elm: Element | null) => {
+  if (!elm) {
+    return console.error("[TTV LOL PRO] Video player overlay not found.");
+  }
+  console.log("[TTV LOL PRO] Video player overlay loaded.");
+  const adSelectors = [
+    'span[data-a-target="video-ad-label"]',
+    'span[data-a-target="video-ad-countdown"]',
+  ];
+  const observer = new MutationObserver(mutations => {
+    const adDetected = mutations.some(
+      mutation =>
+        mutation.type === "childList" &&
+        Array.from(mutation.addedNodes).some(
+          node =>
+            node instanceof Element &&
+            (adSelectors.some(s => node.matches(s)) ||
+              node.querySelector(adSelectors.join(",")) != null)
+        )
+    );
+    if (adDetected) {
+      console.log(
+        "[TTV LOL PRO] AD DETECTED ALERT THERE IS AN ADVERT ALERT ALERT ALERT AD AD AD AD AD"
+      );
+    }
+  });
+  observer.observe(elm, {
+    childList: true,
+    subtree: true,
+  });
+});
