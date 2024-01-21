@@ -255,8 +255,8 @@ li.hide-marker::marker {
   grid-template-columns: auto 1fr;
   grid-template-areas:
     "image slider"
-    ". warning"
-    ". usage";
+    ". usage"
+    ". warning";
   column-gap: 1.25rem;
   row-gap: 0;
   align-items: center;
@@ -292,17 +292,11 @@ li.hide-marker::marker {
   text-align: right;
 }
 
-#passport-type-warning {
-  display: none;
-  grid-area: warning;
-  margin-top: 0.5rem;
-}
-
 #passport-type-proxy-usage {
   grid-area: usage;
   width: 100%;
   max-width: var(--input-max-width);
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--input-border-color);
@@ -371,6 +365,12 @@ li.hide-marker::marker {
 #passport-type-proxy-usage-table > tbody > tr > td:nth-child(2) {
   color: var(--text-secondary);
   text-align: right;
+}
+
+#passport-type-warning {
+  display: none;
+  grid-area: warning;
+  margin-top: 0.75rem;
 }
 
 @media screen and (max-width: 800px) {

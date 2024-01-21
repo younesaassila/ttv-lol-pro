@@ -237,7 +237,6 @@ export function getFetch(pageState: PageState): typeof fetch {
               "[TTV LOL PRO] Overriding PlaybackAccessToken request…"
             );
             request = newRequest;
-            isFlaggedRequest = true;
             // Since this is a template request, whether or not integrity requests are proxied doesn't matter.
           } else {
             console.error(
@@ -259,17 +258,28 @@ export function getFetch(pageState: PageState): typeof fetch {
     usher: if (host != null && usherHostRegex.test(host)) {
       cachedUsherRequestUrl = url; // Cache the URL for later use.
       requestType = ProxyRequestType.Usher;
-      if (url.includes("/vod/")) {
-        console.debug("[TTV LOL PRO] Not flagging VOD Usher request.");
-        break usher;
-      }
       await waitForStore(pageState);
+      const channelName = findChannelFromUsherUrl(url);
+      const isLivestream = !url.includes("/vod/");
+      const whitelistedChannelsLower = pageState.state?.whitelistedChannels.map(
+        channel => channel.toLowerCase()
+      );
+      const isWhitelisted =
+        channelName != null &&
+        whitelistedChannelsLower != null &&
+        whitelistedChannelsLower.includes(channelName.toLowerCase());
       const shouldFlagRequest = isRequestTypeProxied(ProxyRequestType.Usher, {
         isChromium: pageState.isChromium,
         optimizedProxiesEnabled:
           pageState.state?.optimizedProxiesEnabled ?? true,
         passportLevel: pageState.state?.passportLevel ?? 0,
       });
+      if (!isLivestream || isWhitelisted) {
+        console.log(
+          "[TTV LOL PRO] Not flagging Usher request: not a livestream or is whitelisted."
+        );
+        break usher;
+      }
       if (shouldFlagRequest) {
         console.debug("[TTV LOL PRO] Flagging Usher request…");
         isFlaggedRequest = true;
@@ -277,7 +287,7 @@ export function getFetch(pageState: PageState): typeof fetch {
     }
 
     // Twitch Video Weaver requests.
-    if (host != null && videoWeaverHostRegex.test(host)) {
+    weaver: if (host != null && videoWeaverHostRegex.test(host)) {
       requestType = ProxyRequestType.VideoWeaver;
 
       //#region Video Weaver requests.
@@ -289,9 +299,37 @@ export function getFetch(pageState: PageState): typeof fetch {
           "[TTV LOL PRO] No associated Usher manifest found for Video Weaver request."
         );
       }
-      let videoWeaverUrl = url;
+
+      await waitForStore(pageState);
+      const channelName =
+        manifest?.channelName ?? findChannelFromTwitchTvUrl(location.href);
+      const whitelistedChannelsLower = pageState.state?.whitelistedChannels.map(
+        channel => channel.toLowerCase()
+      );
+      const isWhitelisted =
+        channelName != null &&
+        whitelistedChannelsLower != null &&
+        whitelistedChannelsLower.includes(channelName.toLowerCase());
+      const shouldFlagRequest = isRequestTypeProxied(
+        ProxyRequestType.VideoWeaver,
+        {
+          isChromium: pageState.isChromium,
+          optimizedProxiesEnabled:
+            pageState.state?.optimizedProxiesEnabled ?? true,
+          passportLevel: pageState.state?.passportLevel ?? 0,
+        }
+      );
+      if (isWhitelisted) {
+        if (IS_DEVELOPMENT) {
+          console.debug(
+            "[TTV LOL PRO] Not flagging Video Weaver request: is whitelisted."
+          );
+        }
+        break weaver;
+      }
 
       // Check if we should replace the Video Weaver URL.
+      let videoWeaverUrl = url;
       if (manifest?.replacementMap != null) {
         const videoQuality = [...manifest.assignedMap].find(
           ([, url]) => url === videoWeaverUrl
@@ -315,18 +353,9 @@ export function getFetch(pageState: PageState): typeof fetch {
         }
       }
 
-      // Not needed for now (always returns `true`).
-      // await waitForStore(pageState);
-      // const shouldFlagRequest = isRequestTypeProxied(ProxyRequestType.VideoWeaver, {
-      //   isChromium: pageState.isChromium,
-      //   optimizedProxiesEnabled:
-      //     pageState.state?.optimizedProxiesEnabled ?? true,
-      //   passportLevel: pageState.state?.passportLevel ?? 0,
-      // });
-
       // Flag first request to each Video Weaver URL.
       const proxiedCount = videoWeaverUrlsProxiedCount.get(videoWeaverUrl) ?? 0;
-      if (proxiedCount < 1) {
+      if (shouldFlagRequest && proxiedCount < 1) {
         videoWeaverUrlsProxiedCount.set(videoWeaverUrl, proxiedCount + 1);
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/PluralRules/PluralRules#using_options
         const pr = new Intl.PluralRules("en-US", { type: "ordinal" });

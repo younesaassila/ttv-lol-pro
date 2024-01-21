@@ -4,6 +4,7 @@
 }
 
 :root {
+  --popup-width: 310px;
   --font-family: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
     sans-serif;
 
@@ -21,8 +22,7 @@
 }
 
 body {
-  width: 100%;
-  min-width: max-content;
+  width: var(--popup-width);
   margin: 0;
   padding: 0;
   background-color: var(--background);

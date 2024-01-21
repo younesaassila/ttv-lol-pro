@@ -27,7 +27,7 @@ export default async function onProxyRequest(
     ? getHostFromUrl(details.documentUrl)
     : null;
   const isFromTwitchTvHost =
-    documentHost && twitchTvHostRegex.test(documentHost);
+    documentHost != null && documentHost.endsWith(".twitch.tv");
 
   // Wait for the store to be ready.
   if (store.readyState !== "complete") {
@@ -74,6 +74,12 @@ export default async function onProxyRequest(
 
   // Passport requests.
   if (proxyPassportRequest && passportHostRegex.test(host)) {
+    if (!isFromTwitchTvHost) {
+      console.log(
+        `✋ '${details.url}' from host '${documentHost}' is not supported.`
+      );
+      return { type: "direct" };
+    }
     console.log(
       `⌛ Proxying ${details.url} through one of: ${
         proxies.toString() || "<empty>"
@@ -84,14 +90,16 @@ export default async function onProxyRequest(
 
   // Usher requests.
   if (proxyUsherRequest && usherHostRegex.test(host)) {
-    // Don't proxy Usher requests from non-supported hosts.
     if (!isFromTwitchTvHost) {
       console.log(
         `✋ '${details.url}' from host '${documentHost}' is not supported.`
       );
       return { type: "direct" };
     }
-    // Don't proxy whitelisted channels.
+    if (details.url.includes("/vod/")) {
+      console.log(`✋ '${details.url}' is a VOD manifest.`);
+      return { type: "direct" };
+    }
     const channelName = findChannelFromUsherUrl(details.url);
     if (isChannelWhitelisted(channelName)) {
       console.log(`✋ Channel '${channelName}' is whitelisted.`);
@@ -107,14 +115,12 @@ export default async function onProxyRequest(
 
   // Video Weaver requests.
   if (proxyVideoWeaverRequest && videoWeaverHostRegex.test(host)) {
-    // Don't proxy Video Weaver requests from non-supported hosts.
     if (!isFromTwitchTvHost) {
       console.log(
         `✋ '${details.url}' from host '${documentHost}' is not supported.`
       );
       return { type: "direct" };
     }
-    // Don't proxy whitelisted channels.
     const channelName =
       findChannelFromVideoWeaverUrl(details.url) ??
       findChannelFromTwitchTvUrl(details.documentUrl);
@@ -132,6 +138,12 @@ export default async function onProxyRequest(
 
   // Twitch GraphQL requests.
   if (proxyGraphQLRequest && twitchGqlHostRegex.test(host)) {
+    if (!isFromTwitchTvHost) {
+      console.log(
+        `✋ '${details.url}' from host '${documentHost}' is not supported.`
+      );
+      return { type: "direct" };
+    }
     console.log(
       `⌛ Proxying ${details.url} through one of: ${
         proxies.toString() || "<empty>"
@@ -142,7 +154,12 @@ export default async function onProxyRequest(
 
   // Twitch webpage requests.
   if (proxyTwitchWebpageRequest && twitchTvHostRegex.test(host)) {
-    console.log(`⌛ Proxying ${details.url} through one of: <empty>`);
+    // No check for `isFromTwitchTvHost` here because `documentHost` is null.
+    console.log(
+      `⌛ Proxying ${details.url} through one of: ${
+        proxies.toString() || "<empty>"
+      }`
+    );
     return proxyInfoArray;
   }
 
