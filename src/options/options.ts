@@ -251,11 +251,7 @@ function updateProxyUsage() {
     passportTypeProxyUsagePassportElement.textContent = "None";
   }
   // Usher
-  if (isRequestTypeProxied(ProxyRequestType.Usher, requestParams)) {
-    passportTypeProxyUsageUsherElement.textContent = "All";
-  } else {
-    passportTypeProxyUsageUsherElement.textContent = "None";
-  }
+  passportTypeProxyUsageUsherElement.textContent = "All";
   // Video Weaver
   if (isRequestTypeProxied(ProxyRequestType.VideoWeaver, requestParams)) {
     passportTypeProxyUsageVideoWeaverElement.textContent = "All";

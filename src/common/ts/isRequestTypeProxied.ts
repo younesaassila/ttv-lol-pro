@@ -5,15 +5,21 @@ export default function isRequestTypeProxied(
   params: ProxyRequestParams
 ): boolean {
   if (type === ProxyRequestType.Passport) {
-    return params.passportLevel >= 0;
+    if (params.isChromium && !params.optimizedProxiesEnabled) {
+      return params.passportLevel >= 0;
+    } else {
+      return params.passportLevel >= 1;
+    }
   }
 
   if (type === ProxyRequestType.Usher) {
-    if (params.isChromium && params.fullModeEnabled === false) {
-      return false;
-    }
-    if (!params.isChromium && params.isFlagged === false) {
-      return false;
+    if (params.optimizedProxiesEnabled) {
+      if (params.isChromium && params.fullModeEnabled === false) {
+        return false;
+      }
+      if (!params.isChromium && params.isFlagged === false) {
+        return false;
+      }
     }
     return params.passportLevel >= 0;
   }
@@ -31,7 +37,11 @@ export default function isRequestTypeProxied(
   }
 
   if (type === ProxyRequestType.GraphQLToken) {
-    return params.passportLevel >= 1;
+    if (params.isChromium) {
+      return params.passportLevel >= 1;
+    } else {
+      return params.passportLevel >= 0;
+    }
   }
 
   if (type === ProxyRequestType.GraphQLIntegrity) {
@@ -66,7 +76,11 @@ export default function isRequestTypeProxied(
     if (!params.isChromium && params.isFlagged === false) {
       return false;
     }
-    return params.passportLevel >= 1;
+    if (params.isChromium) {
+      return params.passportLevel >= 1;
+    } else {
+      return params.passportLevel >= 0;
+    }
   }
 
   if (type === ProxyRequestType.TwitchWebpage) {
