@@ -2,12 +2,12 @@ import { Runtime } from "webextension-polyfill";
 import isChromium from "../../common/ts/isChromium";
 import store from "../../store";
 
-export default function onInstalledDataCleanup(
+export default function onInstalledStoreCleanup(
   details: Runtime.OnInstalledDetailsType
 ): void {
   if (store.readyState !== "complete")
     return store.addEventListener("load", () =>
-      onInstalledDataCleanup(details)
+      onInstalledStoreCleanup(details)
     );
 
   if (details.reason === "update") {
