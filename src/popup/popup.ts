@@ -91,10 +91,12 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
     proxiedElement.classList.remove("error");
     proxiedElement.classList.remove("idle");
     proxiedElement.classList.add("success");
-    proxiedElement.title = "Proxied";
+    proxiedElement.title = "Proxying";
   } else if (
     !status.proxied &&
     status.proxyHost &&
+    status.stats &&
+    status.stats.proxied > 0 &&
     store.state.optimizedProxiesEnabled &&
     store.state.optimizedProxies.length > 0 &&
     !isWhitelisted
@@ -102,12 +104,12 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
     proxiedElement.classList.remove("error");
     proxiedElement.classList.remove("success");
     proxiedElement.classList.add("idle");
-    proxiedElement.title = "Idle";
+    proxiedElement.title = "Idling";
   } else {
     proxiedElement.classList.remove("success");
     proxiedElement.classList.remove("idle");
     proxiedElement.classList.add("error");
-    proxiedElement.title = "Not proxied";
+    proxiedElement.title = "Not proxying";
   }
   // Channel name
   channelNameElement.textContent = channelNameLower;
