@@ -1,3 +1,4 @@
+import isChromium from "../common/ts/isChromium";
 import type { State } from "./types";
 
 export default function getDefaultState() {
@@ -10,7 +11,9 @@ export default function getDefaultState() {
     dnsResponses: [],
     normalProxies: [],
     openedTwitchTabs: [],
-    optimizedProxies: ["firefox.api.cdn-perfprod.com:2023"],
+    optimizedProxies: isChromium
+      ? ["chromium.api.cdn-perfprod.com:2023"]
+      : ["firefox.api.cdn-perfprod.com:2023"],
     optimizedProxiesEnabled: true,
     passportLevel: 0,
     streamStatuses: {},
