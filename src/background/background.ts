@@ -6,7 +6,7 @@ import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
 import onBeforeTwitchTvSendHeaders from "./handlers/onBeforeTwitchTvSendHeaders";
 import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
 import onContentScriptMessage from "./handlers/onContentScriptMessage";
-import onInstalled from "./handlers/onInstalled";
+import onInstalledDataCleanup from "./handlers/onInstalledDataCleanup";
 import onProxyRequest from "./handlers/onProxyRequest";
 import onResponseStarted from "./handlers/onResponseStarted";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
@@ -18,7 +18,7 @@ import onTabUpdated from "./handlers/onTabUpdated";
 console.info("🚀 Background script loaded.");
 
 // Cleanup old data on update.
-browser.runtime.onInstalled.addListener(onInstalled);
+browser.runtime.onInstalled.addListener(onInstalledDataCleanup);
 
 // Cleanup the session-related data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);

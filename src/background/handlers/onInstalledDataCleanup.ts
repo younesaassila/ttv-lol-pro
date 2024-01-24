@@ -2,11 +2,13 @@ import { Runtime } from "webextension-polyfill";
 import isChromium from "../../common/ts/isChromium";
 import store from "../../store";
 
-export default function onInstalled(
+export default function onInstalledDataCleanup(
   details: Runtime.OnInstalledDetailsType
 ): void {
   if (store.readyState !== "complete")
-    return store.addEventListener("load", () => onInstalled(details));
+    return store.addEventListener("load", () =>
+      onInstalledDataCleanup(details)
+    );
 
   if (details.reason === "update") {
     // Remove old Chromium normal proxy.
