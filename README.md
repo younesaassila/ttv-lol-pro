@@ -65,25 +65,21 @@
 
 > ℹ️ Looking for TTV LOL PRO v1? [Click here](https://github.com/younesaassila/ttv-lol-pro/tree/v1).
 
-TTV LOL PRO removes _most_ livestream ads from Twitch. This is free, don't expect it to be perfect. Issues? Complain to Twitch
+TTV LOL PRO removes most livestream ads from Twitch. This is free, don't expect it to be perfect.
 
-**TTV LOL PRO:**
+TTV LOL PRO is a fork of TTV LOL that:
 
-- removes _most_ livestream ads from Twitch,
+- uses an improved ad blocking method,
+- uses standard HTTP proxies (thus improving proxy compatibility and your privacy),
+- adds a stream status widget to the popup,
 - lets you whitelist channels,
-- improves TTV LOL's popup by showing stream status,
-- lets you add custom primary/fallback proxies.
+- lets you use your own proxies.
 
-**Recommended:**
+We recommend using [uBlock Origin](https://ublockorigin.com/) alongside TTV LOL PRO for the best experience.
 
-- [uBlock Origin](https://ublockorigin.com/)
+**Useful links:**
 
-  - removes banner ads,
-  - removes ads on VODs.
-
-**Frequently Asked Questions (FAQ):**
-
-- [Click here](FAQ.md)
+- [❓ Frequently Asked Questions (FAQ)](FAQ.md)
 
 ## Screenshots
 
