@@ -20,7 +20,7 @@ console.info("🚀 Background script loaded.");
 // Cleanup old data in the store on update.
 browser.runtime.onInstalled.addListener(onInstalledStoreCleanup);
 
-// Cleanup the session-related data in the store on startup.
+// Cleanup session data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);
 
 // Handle proxy authentication.
