@@ -23,9 +23,9 @@ export const enum AdType {
 
 export interface AdLogEntry {
   adType: AdType;
-  channel: string | null;
   isPurpleScreen: boolean;
   proxy: string | null;
+  channel: string | null;
   passportLevel: number;
   anonymousMode: boolean;
   timestamp: number;
@@ -67,13 +67,13 @@ export const enum MessageType {
 }
 
 export const enum ProxyRequestType {
-  Passport = "TLP_Passport",
-  Usher = "TLP_Usher",
-  VideoWeaver = "TLP_VideoWeaver",
-  GraphQL = "TLP_GraphQL",
-  GraphQLToken = "TLP_GraphQLToken",
-  GraphQLIntegrity = "TLP_GraphQLIntegrity",
-  TwitchWebpage = "TLP_TwitchWebpage",
+  Passport = "passport",
+  Usher = "usher",
+  VideoWeaver = "videoWeaver",
+  GraphQL = "graphQL",
+  GraphQLToken = "graphQLToken",
+  GraphQLIntegrity = "graphQLIntegrity",
+  TwitchWebpage = "twitchWebpage",
 }
 
 export type ProxyRequestParams =
