@@ -11,14 +11,11 @@ import isChannelWhitelisted from "../common/ts/isChannelWhitelisted";
 import store from "../store";
 import type { StreamStatus } from "../types";
 
-type WarningBannerType = "noProxies" | "limitedProxy";
+type WarningBannerType = "noProxies";
 
 //#region HTML Elements
 const warningBannerNoProxiesElement = $(
   "#warning-banner-no-proxies"
-) as HTMLDivElement;
-const warningBannerLimitedProxyElement = $(
-  "#warning-banner-limited-proxy"
 ) as HTMLDivElement;
 const streamStatusElement = $("#stream-status") as HTMLDivElement;
 const proxiedElement = $("#proxied") as HTMLDivElement;
@@ -42,13 +39,8 @@ async function main() {
   const proxies = store.state.optimizedProxiesEnabled
     ? store.state.optimizedProxies
     : store.state.normalProxies;
-
-  // TODO: Limited proxy should show an informatory message instead of a warning banner.
-  const isLimitedProxy = false; // TODO: Should be true if using the default proxy.
   if (proxies.length === 0) {
     setWarningBanner("noProxies");
-  } else if (isLimitedProxy) {
-    setWarningBanner("limitedProxy");
   }
 
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
@@ -63,20 +55,22 @@ async function main() {
 }
 
 function setWarningBanner(type: WarningBannerType) {
-  if (type === "noProxies") {
-    warningBannerNoProxiesElement.style.display = "block";
-    warningBannerLimitedProxyElement.style.display = "none";
-  } else if (type === "limitedProxy") {
-    warningBannerNoProxiesElement.style.display = "none";
-    warningBannerLimitedProxyElement.style.display = "block";
+  // Hide all warning banners.
+  warningBannerNoProxiesElement.style.display = "none";
+
+  switch (type) {
+    case "noProxies":
+      warningBannerNoProxiesElement.style.display = "block";
+      break;
   }
 }
 
 function setStreamStatusElement(channelName: string) {
   const channelNameLower = channelName.toLowerCase();
+  const isWhitelisted = isChannelWhitelisted(channelNameLower);
   const status = store.state.streamStatuses[channelNameLower];
   if (status) {
-    setProxyStatus(channelNameLower, status);
+    setProxyStatus(channelNameLower, isWhitelisted, status);
     setWhitelistStatus(channelNameLower);
     streamStatusElement.style.display = "flex";
   } else {
@@ -84,8 +78,11 @@ function setStreamStatusElement(channelName: string) {
   }
 }
 
-function setProxyStatus(channelNameLower: string, status: StreamStatus) {
-  const isWhitelisted = isChannelWhitelisted(channelNameLower);
+function setProxyStatus(
+  channelNameLower: string,
+  isWhitelisted: boolean,
+  status: StreamStatus
+) {
   // Proxied
   if (status.proxied) {
     proxiedElement.classList.remove("error");
@@ -140,8 +137,8 @@ function setProxyStatus(channelNameLower: string, status: StreamStatus) {
   infoContainerElement.style.display = "none";
   for (const message of messages) {
     const smallElement = document.createElement("small");
-    smallElement.textContent = message;
     smallElement.className = "info";
+    smallElement.textContent = message;
     infoContainerElement.appendChild(smallElement);
     infoContainerElement.style.display = "flex";
   }
@@ -180,12 +177,12 @@ copyDebugInfoButtonElement.addEventListener("click", async e => {
     activeTab?.url != null ? findChannelFromTwitchTvUrl(activeTab.url) : null;
   const channelNameLower =
     channelName != null ? channelName.toLowerCase() : null;
+  const isWhitelisted =
+    channelNameLower != null ? isChannelWhitelisted(channelNameLower) : null;
   const status =
     channelNameLower != null
       ? store.state.streamStatuses[channelNameLower]
       : null;
-  const isWhitelisted =
-    channelNameLower != null ? isChannelWhitelisted(channelNameLower) : null;
 
   const debugInfo = [
     `**Debug Info**\n`,

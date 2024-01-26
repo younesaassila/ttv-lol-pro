@@ -568,8 +568,8 @@ importButtonElement.addEventListener("click", async () => {
       }
       if (key === "passportLevel") {
         if (typeof value !== "number") {
-          filteredValue = isChromium ? 0 : 1;
-        } else if (value < 0 || value > 2) {
+          filteredValue = DEFAULT_STATE.passportLevel;
+        } else {
           filteredValue = Math.min(Math.max(value, 0), 2);
         }
       }
