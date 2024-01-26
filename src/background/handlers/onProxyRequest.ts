@@ -20,6 +20,17 @@ import { ProxyInfo, ProxyRequestType } from "../../types";
 export default async function onProxyRequest(
   details: Proxy.OnRequestDetailsType
 ): Promise<ProxyInfo | ProxyInfo[]> {
+  // Wait for the store to be ready.
+  if (store.readyState !== "complete") {
+    await new Promise(resolve => {
+      const listener = () => {
+        store.removeEventListener("load", listener);
+        resolve(onProxyRequest(details));
+      };
+      store.addEventListener("load", listener);
+    });
+  }
+
   const host = getHostFromUrl(details.url);
   if (!host) return { type: "direct" };
 
@@ -33,17 +44,6 @@ export default async function onProxyRequest(
     !twitchTvHostRegex.test(documentHost)
   ) {
     return { type: "direct" };
-  }
-
-  // Wait for the store to be ready.
-  if (store.readyState !== "complete") {
-    await new Promise(resolve => {
-      const listener = () => {
-        store.removeEventListener("load", listener);
-        resolve(onProxyRequest(details));
-      };
-      store.addEventListener("load", listener);
-    });
   }
 
   const proxies = store.state.optimizedProxiesEnabled
@@ -136,7 +136,6 @@ export default async function onProxyRequest(
 
   // Twitch webpage requests.
   if (proxyTwitchWebpageRequest && twitchTvHostRegex.test(host)) {
-    // No check for `isFromTwitchTvHost` here because `documentHost` is null.
     console.log(
       `⌛ Proxying ${details.url} through one of: ${
         proxies.toString() || "<empty>"

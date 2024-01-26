@@ -54,7 +54,7 @@ export default function isRequestTypeProxied(
 
   if (type === ProxyRequestType.GraphQL) {
     // Proxy all GQL requests when passport is unoptimized official+ (Chromium)
-    // or unoptimized diplomatic (Firefox).
+    // or unoptimized diplomatic+ (Firefox).
     if (
       params.isChromium &&
       !params.optimizedProxiesEnabled &&
