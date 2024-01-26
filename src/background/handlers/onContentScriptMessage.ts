@@ -5,7 +5,7 @@ import { MessageType, ProxyRequestType } from "../../types";
 
 type Timeout = string | number | NodeJS.Timeout | undefined;
 
-const requestTypeToTimeoutMs: Map<ProxyRequestType, Timeout> = new Map();
+const timeoutMap: Map<ProxyRequestType, Timeout> = new Map();
 
 export default function onContentScriptMessage(
   message: any,
@@ -16,39 +16,39 @@ export default function onContentScriptMessage(
     if (!sender.tab?.id) return;
 
     const requestType = message.requestType as ProxyRequestType;
-    if (requestTypeToTimeoutMs.has(requestType)) {
-      clearTimeout(requestTypeToTimeoutMs.get(requestType));
+
+    // Clear existing timeout for request type.
+    if (timeoutMap.has(requestType)) {
+      clearTimeout(timeoutMap.get(requestType));
     }
 
-    const minTimeoutMs = 3000; // Time for fetch to be called.
+    // Set new timeout for request type.
+    const fetchTimeoutMs = 3000; // Time for fetch to be called.
     const replyTimeoutMs = Date.now() - message.timestamp; // Time for reply to be received.
-    requestTypeToTimeoutMs.set(
+    timeoutMap.set(
       requestType,
       setTimeout(() => {
-        console.log("[TTV LOL PRO] Disabling full mode (timeout)");
-        requestTypeToTimeoutMs.delete(requestType);
+        console.log(
+          "[TTV LOL PRO] Disabling full mode (request type: ${requestType}, timeout)"
+        );
+        timeoutMap.delete(requestType);
         if (store.state.chromiumProxyActive) {
-          console.log(requestTypeToTimeoutMs);
-          updateProxySettings([...requestTypeToTimeoutMs.keys()]);
+          updateProxySettings([...timeoutMap.keys()]);
         }
-      }, minTimeoutMs + replyTimeoutMs)
+      }, fetchTimeoutMs + replyTimeoutMs)
     );
     if (store.state.chromiumProxyActive) {
-      console.log(requestTypeToTimeoutMs);
-      updateProxySettings([...requestTypeToTimeoutMs.keys()]);
+      updateProxySettings([...timeoutMap.keys()]);
     }
 
     console.log(
-      `[TTV LOL PRO] Enabling full mode for ${
-        minTimeoutMs + replyTimeoutMs
+      `[TTV LOL PRO] Enabled full mode for ${
+        fetchTimeoutMs + replyTimeoutMs
       }ms (request type: ${requestType})`
     );
-
     try {
       browser.tabs.sendMessage(sender.tab.id, {
         type: MessageType.EnableFullModeResponse,
-        timestamp: Date.now(),
-        timeout: minTimeoutMs + replyTimeoutMs,
       });
     } catch (error) {
       console.error(
@@ -59,15 +59,17 @@ export default function onContentScriptMessage(
   }
 
   if (message.type === MessageType.DisableFullMode) {
-    console.log("[TTV LOL PRO] Disabling full mode");
     const requestType = message.requestType as ProxyRequestType;
-    if (requestTypeToTimeoutMs.has(requestType)) {
-      clearTimeout(requestTypeToTimeoutMs.get(requestType));
-      requestTypeToTimeoutMs.delete(requestType);
+    // Clear existing timeout for request type.
+    if (timeoutMap.has(requestType)) {
+      clearTimeout(timeoutMap.get(requestType));
+      timeoutMap.delete(requestType);
     }
     if (store.state.chromiumProxyActive) {
-      console.log(requestTypeToTimeoutMs);
-      updateProxySettings([...requestTypeToTimeoutMs.keys()]);
+      updateProxySettings([...timeoutMap.keys()]);
     }
+    console.log(
+      `[TTV LOL PRO] Disabled full mode (request type: ${requestType})`
+    );
   }
 }

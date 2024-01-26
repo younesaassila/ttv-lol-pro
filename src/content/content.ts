@@ -13,8 +13,9 @@ console.info("[TTV LOL PRO] Content script running.");
 if (isChromium) injectPageScript();
 // Firefox uses FilterResponseData to inject the page script.
 
-if (store.readyState === "complete") onStoreReady();
-else store.addEventListener("load", onStoreReady);
+if (store.readyState === "complete") onStoreLoad();
+else store.addEventListener("load", onStoreLoad);
+store.addEventListener("change", onStoreChange);
 
 browser.runtime.onMessage.addListener(onBackgroundMessage);
 window.addEventListener("message", onPageMessage);
@@ -37,7 +38,7 @@ function injectPageScript() {
   (document.head || document.documentElement).prepend(script); // Note: Despite what the TS types say, `document.head` can be `null`.
 }
 
-function onStoreReady() {
+function onStoreLoad() {
   // Clear stats for stream on page load/reload.
   clearStats();
 }
@@ -51,14 +52,36 @@ function clearStats() {
   if (!channelName) return;
 
   if (store.state.streamStatuses.hasOwnProperty(channelName)) {
-    store.state.streamStatuses[channelName].stats = {
-      proxied: 0,
-      notProxied: 0,
-    };
+    setStreamStatus(channelName, {
+      proxied: false,
+      reason: "",
+    });
   }
   console.log(
     `[TTV LOL PRO] Cleared stats for channel '${channelName}' (content script).`
   );
+}
+
+function onStoreChange(changes: Record<string, Storage.StorageChange>) {
+  const changedKeys = Object.keys(changes) as (keyof State)[];
+  // This is mainly to reduce the amount of messages sent to the page script.
+  // (Also to reduce the number of console logs.)
+  const ignoredKeys: (keyof State)[] = [
+    "adLog",
+    "dnsResponses",
+    "openedTwitchTabs",
+    "streamStatuses",
+    "videoWeaverUrlsByChannel",
+  ];
+  if (changedKeys.every(key => ignoredKeys.includes(key))) return;
+  console.log("[TTV LOL PRO] Store changed:", changes);
+  window.postMessage({
+    type: MessageType.PageScriptMessage,
+    message: {
+      type: MessageType.GetStoreStateResponse,
+      state: JSON.parse(JSON.stringify(store.state)),
+    },
+  });
 }
 
 function onBackgroundMessage(message: any) {
@@ -135,28 +158,3 @@ function onPageMessage(event: MessageEvent) {
       break;
   }
 }
-
-store.addEventListener(
-  "change",
-  (changes: Record<string, Storage.StorageChange>) => {
-    const changedKeys = Object.keys(changes) as (keyof State)[];
-    // This is mainly to reduce the amount of messages sent to the page script.
-    // (Also to reduce the number of console logs.)
-    const ignoredKeys: (keyof State)[] = [
-      "adLog",
-      "dnsResponses",
-      "openedTwitchTabs",
-      "streamStatuses",
-      "videoWeaverUrlsByChannel",
-    ];
-    if (changedKeys.every(key => ignoredKeys.includes(key))) return;
-    console.log("[TTV LOL PRO] Store changed:", changes);
-    window.postMessage({
-      type: MessageType.PageScriptMessage,
-      message: {
-        type: MessageType.GetStoreStateResponse,
-        state: JSON.parse(JSON.stringify(store.state)),
-      },
-    });
-  }
-);
