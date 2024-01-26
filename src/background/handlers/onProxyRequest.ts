@@ -26,8 +26,14 @@ export default async function onProxyRequest(
   const documentHost = details.documentUrl
     ? getHostFromUrl(details.documentUrl)
     : null;
-  const isFromTwitchTvHost =
-    documentHost != null && documentHost.endsWith(".twitch.tv");
+  // Twitch requests from non-Twitch hosts are not supported.
+  if (
+    documentHost != null && // Twitch webpage requests have no document URL.
+    !passportHostRegex.test(documentHost) && // Passport requests have a `passport.twitch.tv` document URL.
+    !twitchTvHostRegex.test(documentHost)
+  ) {
+    return { type: "direct" };
+  }
 
   // Wait for the store to be ready.
   if (store.readyState !== "complete") {
@@ -74,12 +80,6 @@ export default async function onProxyRequest(
 
   // Passport requests.
   if (proxyPassportRequest && passportHostRegex.test(host)) {
-    if (!isFromTwitchTvHost) {
-      console.log(
-        `✋ '${details.url}' from host '${documentHost}' is not supported.`
-      );
-      return { type: "direct" };
-    }
     console.log(
       `⌛ Proxying ${details.url} through one of: ${
         proxies.toString() || "<empty>"
@@ -90,12 +90,6 @@ export default async function onProxyRequest(
 
   // Usher requests.
   if (proxyUsherRequest && usherHostRegex.test(host)) {
-    if (!isFromTwitchTvHost) {
-      console.log(
-        `✋ '${details.url}' from host '${documentHost}' is not supported.`
-      );
-      return { type: "direct" };
-    }
     if (details.url.includes("/vod/")) {
       console.log(`✋ '${details.url}' is a VOD manifest.`);
       return { type: "direct" };
@@ -115,12 +109,6 @@ export default async function onProxyRequest(
 
   // Video Weaver requests.
   if (proxyVideoWeaverRequest && videoWeaverHostRegex.test(host)) {
-    if (!isFromTwitchTvHost) {
-      console.log(
-        `✋ '${details.url}' from host '${documentHost}' is not supported.`
-      );
-      return { type: "direct" };
-    }
     const channelName =
       findChannelFromVideoWeaverUrl(details.url) ??
       findChannelFromTwitchTvUrl(details.documentUrl);
@@ -138,12 +126,6 @@ export default async function onProxyRequest(
 
   // Twitch GraphQL requests.
   if (proxyGraphQLRequest && twitchGqlHostRegex.test(host)) {
-    if (!isFromTwitchTvHost) {
-      console.log(
-        `✋ '${details.url}' from host '${documentHost}' is not supported.`
-      );
-      return { type: "direct" };
-    }
     console.log(
       `⌛ Proxying ${details.url} through one of: ${
         proxies.toString() || "<empty>"

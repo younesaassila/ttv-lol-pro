@@ -69,7 +69,8 @@ export default function isRequestTypeProxied(
     ) {
       return true;
     }
-    // Proxy flagged GQL requests when passport is official+.
+    // Proxy flagged GQL requests when passport is official+ (Chromium) or
+    // ordinary+ (Firefox).
     if (params.isChromium && params.fullModeEnabled === false) {
       return false;
     }
