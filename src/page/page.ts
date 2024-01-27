@@ -2,23 +2,45 @@ import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl"
 import toAbsoluteUrl from "../common/ts/toAbsoluteUrl";
 import { MessageType } from "../types";
 import { getFetch } from "./getFetch";
+import {
+  getSendMessageToContentScript,
+  getSendMessageToContentScriptAndWaitForResponse,
+  getSendMessageToPageScript,
+  getSendMessageToPageScriptAndWaitForResponse,
+  getSendMessageToWorkerScript,
+  getSendMessageToWorkerScriptAndWaitForResponse,
+} from "./sendMessage";
 import type { PageState } from "./types";
 
 console.info("[TTV LOL PRO] Page script running.");
 
 const params = JSON.parse(document.currentScript!.dataset.params!);
+
+const sendMessageToContentScript = getSendMessageToContentScript();
+const sendMessageToContentScriptAndWaitForResponse =
+  getSendMessageToContentScriptAndWaitForResponse();
+const sendMessageToPageScript = getSendMessageToPageScript();
+const sendMessageToPageScriptAndWaitForResponse =
+  getSendMessageToPageScriptAndWaitForResponse();
+const sendMessageToWorkerScript = getSendMessageToWorkerScript();
+const sendMessageToWorkerScriptAndWaitForResponse =
+  getSendMessageToWorkerScriptAndWaitForResponse();
 const pageState: PageState = {
   isChromium: params.isChromium,
   scope: "page",
   state: undefined,
   twitchWorker: undefined,
+  sendMessageToContentScript,
+  sendMessageToContentScriptAndWaitForResponse,
+  sendMessageToPageScript,
+  sendMessageToPageScriptAndWaitForResponse,
+  sendMessageToWorkerScript,
+  sendMessageToWorkerScriptAndWaitForResponse,
 };
-
-const NATIVE_WORKER = window.Worker;
 
 window.fetch = getFetch(pageState);
 
-window.Worker = class Worker extends NATIVE_WORKER {
+window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
     const fullUrl = toAbsoluteUrl(scriptURL.toString());
     const isTwitchWorker = fullUrl.includes(".twitch.tv");
@@ -70,32 +92,11 @@ window.Worker = class Worker extends NATIVE_WORKER {
   }
 };
 
-function sendMessageToContentScript(message: any) {
-  window.postMessage({
-    type: MessageType.ContentScriptMessage,
-    message,
-  });
-}
-
-function sendMessageToPageScript(message: any) {
-  window.postMessage({
-    type: MessageType.PageScriptMessage,
-    message,
-  });
-}
-
-function sendMessageToWorkerScript(message: any) {
-  pageState.twitchWorker?.postMessage({
-    type: MessageType.WorkerScriptMessage,
-    message,
-  });
-}
-
 let sendStoreStateToWorker = false;
 window.addEventListener("message", event => {
   // Relay messages from the content script to the worker script.
   if (event.data?.type === MessageType.WorkerScriptMessage) {
-    sendMessageToWorkerScript(event.data.message);
+    sendMessageToWorkerScript(pageState.twitchWorker, event.data.message);
     return;
   }
 
@@ -107,7 +108,7 @@ window.addEventListener("message", event => {
   switch (message.type) {
     case MessageType.GetStoreState: // From Worker
       if (pageState.state != null) {
-        sendMessageToWorkerScript({
+        sendMessageToWorkerScript(pageState.twitchWorker, {
           type: MessageType.GetStoreStateResponse,
           state: pageState.state,
         });
@@ -125,7 +126,7 @@ window.addEventListener("message", event => {
       const state = message.state;
       pageState.state = state;
       if (sendStoreStateToWorker) {
-        sendMessageToWorkerScript({
+        sendMessageToWorkerScript(pageState.twitchWorker, {
           type: MessageType.GetStoreStateResponse,
           state,
         });
@@ -133,8 +134,6 @@ window.addEventListener("message", event => {
       break;
   }
 });
-
-sendMessageToContentScript({ type: MessageType.GetStoreState });
 
 function onChannelChange(callback: (channelName: string) => void) {
   let channelName: string | null = findChannelFromTwitchTvUrl(location.href);
@@ -185,7 +184,11 @@ function onChannelChange(callback: (channelName: string) => void) {
 onChannelChange(() => {
   sendMessageToContentScript({ type: MessageType.ClearStats });
   sendMessageToPageScript({ type: MessageType.ClearStats });
-  sendMessageToWorkerScript({ type: MessageType.ClearStats });
+  sendMessageToWorkerScript(pageState.twitchWorker, {
+    type: MessageType.ClearStats,
+  });
 });
+
+sendMessageToContentScript({ type: MessageType.GetStoreState });
 
 document.currentScript!.remove();

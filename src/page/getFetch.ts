@@ -13,8 +13,6 @@ import {
 import { MessageType, ProxyRequestType } from "../types";
 import type { PageState, PlaybackAccessToken, UsherManifest } from "./types";
 
-// FIXME: Use rolling codes to secure the communication between the content, page, and worker scripts.
-
 const IS_DEVELOPMENT = process.env.NODE_ENV == "development";
 const NATIVE_FETCH = self.fetch;
 
@@ -84,10 +82,11 @@ export function getFetch(pageState: PageState): typeof fetch {
   //   setTimeout(
   //     () =>
   //       updateVideoWeaverReplacementMap(
+  //         pageState,
   //         cachedUsherRequestUrl,
   //         usherManifests[usherManifests.length - 1]
   //       ),
-  //     15000
+  //     30000
   //   );
   // }
 
@@ -402,7 +401,7 @@ export function getFetch(pageState: PageState): typeof fetch {
       pageState.isChromium &&
       pageState.state?.optimizedProxiesEnabled
     ) {
-      sendMessageToContentScript({
+      pageState.sendMessageToContentScript({
         type: MessageType.DisableFullMode,
         timestamp: Date.now(),
         requestType,
@@ -441,7 +440,7 @@ export function getFetch(pageState: PageState): typeof fetch {
       // Send Video Weaver URLs to content script.
       const videoWeaverUrls = [...(assignedMap?.values() ?? [])];
       videoWeaverUrls.forEach(url => videoWeaverUrlsProxiedCount.delete(url)); // Shouldn't be necessary, but just in case.
-      sendMessageToContentScript({
+      pageState.sendMessageToContentScript({
         type: MessageType.UsherResponse,
         channel: channelName,
         videoWeaverUrls,
@@ -489,6 +488,7 @@ export function getFetch(pageState: PageState): typeof fetch {
           !isWhitelisted
         ) {
           const success = await updateVideoWeaverReplacementMap(
+            pageState,
             cachedUsherRequestUrl,
             manifest
           );
@@ -596,7 +596,7 @@ async function flagRequest(
   if (pageState.isChromium) {
     if (pageState.state?.optimizedProxiesEnabled !== true) return request;
     try {
-      await sendMessageToContentScriptAndWaitForResponse(
+      await pageState.sendMessageToContentScriptAndWaitForResponse(
         pageState.scope,
         {
           type: MessageType.EnableFullMode,
@@ -629,116 +629,17 @@ async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-//#region Messages
-
-/**
- * Sends a message to the content script.
- * @param message
- */
-function sendMessageToContentScript(message: any) {
-  self.postMessage({
-    type: MessageType.ContentScriptMessage,
-    message,
-  });
-}
-
-/**
- * Sends a message to the content script and waits for a response.
- * @param scope
- * @param message
- */
-async function sendMessageToContentScriptAndWaitForResponse(
-  scope: "page" | "worker",
-  message: any,
-  messageResponseType: MessageType,
-  timeoutMs = 5000
-): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const listener = (event: MessageEvent) => {
-      if (
-        (scope === "page" &&
-          event.data?.type !== MessageType.PageScriptMessage) ||
-        (scope === "worker" &&
-          event.data?.type !== MessageType.WorkerScriptMessage)
-      )
-        return;
-
-      const message = event.data?.message;
-      if (!message) return;
-
-      if (message.type === messageResponseType) {
-        resolve(message);
-      }
-    };
-    self.addEventListener("message", listener);
-    sendMessageToContentScript(message);
-    setTimeout(() => {
-      self.removeEventListener("message", listener);
-      reject(new Error("Timed out waiting for message response."));
-    }, timeoutMs);
-  });
-}
-
-/**
- * Sends a message to the page script.
- * @param message
- */
-function sendMessageToPageScript(message: any) {
-  self.postMessage({
-    type: MessageType.PageScriptMessage,
-    message,
-  });
-}
-
-/**
- * Sends a message to the page script and waits for a response.
- * @param scope
- * @param message
- */
-async function sendMessageToPageScriptAndWaitForResponse(
-  scope: "page" | "worker",
-  message: any,
-  messageResponseType: MessageType,
-  timeoutMs = 5000
-): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const listener = (event: MessageEvent) => {
-      if (
-        (scope === "page" &&
-          event.data?.type !== MessageType.PageScriptMessage) ||
-        (scope === "worker" &&
-          event.data?.type !== MessageType.WorkerScriptMessage)
-      )
-        return;
-
-      const message = event.data?.message;
-      if (!message) return;
-
-      if (message.type === messageResponseType) {
-        resolve(message);
-      }
-    };
-    self.addEventListener("message", listener);
-    sendMessageToPageScript(message);
-    setTimeout(() => {
-      self.removeEventListener("message", listener);
-      reject(new Error("Timed out waiting for message response."));
-    }, timeoutMs);
-  });
-}
-
-//#endregion
-
 async function waitForStore(pageState: PageState) {
   if (pageState.state != null) return;
   try {
-    const message = await sendMessageToContentScriptAndWaitForResponse(
-      pageState.scope,
-      {
-        type: MessageType.GetStoreState,
-      },
-      MessageType.GetStoreStateResponse
-    );
+    const message =
+      await pageState.sendMessageToContentScriptAndWaitForResponse(
+        pageState.scope,
+        {
+          type: MessageType.GetStoreState,
+        },
+        MessageType.GetStoreStateResponse
+      );
     pageState.state = message.state;
   } catch (error) {
     console.error("[TTV LOL PRO] Failed to get store state:", error);
@@ -918,6 +819,7 @@ function parseUsherManifest(manifest: string): Map<string, string> | null {
  * @returns
  */
 async function updateVideoWeaverReplacementMap(
+  pageState: PageState,
   cachedUsherRequestUrl: string | null,
   manifest: UsherManifest
 ): Promise<boolean> {
@@ -925,7 +827,7 @@ async function updateVideoWeaverReplacementMap(
   try {
     console.log("[TTV LOL PRO] (1/3) Getting new PlaybackAccessToken…");
     const newPlaybackAccessTokenResponse =
-      await sendMessageToPageScriptAndWaitForResponse(
+      await pageState.sendMessageToPageScriptAndWaitForResponse(
         "worker",
         {
           type: MessageType.NewPlaybackAccessToken,
@@ -965,7 +867,7 @@ async function updateVideoWeaverReplacementMap(
     // Send replacement Video Weaver URLs to content script.
     const videoWeaverUrls = [...replacementMap.values()];
     if (cachedUsherRequestUrl != null && videoWeaverUrls.length > 0) {
-      sendMessageToContentScript({
+      pageState.sendMessageToContentScript({
         type: MessageType.UsherResponse,
         channel: findChannelFromUsherUrl(cachedUsherRequestUrl),
         videoWeaverUrls,
