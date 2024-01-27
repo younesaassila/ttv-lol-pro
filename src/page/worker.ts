@@ -30,9 +30,12 @@ const sendMessageToPageScriptAndWaitForResponse =
 const sendMessageToWorkerScript = getSendMessageToWorkerScript();
 const sendMessageToWorkerScriptAndWaitForResponse =
   getSendMessageToWorkerScriptAndWaitForResponse();
+
 const pageState: PageState = {
   isChromium: params.isChromium,
   scope: "worker",
+  state: undefined,
+  twitchWorker: undefined, // Can't get the worker instance from inside the worker.
   sendMessageToContentScript,
   sendMessageToContentScriptAndWaitForResponse,
   sendMessageToPageScript,

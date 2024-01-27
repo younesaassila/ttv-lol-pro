@@ -25,6 +25,7 @@ const sendMessageToPageScriptAndWaitForResponse =
 const sendMessageToWorkerScript = getSendMessageToWorkerScript();
 const sendMessageToWorkerScriptAndWaitForResponse =
   getSendMessageToWorkerScriptAndWaitForResponse();
+
 const pageState: PageState = {
   isChromium: params.isChromium,
   scope: "page",
