@@ -31,56 +31,56 @@
         <!-- Passport -->
         <section id="passport" class="section">
           <h2>Passport</h2>
-          <div id="passport-type-container">
+          <div id="passport-level-container">
             <img
               src="../common/images/passport.png"
               alt="TTV LOL PRO passport"
-              id="passport-type-image"
+              id="passport-level-image"
             />
-            <div id="passport-type-slider-container">
+            <div id="passport-level-slider-container">
               <input
                 type="range"
-                name="passport-type-slider"
-                id="passport-type-slider"
+                name="passport-level-slider"
+                id="passport-level-slider"
                 min="0"
                 max="2"
                 step="1"
-                list="passport-type-slider-datalist"
+                list="passport-level-slider-datalist"
               />
-              <datalist id="passport-type-slider-datalist">
+              <datalist id="passport-level-slider-datalist">
                 <option value="0" label="Ordinary"></option>
                 <option value="1" label="Official"></option>
                 <option value="2" label="Diplomatic"></option>
               </datalist>
             </div>
-            <details id="passport-type-proxy-usage">
-              <summary id="passport-type-proxy-usage-summary"></summary>
-              <table id="passport-type-proxy-usage-table">
+            <details id="passport-level-proxy-usage">
+              <summary id="passport-level-proxy-usage-summary"></summary>
+              <table id="passport-level-proxy-usage-table">
                 <tbody>
                   <tr>
                     <td>passport.twitch.tv</td>
-                    <td id="passport-type-proxy-usage-passport"></td>
+                    <td id="passport-level-proxy-usage-passport"></td>
                   </tr>
                   <tr>
                     <td>usher.ttvnw.net</td>
-                    <td id="passport-type-proxy-usage-usher"></td>
+                    <td id="passport-level-proxy-usage-usher"></td>
                   </tr>
                   <tr>
                     <td>video-weaver.*.hls.ttvnw.net</td>
-                    <td id="passport-type-proxy-usage-video-weaver"></td>
+                    <td id="passport-level-proxy-usage-video-weaver"></td>
                   </tr>
                   <tr>
                     <td>gql.twitch.tv</td>
-                    <td id="passport-type-proxy-usage-gql"></td>
+                    <td id="passport-level-proxy-usage-gql"></td>
                   </tr>
                   <tr>
                     <td>www.twitch.tv</td>
-                    <td id="passport-type-proxy-usage-www"></td>
+                    <td id="passport-level-proxy-usage-www"></td>
                   </tr>
                 </tbody>
               </table>
             </details>
-            <small id="passport-type-warning">
+            <small id="passport-level-warning">
               <b>WARNING:</b>
               Enabling this option could open up a range of features that are
               not accessible in your region, including Predictions, Prime
@@ -153,14 +153,6 @@
                 checked
               />
               <label for="optimized">Proxy ad requests only</label>
-              <span class="tag">
-                <a
-                  href="https://youtu.be/YivUOqd91Nk"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Powered by AI</a
-                >
-              </span>
               <ol id="optimized-proxies-list" class="store-list" start="0"></ol>
             </div>
             <div>

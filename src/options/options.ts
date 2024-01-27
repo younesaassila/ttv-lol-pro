@@ -41,34 +41,34 @@ const exportButtonElement = $("#export-button") as HTMLButtonElement;
 const importButtonElement = $("#import-button") as HTMLButtonElement;
 const resetButtonElement = $("#reset-button") as HTMLButtonElement;
 // Passport
-const passportTypeSliderElement = $(
-  "#passport-type-slider"
+const passportLevelSliderElement = $(
+  "#passport-level-slider"
 ) as HTMLInputElement;
-const passportTypeWarningElement = $("#passport-type-warning") as HTMLElement;
+const passportLevelWarningElement = $("#passport-level-warning") as HTMLElement;
 const anonymousModeCheckboxElement = $(
   "#anonymous-mode-checkbox"
 ) as HTMLInputElement;
 // Proxy usage
-const passportTypeProxyUsageElement = $(
-  "#passport-type-proxy-usage"
+const passportLevelProxyUsageElement = $(
+  "#passport-level-proxy-usage"
 ) as HTMLDetailsElement;
-const passportTypeProxyUsageSummaryElement = $(
-  "#passport-type-proxy-usage-summary"
+const passportLevelProxyUsageSummaryElement = $(
+  "#passport-level-proxy-usage-summary"
 ) as HTMLElement;
-const passportTypeProxyUsagePassportElement = $(
-  "#passport-type-proxy-usage-passport"
+const passportLevelProxyUsagePassportElement = $(
+  "#passport-level-proxy-usage-passport"
 ) as HTMLTableCellElement;
-const passportTypeProxyUsageUsherElement = $(
-  "#passport-type-proxy-usage-usher"
+const passportLevelProxyUsageUsherElement = $(
+  "#passport-level-proxy-usage-usher"
 ) as HTMLTableCellElement;
-const passportTypeProxyUsageVideoWeaverElement = $(
-  "#passport-type-proxy-usage-video-weaver"
+const passportLevelProxyUsageVideoWeaverElement = $(
+  "#passport-level-proxy-usage-video-weaver"
 ) as HTMLTableCellElement;
-const passportTypeProxyUsageGqlElement = $(
-  "#passport-type-proxy-usage-gql"
+const passportLevelProxyUsageGqlElement = $(
+  "#passport-level-proxy-usage-gql"
 ) as HTMLTableCellElement;
-const passportTypeProxyUsageWwwElement = $(
-  "#passport-type-proxy-usage-www"
+const passportLevelProxyUsageWwwElement = $(
+  "#passport-level-proxy-usage-www"
 ) as HTMLTableCellElement;
 // Whitelisted channels
 const whitelistedChannelsListElement = $(
@@ -123,9 +123,9 @@ function main() {
     .querySelectorAll(isChromium ? ".firefox-only" : ".chromium-only")
     .forEach(element => element.remove());
   // Passport
-  passportTypeSliderElement.value = store.state.passportLevel.toString();
-  passportTypeSliderElement.addEventListener("input", () => {
-    store.state.passportLevel = parseInt(passportTypeSliderElement.value);
+  passportLevelSliderElement.value = store.state.passportLevel.toString();
+  passportLevelSliderElement.addEventListener("input", () => {
+    store.state.passportLevel = parseInt(passportLevelSliderElement.value);
     if (isChromium && store.state.chromiumProxyActive) {
       updateProxySettings();
     }
@@ -224,59 +224,59 @@ function updateProxyUsage() {
   // GraphQL integrity penalty and warning.
   if (isRequestTypeProxied(ProxyRequestType.GraphQLIntegrity, requestParams)) {
     usageScore += 1;
-    passportTypeWarningElement.style.display = "block";
+    passportLevelWarningElement.style.display = "block";
   } else {
-    passportTypeWarningElement.style.display = "none";
+    passportLevelWarningElement.style.display = "none";
   }
   switch (usageScore) {
     case 0:
-      passportTypeProxyUsageSummaryElement.textContent = "🙂 Low proxy usage";
-      passportTypeProxyUsageElement.dataset.usage = "low";
+      passportLevelProxyUsageSummaryElement.textContent = "🙂 Low proxy usage";
+      passportLevelProxyUsageElement.dataset.usage = "low";
       break;
     case 1:
-      passportTypeProxyUsageSummaryElement.textContent =
+      passportLevelProxyUsageSummaryElement.textContent =
         "😐 Medium proxy usage";
-      passportTypeProxyUsageElement.dataset.usage = "medium";
+      passportLevelProxyUsageElement.dataset.usage = "medium";
       break;
     case 2:
-      passportTypeProxyUsageSummaryElement.textContent = "🙁 High proxy usage";
-      passportTypeProxyUsageElement.dataset.usage = "high";
+      passportLevelProxyUsageSummaryElement.textContent = "🙁 High proxy usage";
+      passportLevelProxyUsageElement.dataset.usage = "high";
       break;
   }
 
   // Passport
   if (isRequestTypeProxied(ProxyRequestType.Passport, requestParams)) {
-    passportTypeProxyUsagePassportElement.textContent = "All";
+    passportLevelProxyUsagePassportElement.textContent = "All";
   } else {
-    passportTypeProxyUsagePassportElement.textContent = "None";
+    passportLevelProxyUsagePassportElement.textContent = "None";
   }
   // Usher
-  passportTypeProxyUsageUsherElement.textContent = "All";
+  passportLevelProxyUsageUsherElement.textContent = "All";
   // Video Weaver
   if (isRequestTypeProxied(ProxyRequestType.VideoWeaver, requestParams)) {
-    passportTypeProxyUsageVideoWeaverElement.textContent = "All";
+    passportLevelProxyUsageVideoWeaverElement.textContent = "All";
   } else {
-    passportTypeProxyUsageVideoWeaverElement.textContent = "Few";
+    passportLevelProxyUsageVideoWeaverElement.textContent = "Few";
   }
   // GraphQL
   if (isRequestTypeProxied(ProxyRequestType.GraphQL, requestParams)) {
-    passportTypeProxyUsageGqlElement.textContent = "All";
+    passportLevelProxyUsageGqlElement.textContent = "All";
   } else if (
     isRequestTypeProxied(ProxyRequestType.GraphQLIntegrity, requestParams)
   ) {
-    passportTypeProxyUsageGqlElement.textContent = "Some";
+    passportLevelProxyUsageGqlElement.textContent = "Some";
   } else if (
     isRequestTypeProxied(ProxyRequestType.GraphQLToken, requestParams)
   ) {
-    passportTypeProxyUsageGqlElement.textContent = "Few";
+    passportLevelProxyUsageGqlElement.textContent = "Few";
   } else {
-    passportTypeProxyUsageGqlElement.textContent = "None";
+    passportLevelProxyUsageGqlElement.textContent = "None";
   }
   // WWW
   if (isRequestTypeProxied(ProxyRequestType.TwitchWebpage, requestParams)) {
-    passportTypeProxyUsageWwwElement.textContent = "All";
+    passportLevelProxyUsageWwwElement.textContent = "All";
   } else {
-    passportTypeProxyUsageWwwElement.textContent = "None";
+    passportLevelProxyUsageWwwElement.textContent = "None";
   }
 }
 

@@ -4,13 +4,14 @@
 }
 
 :root {
+  --wrapper-width: 1100px;
   --font-primary: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
     sans-serif;
 
   --brand-color: #aa51b8;
-  --body-background-color: #0e0f11;
-  --wrapper-background-color: #151619;
   --wrapper-box-shadow-color: #0c0c0e;
+  --wrapper-background-color: #151619;
+  --body-background-color: #0e0f11;
 
   --text-primary: #e4e6e7;
   --text-secondary: #8d9296;
@@ -65,7 +66,7 @@ body {
 .wrapper {
   position: relative;
   left: 50%;
-  width: min(100%, 1000px);
+  width: min(100%, var(--wrapper-width));
   transform: translateX(-50%);
   background-color: var(--wrapper-background-color);
   box-shadow: 0 0 32px var(--wrapper-box-shadow-color);
@@ -249,7 +250,7 @@ li.hide-marker::marker {
   margin-top: 0.3rem;
 }
 
-#passport-type-container {
+#passport-level-container {
   display: grid;
   grid-template-rows: auto auto auto;
   grid-template-columns: auto 1fr;
@@ -263,36 +264,36 @@ li.hide-marker::marker {
   margin: 1rem 0 1.5rem 0;
 }
 
-#passport-type-image {
+#passport-level-image {
   grid-area: image;
   height: 55px;
 }
 
-#passport-type-slider-container {
+#passport-level-slider-container {
   grid-area: slider;
 }
 
-#passport-type-slider {
+#passport-level-slider {
   width: 100%;
   max-width: var(--input-max-width);
   margin: 0;
 }
 
-#passport-type-slider-datalist {
+#passport-level-slider-datalist {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   width: 100%;
   max-width: var(--input-max-width);
   text-align: center;
 }
-#passport-type-slider-datalist > option:first-child {
+#passport-level-slider-datalist > option:first-child {
   text-align: left;
 }
-#passport-type-slider-datalist > option:last-child {
+#passport-level-slider-datalist > option:last-child {
   text-align: right;
 }
 
-#passport-type-proxy-usage {
+#passport-level-proxy-usage {
   grid-area: usage;
   width: 100%;
   max-width: var(--input-max-width);
@@ -303,71 +304,71 @@ li.hide-marker::marker {
   border-radius: 18px;
   background-color: var(--input-background-color);
 }
-#passport-type-proxy-usage[data-usage="low"] {
+#passport-level-proxy-usage[data-usage="low"] {
   border-color: var(--low-color);
   background-color: var(--low-bg-color);
 }
-#passport-type-proxy-usage[data-usage="medium"] {
+#passport-level-proxy-usage[data-usage="medium"] {
   border-color: var(--medium-color);
   background-color: var(--medium-bg-color);
 }
-#passport-type-proxy-usage[data-usage="high"] {
+#passport-level-proxy-usage[data-usage="high"] {
   border-color: var(--high-color);
   background-color: var(--high-bg-color);
 }
 
-#passport-type-proxy-usage-summary {
+#passport-level-proxy-usage-summary {
   margin: 0;
   padding: 0.5rem;
   font-size: 0.9rem;
   cursor: pointer;
   transition: background-color 100ms ease-in-out, color 100ms ease-in-out;
 }
-#passport-type-proxy-usage-summary::marker {
+#passport-level-proxy-usage-summary::marker {
   content: none;
 }
-#passport-type-proxy-usage-summary::after {
+#passport-level-proxy-usage-summary::after {
   display: block;
   float: right;
   transform: translateY(-15%) rotate(-45deg);
   content: "∟";
   text-align: right;
 }
-#passport-type-proxy-usage[open] #passport-type-proxy-usage-summary::after {
+#passport-level-proxy-usage[open] #passport-level-proxy-usage-summary::after {
   display: block;
   float: right;
   transform: translateY(30%) rotate(135deg);
   content: "∟";
   text-align: right;
 }
-#passport-type-proxy-usage[data-usage="low"]
-  #passport-type-proxy-usage-summary:hover {
+#passport-level-proxy-usage[data-usage="low"]
+  #passport-level-proxy-usage-summary:hover {
   background-color: var(--low-color);
   color: #000000;
 }
-#passport-type-proxy-usage[data-usage="medium"]
-  #passport-type-proxy-usage-summary:hover {
+#passport-level-proxy-usage[data-usage="medium"]
+  #passport-level-proxy-usage-summary:hover {
   background-color: var(--medium-color);
   color: #000000;
 }
-#passport-type-proxy-usage[data-usage="high"]
-  #passport-type-proxy-usage-summary:hover {
+#passport-level-proxy-usage[data-usage="high"]
+  #passport-level-proxy-usage-summary:hover {
   background-color: var(--high-color);
   color: #000000;
 }
 
-#passport-type-proxy-usage-table {
+#passport-level-proxy-usage-table {
   width: 100%;
   margin: 0;
   padding: 0.5rem;
   font-size: 0.7rem;
 }
-#passport-type-proxy-usage-table > tbody > tr > td:nth-child(2) {
+#passport-level-proxy-usage-table > tbody > tr > td:nth-child(2) {
   color: var(--text-secondary);
   text-align: right;
 }
 
-#passport-type-warning {
+#passport-level-warning {
   display: none;
   grid-area: warning;
   margin-top: 0.75rem;
