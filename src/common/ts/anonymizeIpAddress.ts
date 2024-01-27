@@ -25,7 +25,7 @@ export function anonymizeIpAddress(url: string): string {
     }
   }
 
-  return proxyHost;
+  return proxyHost; // Also anonymizes port.
 }
 
 /**
