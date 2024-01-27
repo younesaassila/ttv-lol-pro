@@ -588,6 +588,23 @@ function removeHeaderFromMap(headersMap: Map<string, string>, name: string) {
   }
 }
 
+async function waitForStore(pageState: PageState) {
+  if (pageState.state != null) return;
+  try {
+    const message =
+      await pageState.sendMessageToContentScriptAndWaitForResponse(
+        pageState.scope,
+        {
+          type: MessageType.GetStoreState,
+        },
+        MessageType.GetStoreStateResponse
+      );
+    pageState.state = message.state;
+  } catch (error) {
+    console.error("[TTV LOL PRO] Failed to get store state:", error);
+  }
+}
+
 async function flagRequest(
   request: Request,
   requestType: ProxyRequestType,
@@ -627,23 +644,6 @@ function cancelRequest(): never {
 
 async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function waitForStore(pageState: PageState) {
-  if (pageState.state != null) return;
-  try {
-    const message =
-      await pageState.sendMessageToContentScriptAndWaitForResponse(
-        pageState.scope,
-        {
-          type: MessageType.GetStoreState,
-        },
-        MessageType.GetStoreStateResponse
-      );
-    pageState.state = message.state;
-  } catch (error) {
-    console.error("[TTV LOL PRO] Failed to get store state:", error);
-  }
 }
 
 //#region Video Weaver URL replacement
