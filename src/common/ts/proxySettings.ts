@@ -1,7 +1,7 @@
 import store from "../../store";
 import { ProxyRequestType } from "../../types";
-import getProxyInfoFromUrl from "./getProxyInfoFromUrl";
 import isRequestTypeProxied from "./isRequestTypeProxied";
+import { getProxyInfoFromUrl, getUrlFromProxyInfo } from "./proxyInfo";
 import {
   passportHostRegex,
   twitchGqlHostRegex,
@@ -92,7 +92,7 @@ function getProxyInfoStringFromUrls(urls: string[]): string {
   return [
     ...urls.map(url => {
       const proxyInfo = getProxyInfoFromUrl(url);
-      return `PROXY ${proxyInfo.host}:${proxyInfo.port}`;
+      return `PROXY ${getUrlFromProxyInfo(proxyInfo)}`;
     }),
     "DIRECT",
   ].join("; ");

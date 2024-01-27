@@ -1,7 +1,7 @@
 import ip from "ip";
 import store from "../../store";
 import type { DnsResponse } from "../../types";
-import getProxyInfoFromUrl from "./getProxyInfoFromUrl";
+import { getProxyInfoFromUrl } from "./proxyInfo";
 
 export default async function updateDnsResponses() {
   const proxies = [

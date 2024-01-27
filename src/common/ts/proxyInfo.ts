@@ -1,6 +1,7 @@
+import ip from "ip";
 import type { ProxyInfo } from "../../types";
 
-export default function getProxyInfoFromUrl(
+export function getProxyInfoFromUrl(
   url: string
 ): ProxyInfo & { type: "http"; host: string; port: number } {
   const lastIndexOfAt = url.lastIndexOf("@");
@@ -15,6 +16,9 @@ export default function getProxyInfoFromUrl(
   } else {
     host = hostname.substring(0, lastIndexOfColon);
     port = Number(hostname.substring(lastIndexOfColon + 1, hostname.length));
+  }
+  if (host.startsWith("[") && host.endsWith("]")) {
+    host = host.substring(1, host.length - 1);
   }
 
   let username: string | undefined = undefined;
@@ -56,4 +60,22 @@ function getLastIndexOfColon(hostname: string): number {
     }
   }
   return lastIndexOfColon;
+}
+
+export function getUrlFromProxyInfo(proxyInfo: ProxyInfo): string {
+  const { host, port, username, password } = proxyInfo;
+  if (!host) return "";
+  let url = "";
+  if (username && password) {
+    url = `${username}:${password}@`;
+  } else if (username) {
+    url = `${username}@`;
+  }
+  if (ip.isV6Format(host)) {
+    url += `[${host}]`;
+  } else {
+    url += host;
+  }
+  if (port) url += `:${port}`;
+  return url;
 }

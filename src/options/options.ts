@@ -3,10 +3,10 @@ import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
 import { readFile, saveFile } from "../common/ts/file";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
-import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
 import isChannelWhitelisted from "../common/ts/isChannelWhitelisted";
 import isChromium from "../common/ts/isChromium";
 import isRequestTypeProxied from "../common/ts/isRequestTypeProxied";
+import { getProxyInfoFromUrl } from "../common/ts/proxyInfo";
 import {
   clearProxySettings,
   updateProxySettings,

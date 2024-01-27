@@ -1,5 +1,5 @@
 import { WebRequest } from "webextension-polyfill";
-import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
+import { getProxyInfoFromUrl } from "../../common/ts/proxyInfo";
 import store from "../../store";
 
 const pendingRequests: string[] = [];

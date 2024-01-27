@@ -3,6 +3,7 @@ import filterResponseDataWrapper from "../../common/ts/filterResponseDataWrapper
 import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
+import { getUrlFromProxyInfo } from "../../common/ts/proxyInfo";
 import { videoWeaverHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
 import { AdType, ProxyInfo } from "../../types";
@@ -41,7 +42,7 @@ export default function onBeforeVideoWeaverRequest(
     );
     const proxy =
       details.proxyInfo && details.proxyInfo.type !== "direct"
-        ? `${details.proxyInfo.host}:${details.proxyInfo.port}`
+        ? getUrlFromProxyInfo(details.proxyInfo)
         : null;
 
     store.state.adLog.push({

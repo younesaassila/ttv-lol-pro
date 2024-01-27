@@ -2,9 +2,12 @@ import { WebRequest } from "webextension-polyfill";
 import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
-import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
 import isChromium from "../../common/ts/isChromium";
 import isRequestTypeProxied from "../../common/ts/isRequestTypeProxied";
+import {
+  getProxyInfoFromUrl,
+  getUrlFromProxyInfo,
+} from "../../common/ts/proxyInfo";
 import {
   passportHostRegex,
   twitchGqlHostRegex,
@@ -133,11 +136,11 @@ function getProxyFromDetails(
       proxy => proxy.host === dnsResponse.host
     );
     if (possibleProxies.length === 1)
-      return `${possibleProxies[0].host}:${possibleProxies[0].port}`;
+      return getUrlFromProxyInfo(possibleProxies[0]);
     return dnsResponse.host;
   } else {
     const proxyInfo = details.proxyInfo; // Firefox only.
     if (!proxyInfo || proxyInfo.type === "direct") return null;
-    return `${proxyInfo.host}:${proxyInfo.port}`;
+    return getUrlFromProxyInfo(proxyInfo);
   }
 }

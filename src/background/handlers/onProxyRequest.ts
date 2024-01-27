@@ -3,10 +3,10 @@ import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvU
 import findChannelFromUsherUrl from "../../common/ts/findChannelFromUsherUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
-import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
 import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import isFlaggedRequest from "../../common/ts/isFlaggedRequest";
 import isRequestTypeProxied from "../../common/ts/isRequestTypeProxied";
+import { getProxyInfoFromUrl } from "../../common/ts/proxyInfo";
 import {
   passportHostRegex,
   twitchGqlHostRegex,
