@@ -500,7 +500,8 @@ export function getFetch(pageState: PageState): typeof fetch {
 
 /**
  * Converts a HeadersInit to a map.
- * @param headers
+ * @param input
+ * @param init
  * @returns
  */
 function getHeadersMap(
@@ -520,7 +521,8 @@ function getHeadersMap(
 
 /**
  * Converts a BodyInit to a string.
- * @param body
+ * @param input
+ * @param init
  * @returns
  */
 async function getRequestBodyText(
@@ -655,6 +657,7 @@ async function sleep(ms: number): Promise<void> {
 /**
  * Returns a PlaybackAccessToken request that can be used when Twitch doesn't send one.
  * @param channel
+ * @param anonymousMode
  * @returns
  */
 async function getDefaultPlaybackAccessTokenRequest(
@@ -772,6 +775,7 @@ function getReplacementUsherUrl(
 
 /**
  * Fetches a new Usher manifest from Twitch.
+ * @param pageState
  * @param cachedUsherRequestUrl
  * @param playbackAccessToken
  * @returns
@@ -833,6 +837,7 @@ function parseUsherManifest(manifest: string): Map<string, string> | null {
 
 /**
  * Updates the replacement Video Weaver URLs.
+ * @param pageState
  * @param cachedUsherRequestUrl
  * @param manifest
  * @returns

@@ -27,6 +27,14 @@ export default function onInstalledStoreCleanup(
       isChromium &&
       !store.state.optimizedProxies.includes(newChromiumProxy)
     ) {
+      // Remove Firefox optimized proxy (used during beta).
+      const firefoxProxy = "firefox.api.cdn-perfprod.com:2023";
+      if (store.state.optimizedProxies.includes(firefoxProxy)) {
+        store.state.optimizedProxies = store.state.optimizedProxies.filter(
+          proxy => proxy !== firefoxProxy
+        );
+      }
+
       store.state.optimizedProxies.push(newChromiumProxy);
     }
   }
