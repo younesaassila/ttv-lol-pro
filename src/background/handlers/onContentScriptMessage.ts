@@ -29,7 +29,7 @@ export default function onContentScriptMessage(
       requestType,
       setTimeout(() => {
         console.log(
-          "[TTV LOL PRO] Disabling full mode (request type: ${requestType}, timeout)"
+          `[TTV LOL PRO] Disabling full mode (request type: ${requestType}, timeout)`
         );
         timeoutMap.delete(requestType);
         if (store.state.chromiumProxyActive) {
