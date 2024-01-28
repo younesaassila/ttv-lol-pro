@@ -3,6 +3,7 @@ import filterResponseDataWrapper from "../../common/ts/filterResponseDataWrapper
 import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
+import { getUrlFromProxyInfo } from "../../common/ts/proxyInfo";
 import { videoWeaverHostRegex } from "../../common/ts/regexes";
 import store from "../../store";
 import { AdType, ProxyInfo } from "../../types";
@@ -41,27 +42,20 @@ export default function onBeforeVideoWeaverRequest(
     );
     const proxy =
       details.proxyInfo && details.proxyInfo.type !== "direct"
-        ? `${details.proxyInfo.host}:${details.proxyInfo.port}`
+        ? getUrlFromProxyInfo(details.proxyInfo)
         : null;
 
-    const adLog = store.state.adLog.filter(
-      entry => details.timeStamp - entry.timestamp < 1000 * 60 * 60 * 24 * 7 // 7 days
-    );
-    store.state.adLog = [
-      ...adLog,
-      {
-        adType: isMidroll ? AdType.MIDROLL : AdType.PREROLL,
-        channel: channelName,
-        isPurpleScreen,
-        proxy,
-        proxyTwitchWebpage: store.state.proxyTwitchWebpage,
-        proxyUsherRequests: store.state.proxyUsherRequests,
-        anonymousMode: store.state.anonymousMode,
-        timestamp: details.timeStamp,
-        videoWeaverHost: host,
-        videoWeaverUrl: details.url,
-      },
-    ];
+    store.state.adLog.push({
+      adType: isMidroll ? AdType.MIDROLL : AdType.PREROLL,
+      isPurpleScreen,
+      proxy,
+      channel: channelName,
+      passportLevel: store.state.passportLevel,
+      anonymousMode: store.state.anonymousMode,
+      timestamp: details.timeStamp,
+      videoWeaverHost: host,
+      videoWeaverUrl: details.url,
+    });
     console.log(`📝 Ad log updated (${store.state.adLog.length} entries).`);
     console.log(text);
 

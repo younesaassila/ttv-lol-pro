@@ -1,5 +1,7 @@
 import store from "../../store";
-import getProxyInfoFromUrl from "./getProxyInfoFromUrl";
+import { ProxyRequestType } from "../../types";
+import isRequestTypeProxied from "./isRequestTypeProxied";
+import { getProxyInfoFromUrl, getUrlFromProxyInfo } from "./proxyInfo";
 import {
   passportHostRegex,
   twitchGqlHostRegex,
@@ -9,29 +11,66 @@ import {
 } from "./regexes";
 import updateDnsResponses from "./updateDnsResponses";
 
-export function updateProxySettings() {
-  const { proxyTwitchWebpage, proxyUsherRequests } = store.state;
+export function updateProxySettings(requestFilter?: ProxyRequestType[]) {
+  const { optimizedProxiesEnabled, passportLevel } = store.state;
 
-  const proxies = store.state.optimizedProxiesEnabled
+  const proxies = optimizedProxiesEnabled
     ? store.state.optimizedProxies
     : store.state.normalProxies;
   const proxyInfoString = getProxyInfoStringFromUrls(proxies);
+
+  const getRequestParams = (requestType: ProxyRequestType) => ({
+    isChromium: true,
+    optimizedProxiesEnabled: optimizedProxiesEnabled,
+    passportLevel: passportLevel,
+    fullModeEnabled:
+      !optimizedProxiesEnabled ||
+      (requestFilter != null && requestFilter.includes(requestType)),
+  });
+  const proxyPassportRequests = isRequestTypeProxied(
+    ProxyRequestType.Passport,
+    getRequestParams(ProxyRequestType.Passport)
+  );
+  const proxyUsherRequests = isRequestTypeProxied(
+    ProxyRequestType.Usher,
+    getRequestParams(ProxyRequestType.Usher)
+  );
+  const proxyVideoWeaverRequests = isRequestTypeProxied(
+    ProxyRequestType.VideoWeaver,
+    getRequestParams(ProxyRequestType.VideoWeaver)
+  );
+  const proxyGraphQLRequests = isRequestTypeProxied(
+    ProxyRequestType.GraphQL,
+    getRequestParams(ProxyRequestType.GraphQL)
+  );
+  const proxyTwitchWebpageRequests = isRequestTypeProxied(
+    ProxyRequestType.TwitchWebpage,
+    getRequestParams(ProxyRequestType.TwitchWebpage)
+  );
 
   const config = {
     mode: "pac_script",
     pacScript: {
       data: `
         function FindProxyForURL(url, host) {
-          // Twitch webpage & GraphQL requests.
-          if (${proxyTwitchWebpage} && (${twitchTvHostRegex}.test(host) || ${twitchGqlHostRegex}.test(host))) {
+          // Passport requests.
+          if (${proxyPassportRequests} && ${passportHostRegex}.test(host)) {
             return "${proxyInfoString}";
           }
-          // Passport & Usher requests.
-          if (${proxyUsherRequests} && (${passportHostRegex}.test(host) || ${usherHostRegex}.test(host))) {
+          // Usher requests.
+          if (${proxyUsherRequests} && ${usherHostRegex}.test(host)) {
             return "${proxyInfoString}";
           }
           // Video Weaver requests.
-          if (${videoWeaverHostRegex}.test(host)) {
+          if (${proxyVideoWeaverRequests} && ${videoWeaverHostRegex}.test(host)) {
+            return "${proxyInfoString}";
+          }
+          // GraphQL requests.
+          if (${proxyGraphQLRequests} && ${twitchGqlHostRegex}.test(host)) {
+            return "${proxyInfoString}";
+          }
+          // Twitch webpage requests.
+          if (${proxyTwitchWebpageRequests} && ${twitchTvHostRegex}.test(host)) {
             return "${proxyInfoString}";
           }
           return "DIRECT";
@@ -44,6 +83,7 @@ export function updateProxySettings() {
     console.log(
       `⚙️ Proxying requests through one of: ${proxies.toString() || "<empty>"}`
     );
+    store.state.chromiumProxyActive = true;
     updateDnsResponses();
   });
 }
@@ -52,7 +92,12 @@ function getProxyInfoStringFromUrls(urls: string[]): string {
   return [
     ...urls.map(url => {
       const proxyInfo = getProxyInfoFromUrl(url);
-      return `PROXY ${proxyInfo.host}:${proxyInfo.port}`;
+      return `PROXY ${getUrlFromProxyInfo({
+        ...proxyInfo,
+        // Don't include username/password in PAC script.
+        username: undefined,
+        password: undefined,
+      })}`;
     }),
     "DIRECT",
   ].join("; ");
@@ -61,5 +106,6 @@ function getProxyInfoStringFromUrls(urls: string[]): string {
 export function clearProxySettings() {
   chrome.proxy.settings.clear({ scope: "regular" }, function () {
     console.log("⚙️ Proxy settings cleared");
+    store.state.chromiumProxyActive = false;
   });
 }

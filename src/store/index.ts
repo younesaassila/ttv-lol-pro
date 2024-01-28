@@ -31,7 +31,7 @@ class Store<T extends Record<string | symbol, any>> {
         if (newValue === undefined) continue; // Ignore deletions.
         this._state[key as keyof T] = newValue;
       }
-      this.dispatchEvent("change");
+      this.dispatchEvent("change", changes);
     });
   }
 
@@ -68,9 +68,9 @@ class Store<T extends Record<string | symbol, any>> {
     if (index !== -1) this._listenersByEvent[type].splice(index, 1);
   }
 
-  dispatchEvent(type: EventType) {
+  dispatchEvent(type: EventType, ...args: any[]) {
     const listeners = this._listenersByEvent[type] || [];
-    listeners.forEach(listener => listener());
+    listeners.forEach(listener => listener(...args));
   }
 }
 

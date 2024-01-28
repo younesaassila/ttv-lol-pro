@@ -16,8 +16,7 @@ export interface State {
   openedTwitchTabs: Tabs.Tab[];
   optimizedProxies: string[];
   optimizedProxiesEnabled: boolean;
-  proxyTwitchWebpage: boolean;
-  proxyUsherRequests: boolean;
+  passportLevel: number;
   streamStatuses: Record<string, StreamStatus>;
   videoWeaverUrlsByChannel: Record<string, string[]>;
   whitelistedChannels: string[];

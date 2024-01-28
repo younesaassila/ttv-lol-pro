@@ -3,9 +3,10 @@ import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvU
 import findChannelFromUsherUrl from "../../common/ts/findChannelFromUsherUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
-import getProxyInfoFromUrl from "../../common/ts/getProxyInfoFromUrl";
 import isChannelWhitelisted from "../../common/ts/isChannelWhitelisted";
 import isFlaggedRequest from "../../common/ts/isFlaggedRequest";
+import isRequestTypeProxied from "../../common/ts/isRequestTypeProxied";
+import { getProxyInfoFromUrl } from "../../common/ts/proxyInfo";
 import {
   passportHostRegex,
   twitchGqlHostRegex,
@@ -14,20 +15,11 @@ import {
   videoWeaverHostRegex,
 } from "../../common/ts/regexes";
 import store from "../../store";
-import type { ProxyInfo } from "../../types";
+import { ProxyInfo, ProxyRequestType } from "../../types";
 
 export default async function onProxyRequest(
   details: Proxy.OnRequestDetailsType
 ): Promise<ProxyInfo | ProxyInfo[]> {
-  const host = getHostFromUrl(details.url);
-  if (!host) return { type: "direct" };
-
-  const documentHost = details.documentUrl
-    ? getHostFromUrl(details.documentUrl)
-    : null;
-  const isFromTwitchTvHost =
-    documentHost && twitchTvHostRegex.test(documentHost);
-
   // Wait for the store to be ready.
   if (store.readyState !== "complete") {
     await new Promise(resolve => {
@@ -39,37 +31,55 @@ export default async function onProxyRequest(
     });
   }
 
-  const isFlagged =
-    (store.state.optimizedProxiesEnabled &&
-      isFlaggedRequest(details.requestHeaders)) ||
-    !store.state.optimizedProxiesEnabled;
+  const host = getHostFromUrl(details.url);
+  if (!host) return { type: "direct" };
+
+  const documentHost = details.documentUrl
+    ? getHostFromUrl(details.documentUrl)
+    : null;
+  // Twitch requests from non-Twitch hosts are not supported.
+  if (
+    documentHost != null && // Twitch webpage requests have no document URL.
+    !passportHostRegex.test(documentHost) && // Passport requests have a `passport.twitch.tv` document URL.
+    !twitchTvHostRegex.test(documentHost)
+  ) {
+    return { type: "direct" };
+  }
+
   const proxies = store.state.optimizedProxiesEnabled
     ? store.state.optimizedProxies
     : store.state.normalProxies;
   const proxyInfoArray = getProxyInfoArrayFromUrls(proxies);
 
-  // Twitch webpage requests.
-  if (store.state.proxyTwitchWebpage && twitchTvHostRegex.test(host)) {
-    console.log(`⌛ Proxying ${details.url} through one of: <empty>`);
-    return proxyInfoArray;
-  }
-
-  // Twitch GraphQL requests.
-  if (
-    store.state.proxyTwitchWebpage &&
-    twitchGqlHostRegex.test(host) &&
-    isFlagged
-  ) {
-    console.log(
-      `⌛ Proxying ${details.url} through one of: ${
-        proxies.toString() || "<empty>"
-      }`
-    );
-    return proxyInfoArray;
-  }
+  const requestParams = {
+    isChromium: false,
+    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
+    passportLevel: store.state.passportLevel,
+    isFlagged: isFlaggedRequest(details.requestHeaders),
+  };
+  const proxyPassportRequest = isRequestTypeProxied(
+    ProxyRequestType.Passport,
+    requestParams
+  );
+  const proxyUsherRequest = isRequestTypeProxied(
+    ProxyRequestType.Usher,
+    requestParams
+  );
+  const proxyVideoWeaverRequest = isRequestTypeProxied(
+    ProxyRequestType.VideoWeaver,
+    requestParams
+  );
+  const proxyGraphQLRequest = isRequestTypeProxied(
+    ProxyRequestType.GraphQL,
+    requestParams
+  );
+  const proxyTwitchWebpageRequest = isRequestTypeProxied(
+    ProxyRequestType.TwitchWebpage,
+    requestParams
+  );
 
   // Passport requests.
-  if (store.state.proxyUsherRequests && passportHostRegex.test(host)) {
+  if (proxyPassportRequest && passportHostRegex.test(host)) {
     console.log(
       `⌛ Proxying ${details.url} through one of: ${
         proxies.toString() || "<empty>"
@@ -79,15 +89,11 @@ export default async function onProxyRequest(
   }
 
   // Usher requests.
-  if (store.state.proxyUsherRequests && usherHostRegex.test(host)) {
-    // Don't proxy Usher requests from non-supported hosts.
-    if (!isFromTwitchTvHost) {
-      console.log(
-        `✋ '${details.url}' from host '${documentHost}' is not supported.`
-      );
+  if (proxyUsherRequest && usherHostRegex.test(host)) {
+    if (details.url.includes("/vod/")) {
+      console.log(`✋ '${details.url}' is a VOD manifest.`);
       return { type: "direct" };
     }
-    // Don't proxy whitelisted channels.
     const channelName = findChannelFromUsherUrl(details.url);
     if (isChannelWhitelisted(channelName)) {
       console.log(`✋ Channel '${channelName}' is whitelisted.`);
@@ -102,15 +108,7 @@ export default async function onProxyRequest(
   }
 
   // Video Weaver requests.
-  if (videoWeaverHostRegex.test(host) && isFlagged) {
-    // Don't proxy Video Weaver requests from non-supported hosts.
-    if (!isFromTwitchTvHost) {
-      console.log(
-        `✋ '${details.url}' from host '${documentHost}' is not supported.`
-      );
-      return { type: "direct" };
-    }
-    // Don't proxy whitelisted channels.
+  if (proxyVideoWeaverRequest && videoWeaverHostRegex.test(host)) {
     const channelName =
       findChannelFromVideoWeaverUrl(details.url) ??
       findChannelFromTwitchTvUrl(details.documentUrl);
@@ -122,6 +120,26 @@ export default async function onProxyRequest(
       `⌛ Proxying ${details.url} (${
         channelName ?? "unknown"
       }) through one of: ${proxies.toString() || "<empty>"}`
+    );
+    return proxyInfoArray;
+  }
+
+  // Twitch GraphQL requests.
+  if (proxyGraphQLRequest && twitchGqlHostRegex.test(host)) {
+    console.log(
+      `⌛ Proxying ${details.url} through one of: ${
+        proxies.toString() || "<empty>"
+      }`
+    );
+    return proxyInfoArray;
+  }
+
+  // Twitch webpage requests.
+  if (proxyTwitchWebpageRequest && twitchTvHostRegex.test(host)) {
+    console.log(
+      `⌛ Proxying ${details.url} through one of: ${
+        proxies.toString() || "<empty>"
+      }`
     );
     return proxyInfoArray;
   }

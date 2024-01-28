@@ -3,9 +3,11 @@ import isChromium from "../common/ts/isChromium";
 import checkForOpenedTwitchTabs from "./handlers/checkForOpenedTwitchTabs";
 import onAuthRequired from "./handlers/onAuthRequired";
 import onBeforeSendHeaders from "./handlers/onBeforeSendHeaders";
+import onBeforeTwitchTvSendHeaders from "./handlers/onBeforeTwitchTvSendHeaders";
 import onBeforeVideoWeaverRequest from "./handlers/onBeforeVideoWeaverRequest";
+import onContentScriptMessage from "./handlers/onContentScriptMessage";
+import onInstalledStoreCleanup from "./handlers/onInstalledStoreCleanup";
 import onProxyRequest from "./handlers/onProxyRequest";
-import onProxySettingsChange from "./handlers/onProxySettingsChanged";
 import onResponseStarted from "./handlers/onResponseStarted";
 import onStartupStoreCleanup from "./handlers/onStartupStoreCleanup";
 import onTabCreated from "./handlers/onTabCreated";
@@ -15,7 +17,10 @@ import onTabUpdated from "./handlers/onTabUpdated";
 
 console.info("🚀 Background script loaded.");
 
-// Cleanup the session-related data in the store on startup.
+// Cleanup old data in the store on update.
+browser.runtime.onInstalled.addListener(onInstalledStoreCleanup);
+
+// Cleanup session data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);
 
 // Handle proxy authentication.
@@ -31,8 +36,8 @@ browser.webRequest.onResponseStarted.addListener(onResponseStarted, {
 });
 
 if (isChromium) {
-  // Listen to whether proxy is set or not.
-  browser.proxy.settings.onChange.addListener(onProxySettingsChange);
+  // Listen to messages from the content script.
+  browser.runtime.onMessage.addListener(onContentScriptMessage);
 
   // Check if there are any opened Twitch tabs on startup.
   checkForOpenedTwitchTabs();
@@ -43,15 +48,21 @@ if (isChromium) {
   browser.tabs.onRemoved.addListener(onTabRemoved);
   browser.tabs.onReplaced.addListener(onTabReplaced);
 } else {
+  // Inject page script.
+  browser.webRequest.onBeforeSendHeaders.addListener(
+    onBeforeTwitchTvSendHeaders,
+    {
+      urls: ["https://www.twitch.tv/*", "https://m.twitch.tv/*"],
+      types: ["main_frame"],
+    },
+    ["blocking", "requestHeaders"]
+  );
+
   // Block tracking pixels.
   browser.webRequest.onBeforeRequest.addListener(
     () => ({ cancel: true }),
     {
-      urls: [
-        "https://*.twitch.tv/r/s/*",
-        "https://*.twitch.tv/r/c/*",
-        "https://*.ads.twitch.tv/*",
-      ],
+      urls: ["https://*.twitch.tv/r/s/*", "https://*.twitch.tv/r/c/*"],
     },
     ["blocking"]
   );

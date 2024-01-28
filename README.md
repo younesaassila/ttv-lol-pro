@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img alt="Icon" src="src/images/brand/icon.png" height="100" width="100" />
+  <img alt="Icon" src="src/common/images/brand/icon.png" height="100" width="100" />
   <br />
   TTV LOL PRO
   <br />
@@ -48,14 +48,14 @@
   >
     <img
       alt="Chrome Web Store"
-      src="src/images/badges/chrome_web_store.png"
+      src="src/common/images/badges/chrome_web_store.png"
       height="50"
     />
   </a>
   <a href="https://addons.mozilla.org/addon/ttv-lol-pro/">
     <img
       alt="Firefox Add-ons"
-      src="src/images/badges/firefox_addons.png"
+      src="src/common/images/badges/firefox_addons.png"
       height="50"
     />
   </a>
@@ -65,25 +65,19 @@
 
 > ℹ️ Looking for TTV LOL PRO v1? [Click here](https://github.com/younesaassila/ttv-lol-pro/tree/v1).
 
-TTV LOL PRO removes _most_ livestream ads from Twitch. This is free, don't expect it to be perfect. Issues? Complain to Twitch
+TTV LOL PRO removes most livestream ads from Twitch. This is free, don't expect it to be perfect.
 
-**TTV LOL PRO:**
+TTV LOL PRO is a fork of TTV LOL that:
 
-- removes _most_ livestream ads from Twitch,
+- uses an improved ad blocking method,
+- uses standard HTTP proxies (thus improving proxy compatibility and your privacy),
+- adds a stream status widget to the popup,
 - lets you whitelist channels,
-- improves TTV LOL's popup by showing stream status,
-- lets you add custom primary/fallback proxies.
+- lets you use your own proxies.
 
-**Recommended:**
+TTV LOL PRO does not remove banner ads, nor does it remove ads from VODs. For the best experience, we recommend using [uBlock Origin](https://ublockorigin.com/) alongside TTV LOL PRO.
 
-- [uBlock Origin](https://ublockorigin.com/)
-
-  - removes banner ads,
-  - removes ads on VODs.
-
-**Frequently Asked Questions (FAQ):**
-
-- [Click here](FAQ.md)
+**Any questions? Please read the [FAQ](FAQ.md).**
 
 ## Screenshots
 

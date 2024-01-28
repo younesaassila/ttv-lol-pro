@@ -5,191 +5,239 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Options - TTV LOL PRO</title>
-    <link rel="icon" href="../images/brand/favicon.ico" />
+    <link rel="icon" href="../common/images/brand/favicon.ico" />
     <link rel="stylesheet" href="../common/css/boilerplate.css" />
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <header>
-      <img src="../images/brand/icon.png" alt="Icon of TTV LOL PRO" />
-      <h1>Options</h1>
-    </header>
+    <div class="wrapper">
+      <header>
+        <div class="title-container">
+          <img
+            src="../common/images/brand/icon.png"
+            alt="Icon of TTV LOL PRO"
+            class="icon"
+          />
+          <h1 class="title">Options</h1>
+        </div>
+        <div id="buttons-container">
+          <button id="export-button">Back up to file…</button>
+          <button id="import-button">Restore from file…</button>
+          <button id="reset-button">Reset to default settings…</button>
+        </div>
+      </header>
 
-    <main>
-      <!-- Proxy Usher requests -->
-      <section class="section">
-        <h2>Passport</h2>
-        <div id="passport-container">
-          <img src="../images/passport.png" alt="TTV LOL PRO passport" />
+      <main>
+        <!-- Passport -->
+        <section id="passport" class="section">
+          <h2>Passport</h2>
+          <div id="passport-level-container">
+            <img
+              src="../common/images/passport.png"
+              alt="TTV LOL PRO passport"
+              id="passport-level-image"
+            />
+            <div id="passport-level-slider-container">
+              <input
+                type="range"
+                name="passport-level-slider"
+                id="passport-level-slider"
+                min="0"
+                max="2"
+                step="1"
+                list="passport-level-slider-datalist"
+              />
+              <datalist id="passport-level-slider-datalist">
+                <option value="0" label="Ordinary"></option>
+                <option value="1" label="Official"></option>
+                <option value="2" label="Diplomatic"></option>
+              </datalist>
+            </div>
+            <details id="passport-level-proxy-usage">
+              <summary id="passport-level-proxy-usage-summary"></summary>
+              <table id="passport-level-proxy-usage-table">
+                <tbody>
+                  <tr>
+                    <td>passport.twitch.tv</td>
+                    <td id="passport-level-proxy-usage-passport"></td>
+                  </tr>
+                  <tr>
+                    <td>usher.ttvnw.net</td>
+                    <td id="passport-level-proxy-usage-usher"></td>
+                  </tr>
+                  <tr>
+                    <td>video-weaver.*.hls.ttvnw.net</td>
+                    <td id="passport-level-proxy-usage-video-weaver"></td>
+                  </tr>
+                  <tr>
+                    <td>gql.twitch.tv</td>
+                    <td id="passport-level-proxy-usage-gql"></td>
+                  </tr>
+                  <tr>
+                    <td>www.twitch.tv</td>
+                    <td id="passport-level-proxy-usage-www"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </details>
+            <small id="passport-level-warning">
+              <b>WARNING:</b>
+              Enabling this option could open up a range of features that are
+              not accessible in your region, including Predictions, Prime
+              Subscriptions, or currency changes, among others. Please be aware
+              that you take full responsibility for the content passing through
+              your proxy or public ones. It's important to note that in certain
+              countries, features like Predictions might be categorized as
+              gambling, making them inappropriate for minors. If your country
+              doesn't support these features, there are legitimate reasons for
+              it. Stay informed and conduct online research accordingly.
+            </small>
+          </div>
           <ul class="options-list">
             <li>
-              <input
-                type="checkbox"
-                name="proxy-usher-requests-checkbox"
-                id="proxy-usher-requests-checkbox"
-              />
-              <label for="proxy-usher-requests-checkbox">
-                Use my TTV LOL PRO passport
-              </label>
-              <br />
-              <small>
-                Browse Twitch as a TTV LOL PRO citizen! This option enables
-                proxying of <code>passport.twitch.tv</code> and
-                <code>usher.ttvnw.net</code> requests.
-              </small>
-              <br />
-              <small>
-                This option is not an on/off switch. TTV LOL PRO will still
-                proxy <code>video-weaver.*.hls.ttvnw.net</code> requests even if
-                this option is disabled.
-              </small>
-            </li>
-            <li>
-              <input
-                type="checkbox"
-                name="proxy-twitch-webpage-checkbox"
-                id="proxy-twitch-webpage-checkbox"
-              />
-              <label for="proxy-twitch-webpage-checkbox">
-                Make the passport a
-                <a
-                  href="https://en.wikipedia.org/wiki/Laissez-passer"
-                  target="_blank"
-                  >laissez-passer</a
-                >
-              </label>
-              <br />
-              <small>
-                This option enables proxying of <code>www.twitch.tv</code> and
-                <code>gql.twitch.tv</code> requests.
-              </small>
-              <br />
-              <small>
-                <b>WARNING:</b>
-                Enabling this option may unlock unavailable features in your
-                country, like Predictions, Prime Subscriptions, or currency
-                changes, among others. You assume full responsibility for the
-                content passing through your proxy or public ones, and note that
-                some features, like Predictions, might be considered gambling in
-                certain countries, making them illegal for minors. If your
-                country lacks these features, there are valid reasons for it.
-                Stay informed and conduct online research accordingly.
-              </small>
-              <br />
-              <small>
-                <b>
-                  ONLY ENABLE THIS OPTION IF YOU ARE EXPERIENCING ISSUES WITH
-                  TTV LOL PRO'S PASSPORT!
-                </b>
-              </small>
-            </li>
-            <li id="anonymous-mode-li">
               <input
                 type="checkbox"
                 name="anonymous-mode-checkbox"
                 id="anonymous-mode-checkbox"
               />
-              <label for="anonymous-mode-checkbox">
-                Redact my passport information
-              </label>
-              <span class="tag">Recommended</span>
+              <label for="anonymous-mode-checkbox">Anonymous mode</label>
               <br />
               <small>
-                Watch streams as if you were logged out. This option removes
-                authentication headers from requests to Twitch.
+                Watch streams as if you were logged out. This option might help
+                reduce the number of "Commercial break in progress" ads.
               </small>
             </li>
-            <small><b>Expiration date:</b> 2038-01-19T03:14:07.000Z</small>
           </ul>
-        </div>
-      </section>
+        </section>
 
-      <!-- Whitelisted channels -->
-      <section id="whitelisted-channels-section" class="section">
-        <h2>Whitelisted channels</h2>
-        <small>
-          Support your favorite content creators by whitelisting their channels.
-          On Chromium-based browsers, whitelisting only works when all opened
-          Twitch tabs are whitelisted channels.
-        </small>
-        <ul id="whitelisted-channels-list" class="store-list"></ul>
-      </section>
+        <!-- Whitelisted channels -->
+        <section id="whitelisted-channels" class="section">
+          <h2>Whitelisted channels</h2>
+          <small>
+            Support your favorite content creators by whitelisting their
+            channels.
+          </small>
+          <br class="chromium-only" />
+          <small class="chromium-only">
+            On Chromium-based browsers, whitelisting only works when all opened
+            Twitch tabs are whitelisted channels.
+          </small>
+          <ul id="whitelisted-channels-list" class="store-list"></ul>
+        </section>
 
-      <!-- Proxies -->
-      <section class="section">
-        <h2>Proxies</h2>
-        <small>
-          Proxies listed below must be HTTP proxies in the format
-          <code>hostname:port</code>. To provide authentication credentials, use
-          the format <code>username:password@hostname:port</code>.
-        </small>
-        <br />
-        <small>
-          IPv6 addresses must be enclosed in square brackets, for example
-          <code>[::1]:8080</code>.
-        </small>
-        <br />
-        <fieldset>
-          <div id="optimized-proxies-div">
-            <input
-              type="radio"
-              name="proxy-mode"
-              id="optimized"
-              value="optimized"
-              checked
-            />
-            <label for="optimized">Proxy ad requests only</label>
-            <ol id="optimized-proxies-list" class="store-list" start="0"></ol>
-          </div>
-          <div>
-            <input type="radio" name="proxy-mode" id="normal" value="normal" />
-            <label for="normal">Proxy all requests</label>
-            <ol id="normal-proxies-list" class="store-list" start="0"></ol>
-          </div>
-        </fieldset>
-        <small>
-          Looking for other proxies? Check out the "<a
-            href="https://github.com/younesaassila/ttv-lol-pro/discussions/130"
-            target="_blank"
-            >List of other proxies</a
-          >" discussion on TTV LOL PRO's GitHub repository.
-        </small>
-      </section>
+        <!-- Proxies -->
+        <section id="proxies" class="section">
+          <h2>Proxies</h2>
+          <small>
+            Proxies listed below must be HTTP proxies in the format
+            <code>hostname:port</code>
+          </small>
+          <br />
+          <small>
+            To provide authentication credentials, use the format
+            <code>username:password@hostname:port</code>
+          </small>
+          <br />
+          <fieldset>
+            <div>
+              <input
+                type="radio"
+                name="proxy-mode"
+                id="optimized"
+                value="optimized"
+                checked
+              />
+              <label for="optimized">Proxy ad requests only</label>
+              <ol id="optimized-proxies-list" class="store-list" start="0"></ol>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="proxy-mode"
+                id="normal"
+                value="normal"
+              />
+              <label for="normal">Proxy all requests</label>
+              <ol id="normal-proxies-list" class="store-list" start="0"></ol>
+            </div>
+          </fieldset>
+          <small>
+            Looking for other proxies? Check out the "<a
+              href="https://github.com/younesaassila/ttv-lol-pro/discussions/130"
+              target="_blank"
+              >List of other proxies</a
+            >" discussion on TTV LOL PRO's GitHub repository.
+          </small>
+        </section>
 
-      <!-- Ad log -->
-      <section id="ad-log-section" class="section">
-        <h2>Ad log</h2>
-        <small>
-          If enabled, TTV LOL PRO will log all ads that did not get blocked for
-          debugging purposes. Entries are automatically removed after 7 days.
-        </small>
-        <ul class="options-list">
-          <li>
-            <input
-              type="checkbox"
-              name="ad-log-enabled-checkbox"
-              id="ad-log-enabled-checkbox"
-            />
-            <label for="ad-log-enabled-checkbox">Enable ad log</label>
-          </li>
-        </ul>
-        <button id="ad-log-send-button" class="btn-primary">
-          Send ad log to developer…
-        </button>
-        <button id="ad-log-export-button">Export ad log…</button>
-        <button id="ad-log-clear-button">Clear ad log</button>
-      </section>
+        <!-- Ad log -->
+        <section id="ad-log" class="firefox-only section">
+          <h2>Ad log</h2>
+          <small>
+            If enabled, TTV LOL PRO will log all ads that did not get blocked
+            for debugging purposes. Entries are automatically removed after 7
+            days.
+          </small>
+          <ul class="options-list">
+            <li>
+              <input
+                type="checkbox"
+                name="ad-log-enabled-checkbox"
+                id="ad-log-enabled-checkbox"
+              />
+              <label for="ad-log-enabled-checkbox">Enable ad log</label>
+            </li>
+          </ul>
+          <button id="ad-log-send-button" class="btn-primary">
+            Send ad log to developer…
+          </button>
+          <button id="ad-log-export-button">Export ad log…</button>
+          <button id="ad-log-clear-button">Clear ad log</button>
+        </section>
 
-      <hr />
+        <!-- Troubleshooting -->
+        <section id="troubleshooting" class="chromium-only section">
+          <h2>Troubleshooting</h2>
+          <br />
+          <button id="twitch-tabs-report-button">
+            Generate Twitch tabs report…
+          </button>
+          <button id="unset-pac-script-button">Unset PAC script</button>
+        </section>
+      </main>
 
-      <!-- Backup and restore -->
-      <section class="section">
-        <button id="export-button">Back up to file…</button>
-        <button id="import-button">Restore from file…</button>
-        <button id="reset-button">Reset to default settings…</button>
-        <button id="unset-pac-script-button">Unset PAC script</button>
-      </section>
-    </main>
+      <footer>
+        <nav>
+          <ul>
+            <li>
+              <a
+                href="https://github.com/younesaassila/ttv-lol-pro"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Source code</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://github.com/younesaassila/ttv-lol-pro/releases"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Changelog</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://github.com/younesaassila/ttv-lol-pro/blob/v2/PRIVACY.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Privacy policy</a
+              >
+            </li>
+          </ul>
+        </nav>
+        <small id="version"></small>
+      </footer>
+    </div>
 
     <script type="module" src="./options.ts"></script>
   </body>

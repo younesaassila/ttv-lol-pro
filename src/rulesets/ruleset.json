@@ -20,15 +20,5 @@
       "urlFilter": "*.twitch.tv/r/c/*",
       "resourceTypes": ["image"]
     }
-  },
-  {
-    "id": 3,
-    "priority": 1,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
-      "urlFilter": "*.ads.twitch.tv/*"
-    }
   }
 ]

@@ -16,9 +16,6 @@ export default function onTabCreated(tab: Tabs.Tab): void {
   const host = getHostFromUrl(url);
   if (!host) return;
 
-  // TODO: `twitchTvHostRegex` doesn't match `appeals.twitch.tv` and
-  // `dashboard.twitch.tv` which means that passport requests from those
-  // subdomains will not be proxied. This could mess up the cookie country.
   if (twitchTvHostRegex.test(host)) {
     console.log(`➕ Opened Twitch tab: ${tab.id}`);
     store.state.openedTwitchTabs.push(tab);

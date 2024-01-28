@@ -23,11 +23,10 @@ export const enum AdType {
 
 export interface AdLogEntry {
   adType: AdType;
-  channel: string | null;
   isPurpleScreen: boolean;
   proxy: string | null;
-  proxyTwitchWebpage: boolean;
-  proxyUsherRequests: boolean;
+  channel: string | null;
+  passportLevel: number;
   anonymousMode: boolean;
   timestamp: number;
   videoWeaverHost: string;
@@ -51,3 +50,42 @@ export interface DnsResponse {
   timestamp: number;
   ttl: number;
 }
+
+export const enum MessageType {
+  ContentScriptMessage = "TLP_ContentScriptMessage",
+  PageScriptMessage = "TLP_PageScriptMessage",
+  WorkerScriptMessage = "TLP_WorkerScriptMessage",
+  GetStoreState = "TLP_GetStoreState",
+  GetStoreStateResponse = "TLP_GetStoreStateResponse",
+  EnableFullMode = "TLP_EnableFullMode",
+  EnableFullModeResponse = "TLP_EnableFullModeResponse",
+  DisableFullMode = "TLP_DisableFullMode",
+  UsherResponse = "TLP_UsherResponse",
+  NewPlaybackAccessToken = "TLP_NewPlaybackAccessToken",
+  NewPlaybackAccessTokenResponse = "TLP_NewPlaybackAccessTokenResponse",
+  ClearStats = "TLP_ClearStats",
+}
+
+export const enum ProxyRequestType {
+  Passport = "passport",
+  Usher = "usher",
+  VideoWeaver = "videoWeaver",
+  GraphQL = "graphQL",
+  GraphQLToken = "graphQLToken",
+  GraphQLIntegrity = "graphQLIntegrity",
+  TwitchWebpage = "twitchWebpage",
+}
+
+export type ProxyRequestParams =
+  | {
+      isChromium: true;
+      optimizedProxiesEnabled: boolean;
+      passportLevel: number;
+      fullModeEnabled?: boolean;
+    }
+  | {
+      isChromium: false;
+      optimizedProxiesEnabled: boolean;
+      passportLevel: number;
+      isFlagged?: boolean;
+    };

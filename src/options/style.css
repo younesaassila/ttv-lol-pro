@@ -1,14 +1,17 @@
 @font-face {
-  src: url("../fonts/Inter-VariableFont_slnt\,wght.ttf");
+  src: url("../common/fonts/Inter-VariableFont_slnt\,wght.ttf");
   font-family: "Inter";
 }
 
 :root {
+  --wrapper-width: 1100px;
   --font-primary: "Inter", "Roobert", "Helvetica Neue", Helvetica, Arial,
     sans-serif;
 
   --brand-color: #aa51b8;
-  --ui-background-color: #151619;
+  --wrapper-box-shadow-color: #0c0c0e;
+  --wrapper-background-color: #151619;
+  --body-background-color: #0e0f11;
 
   --text-primary: #e4e6e7;
   --text-secondary: #8d9296;
@@ -18,6 +21,7 @@
   --input-border-color: #353840;
   --input-text-primary: #c3c4ca;
   --input-text-secondary: #7a8085;
+  --input-max-width: 450px;
 
   --button-background-color: #353840;
   --button-background-color-hover: #464953;
@@ -26,20 +30,20 @@
   --link: #be68ce;
   --link-hover: #cc88d8;
 
-  --header-height: 2.5rem;
+  --logo-height: 2.5rem;
+
+  --low-color: #06c157;
+  --low-bg-color: #1e2421;
+  --medium-color: #f9c643;
+  --medium-bg-color: #24221e;
+  --high-color: #f93e3e;
+  --high-bg-color: #241e1e;
 }
 
-body {
-  margin: 1.5rem;
-  background-color: var(--ui-background-color);
-  color: var(--text-primary);
-  accent-color: var(--brand-color);
-  font-size: 100%;
-  font-family: var(--font-primary);
-}
-
-main {
-  margin-left: 1rem;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 ::-moz-selection,
@@ -48,13 +52,79 @@ main {
   color: #ffffff;
 }
 
-.font-weight-bold {
-  font-weight: bold;
+body {
+  margin: 0;
+  background-image: url("../common/images/options_bg.png");
+  background-repeat: repeat;
+  background-color: var(--body-background-color);
+  color: var(--text-primary);
+  accent-color: var(--brand-color);
+  font-size: 100%;
+  font-family: var(--font-primary);
 }
 
-fieldset {
-  margin-top: 1rem;
-  border: 0;
+.wrapper {
+  position: relative;
+  left: 50%;
+  width: min(100%, var(--wrapper-width));
+  transform: translateX(-50%);
+  background-color: var(--wrapper-background-color);
+  box-shadow: 0 0 32px var(--wrapper-box-shadow-color);
+}
+
+main {
+  padding: 2rem;
+}
+
+header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  gap: 1rem;
+  border-bottom: 1px solid var(--input-border-color);
+  background-color: var(--wrapper-background-color);
+}
+header > .title-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+}
+header > .title-container > .icon {
+  width: var(--logo-height);
+  height: var(--logo-height);
+}
+header > .title-container > .title {
+  margin: 0;
+  font-size: 1.75rem;
+}
+header > #buttons-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-top: 1px solid var(--input-border-color);
+  font-size: 9pt;
+}
+footer > nav > ul {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
+  gap: 1.5rem;
+  list-style-type: none;
 }
 
 a,
@@ -63,7 +133,6 @@ a:visited {
   text-decoration: none;
   transition: color 100ms ease-in-out;
 }
-
 a:hover,
 a:visited:hover {
   color: var(--link-hover);
@@ -79,12 +148,10 @@ select {
   color: var(--input-text-primary);
   vertical-align: middle;
 }
-
 input[type="text"]:disabled {
   background-color: var(--input-background-color-disabled);
   color: var(--input-text-secondary);
 }
-
 input[type="text"]::placeholder {
   font-style: italic;
 }
@@ -100,7 +167,6 @@ button {
   cursor: pointer;
   transition: background-color 100ms ease-in-out;
 }
-
 input[type="button"]:hover,
 button:hover {
   background-color: var(--button-background-color-hover);
@@ -110,7 +176,6 @@ button:hover {
   background-color: var(--brand-color);
   color: #ffffff;
 }
-
 .btn-primary:hover {
   background-color: var(--link-hover);
 }
@@ -119,32 +184,34 @@ input[type="checkbox"]:disabled + label {
   opacity: 0.7;
 }
 
+fieldset {
+  margin-top: 1rem;
+  border: 0;
+}
+
+small {
+  color: var(--text-secondary);
+  font-size: 9pt;
+}
+
 hr {
   margin: 2.5rem 0;
   border: 0;
   border-top: 1px solid var(--input-border-color);
 }
 
-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  height: var(--header-height);
-  gap: 1rem;
-}
-
-header > img {
-  max-height: 100%;
-}
-
 .section {
-  margin-top: 1.5rem;
+  margin: 0 0 3rem 0;
+}
+
+.section:last-child {
+  margin-bottom: 0;
 }
 
 .section > h2 {
+  margin-top: 0;
   margin-bottom: 0.25rem;
-  font-size: 1.15rem;
+  font-size: 1.3rem;
 }
 
 .tag {
@@ -158,13 +225,9 @@ header > img {
   text-transform: uppercase;
 }
 
-small {
-  color: var(--text-secondary);
-  font-size: 9pt;
-}
-
 .store-list > li > input {
-  min-width: 400px;
+  width: 100%;
+  max-width: var(--input-max-width);
   margin-bottom: 0.25rem;
 }
 
@@ -177,23 +240,162 @@ li.hide-marker::marker {
   margin-bottom: 0;
   list-style-type: none;
 }
-
 .options-list > li {
   position: relative;
   margin-bottom: 1rem;
 }
-
 .options-list > li > input[type="checkbox"] {
   position: absolute;
   left: -1.6rem;
   margin-top: 0.3rem;
 }
 
-#passport-container {
-  display: flex;
+#passport-level-container {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "image slider"
+    ". usage"
+    ". warning";
+  column-gap: 1.25rem;
+  row-gap: 0;
+  align-items: center;
+  margin: 1rem 0 1.5rem 0;
 }
 
-#passport-container > img {
-  height: 80px;
-  margin-top: 1rem;
+#passport-level-image {
+  grid-area: image;
+  height: 55px;
+}
+
+#passport-level-slider-container {
+  grid-area: slider;
+}
+
+#passport-level-slider {
+  width: 100%;
+  max-width: var(--input-max-width);
+  margin: 0;
+}
+
+#passport-level-slider-datalist {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  max-width: var(--input-max-width);
+  text-align: center;
+}
+#passport-level-slider-datalist > option:first-child {
+  text-align: left;
+}
+#passport-level-slider-datalist > option:last-child {
+  text-align: right;
+}
+
+#passport-level-proxy-usage {
+  grid-area: usage;
+  width: 100%;
+  max-width: var(--input-max-width);
+  margin-top: 0.5rem;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--input-border-color);
+  border-radius: 18px;
+  background-color: var(--input-background-color);
+}
+#passport-level-proxy-usage[data-usage="low"] {
+  border-color: var(--low-color);
+  background-color: var(--low-bg-color);
+}
+#passport-level-proxy-usage[data-usage="medium"] {
+  border-color: var(--medium-color);
+  background-color: var(--medium-bg-color);
+}
+#passport-level-proxy-usage[data-usage="high"] {
+  border-color: var(--high-color);
+  background-color: var(--high-bg-color);
+}
+
+#passport-level-proxy-usage-summary {
+  margin: 0;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 100ms ease-in-out, color 100ms ease-in-out;
+}
+#passport-level-proxy-usage-summary::marker {
+  content: none;
+}
+#passport-level-proxy-usage-summary::after {
+  display: block;
+  float: right;
+  transform: translateY(-15%) rotate(-45deg);
+  content: "∟";
+  text-align: right;
+}
+#passport-level-proxy-usage[open] #passport-level-proxy-usage-summary::after {
+  display: block;
+  float: right;
+  transform: translateY(30%) rotate(135deg);
+  content: "∟";
+  text-align: right;
+}
+#passport-level-proxy-usage[data-usage="low"]
+  #passport-level-proxy-usage-summary:hover {
+  background-color: var(--low-color);
+  color: #000000;
+}
+#passport-level-proxy-usage[data-usage="medium"]
+  #passport-level-proxy-usage-summary:hover {
+  background-color: var(--medium-color);
+  color: #000000;
+}
+#passport-level-proxy-usage[data-usage="high"]
+  #passport-level-proxy-usage-summary:hover {
+  background-color: var(--high-color);
+  color: #000000;
+}
+
+#passport-level-proxy-usage-table {
+  width: 100%;
+  margin: 0;
+  padding: 0.5rem;
+  font-size: 0.7rem;
+}
+#passport-level-proxy-usage-table > tbody > tr > td:nth-child(2) {
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+#passport-level-warning {
+  display: none;
+  grid-area: warning;
+  margin-top: 0.75rem;
+}
+
+@media screen and (max-width: 800px) {
+  header {
+    flex-direction: column;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  main {
+    padding: 1.25rem;
+  }
+
+  header > #buttons-container {
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+    gap: 0.25rem;
+  }
+  header > #buttons-container > button {
+    width: 100%;
+  }
+
+  footer > nav > ul {
+    gap: 0.5rem;
+  }
 }

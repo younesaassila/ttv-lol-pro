@@ -1,7 +1,12 @@
+import Bowser from "bowser";
+import browser from "webextension-polyfill";
 import $ from "../common/ts/$";
 import { readFile, saveFile } from "../common/ts/file";
-import getProxyInfoFromUrl from "../common/ts/getProxyInfoFromUrl";
+import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
+import isChannelWhitelisted from "../common/ts/isChannelWhitelisted";
 import isChromium from "../common/ts/isChromium";
+import isRequestTypeProxied from "../common/ts/isRequestTypeProxied";
+import { getProxyInfoFromUrl } from "../common/ts/proxyInfo";
 import {
   clearProxySettings,
   updateProxySettings,
@@ -10,7 +15,7 @@ import sendAdLog from "../common/ts/sendAdLog";
 import store from "../store";
 import getDefaultState from "../store/getDefaultState";
 import type { State } from "../store/types";
-import type { KeyOfType } from "../types";
+import { KeyOfType, ProxyRequestType } from "../types";
 
 //#region Types
 type AllowedResult = [boolean, string?];
@@ -31,29 +36,45 @@ type ListOptions = {
 //#endregion
 
 //#region HTML Elements
-// Proxy settings
-const proxyUsherRequestsCheckboxElement = $(
-  "#proxy-usher-requests-checkbox"
+// Import/Export
+const exportButtonElement = $("#export-button") as HTMLButtonElement;
+const importButtonElement = $("#import-button") as HTMLButtonElement;
+const resetButtonElement = $("#reset-button") as HTMLButtonElement;
+// Passport
+const passportLevelSliderElement = $(
+  "#passport-level-slider"
 ) as HTMLInputElement;
-const proxyTwitchWebpageCheckboxElement = $(
-  "#proxy-twitch-webpage-checkbox"
-) as HTMLInputElement;
-const anonymousModeLiElement = $("#anonymous-mode-li") as HTMLLIElement;
+const passportLevelWarningElement = $("#passport-level-warning") as HTMLElement;
 const anonymousModeCheckboxElement = $(
   "#anonymous-mode-checkbox"
 ) as HTMLInputElement;
-// Whitelisted channels
-const whitelistedChannelsSectionElement = $(
-  "#whitelisted-channels-section"
+// Proxy usage
+const passportLevelProxyUsageElement = $(
+  "#passport-level-proxy-usage"
+) as HTMLDetailsElement;
+const passportLevelProxyUsageSummaryElement = $(
+  "#passport-level-proxy-usage-summary"
 ) as HTMLElement;
+const passportLevelProxyUsagePassportElement = $(
+  "#passport-level-proxy-usage-passport"
+) as HTMLTableCellElement;
+const passportLevelProxyUsageUsherElement = $(
+  "#passport-level-proxy-usage-usher"
+) as HTMLTableCellElement;
+const passportLevelProxyUsageVideoWeaverElement = $(
+  "#passport-level-proxy-usage-video-weaver"
+) as HTMLTableCellElement;
+const passportLevelProxyUsageGqlElement = $(
+  "#passport-level-proxy-usage-gql"
+) as HTMLTableCellElement;
+const passportLevelProxyUsageWwwElement = $(
+  "#passport-level-proxy-usage-www"
+) as HTMLTableCellElement;
+// Whitelisted channels
 const whitelistedChannelsListElement = $(
   "#whitelisted-channels-list"
 ) as HTMLUListElement;
-$;
 // Proxies
-const optimizedProxiesDivElement = $(
-  "#optimized-proxies-div"
-) as HTMLDivElement;
 const optimizedProxiesInputElement = $("#optimized") as HTMLInputElement;
 const optimizedProxiesListElement = $(
   "#optimized-proxies-list"
@@ -61,7 +82,6 @@ const optimizedProxiesListElement = $(
 const normalProxiesInputElement = $("#normal") as HTMLInputElement;
 const normalProxiesListElement = $("#normal-proxies-list") as HTMLOListElement;
 // Ad log
-const adLogSectionElement = $("#ad-log-section") as HTMLElement;
 const adLogEnabledCheckboxElement = $(
   "#ad-log-enabled-checkbox"
 ) as HTMLInputElement;
@@ -70,13 +90,15 @@ const adLogExportButtonElement = $(
   "#ad-log-export-button"
 ) as HTMLButtonElement;
 const adLogClearButtonElement = $("#ad-log-clear-button") as HTMLButtonElement;
-// Import/Export
-const exportButtonElement = $("#export-button") as HTMLButtonElement;
-const importButtonElement = $("#import-button") as HTMLButtonElement;
-const resetButtonElement = $("#reset-button") as HTMLButtonElement;
+// Troubleshooting
+const twitchTabsReportButtonElement = $(
+  "#twitch-tabs-report-button"
+) as HTMLButtonElement;
 const unsetPacScriptButtonElement = $(
   "#unset-pac-script-button"
 ) as HTMLButtonElement;
+// Footer
+const versionElement = $("#version") as HTMLParagraphElement;
 //#endregion
 
 const DEFAULT_STATE = Object.freeze(getDefaultState());
@@ -96,52 +118,55 @@ if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
 
 function main() {
-  // Proxy settings
-  proxyUsherRequestsCheckboxElement.checked = store.state.proxyUsherRequests;
-  proxyUsherRequestsCheckboxElement.addEventListener("change", () => {
-    const checked = proxyUsherRequestsCheckboxElement.checked;
-    store.state.proxyUsherRequests = checked;
+  // Remove elements that are only for Chromium or Firefox.
+  document
+    .querySelectorAll(isChromium ? ".firefox-only" : ".chromium-only")
+    .forEach(element => element.remove());
+  // Passport
+  passportLevelSliderElement.value = store.state.passportLevel.toString();
+  passportLevelSliderElement.addEventListener("input", () => {
+    store.state.passportLevel = parseInt(passportLevelSliderElement.value);
     if (isChromium && store.state.chromiumProxyActive) {
       updateProxySettings();
     }
+    updateProxyUsage();
   });
-  proxyTwitchWebpageCheckboxElement.checked = store.state.proxyTwitchWebpage;
-  proxyTwitchWebpageCheckboxElement.addEventListener("change", () => {
-    store.state.proxyTwitchWebpage = proxyTwitchWebpageCheckboxElement.checked;
-    if (isChromium && store.state.chromiumProxyActive) {
-      updateProxySettings();
-    }
+  updateProxyUsage();
+  anonymousModeCheckboxElement.checked = store.state.anonymousMode;
+  anonymousModeCheckboxElement.addEventListener("change", () => {
+    store.state.anonymousMode = anonymousModeCheckboxElement.checked;
   });
-  // TODO: Figure out why this feature doesn't work in Chromium.
-  if (isChromium) {
-    anonymousModeLiElement.style.display = "none";
-  } else {
-    anonymousModeCheckboxElement.checked = store.state.anonymousMode;
-    anonymousModeCheckboxElement.addEventListener("change", () => {
-      store.state.anonymousMode = anonymousModeCheckboxElement.checked;
-    });
-  }
   // Whitelisted channels
   listInit(whitelistedChannelsListElement, "whitelistedChannels", {
     getAlreadyExistsAlertMessage: channelName =>
       `'${channelName}' is already whitelisted`,
     getPromptPlaceholder: () => "Enter a channel name…",
+    isAddAllowed(text) {
+      if (!/^[a-z0-9_]+$/i.test(text)) {
+        return [false, `'${text}' is not a valid channel name`];
+      }
+      return [true];
+    },
+    isEditAllowed(text) {
+      if (!/^[a-z0-9_]+$/i.test(text)) {
+        return [false, `'${text}' is not a valid channel name`];
+      }
+      return [true];
+    },
   });
   // Proxies
-  if (isChromium) {
-    optimizedProxiesDivElement.style.display = "none";
-    normalProxiesInputElement.checked = true;
-  } else {
-    if (store.state.optimizedProxiesEnabled)
-      optimizedProxiesInputElement.checked = true;
-    else normalProxiesInputElement.checked = true;
-    const onProxyTypeChange = () => {
-      store.state.optimizedProxiesEnabled =
-        optimizedProxiesInputElement.checked;
-    };
-    optimizedProxiesInputElement.addEventListener("change", onProxyTypeChange);
-    normalProxiesInputElement.addEventListener("change", onProxyTypeChange);
-  }
+  if (store.state.optimizedProxiesEnabled)
+    optimizedProxiesInputElement.checked = true;
+  else normalProxiesInputElement.checked = true;
+  const onProxyTypeChange = () => {
+    store.state.optimizedProxiesEnabled = optimizedProxiesInputElement.checked;
+    if (isChromium && store.state.chromiumProxyActive) {
+      updateProxySettings();
+    }
+    updateProxyUsage();
+  };
+  optimizedProxiesInputElement.addEventListener("change", onProxyTypeChange);
+  normalProxiesInputElement.addEventListener("change", onProxyTypeChange);
   listInit(optimizedProxiesListElement, "optimizedProxies", {
     getPromptPlaceholder: insertMode => {
       if (insertMode == "prepend") return "Enter a proxy URL… (Primary)";
@@ -149,6 +174,11 @@ function main() {
     },
     isAddAllowed: isOptimizedProxyUrlAllowed,
     isEditAllowed: isOptimizedProxyUrlAllowed,
+    onEdit() {
+      if (isChromium && store.state.chromiumProxyActive) {
+        updateProxySettings();
+      }
+    },
     hidePromptMarker: true,
     insertMode: "both",
   });
@@ -168,16 +198,85 @@ function main() {
     insertMode: "both",
   });
   // Ad log
-  if (isChromium) {
-    adLogSectionElement.style.display = "none";
+  adLogEnabledCheckboxElement.checked = store.state.adLogEnabled;
+  adLogEnabledCheckboxElement.addEventListener("change", () => {
+    store.state.adLogEnabled = adLogEnabledCheckboxElement.checked;
+  });
+  // Footer
+  versionElement.textContent = `Version ${
+    browser.runtime.getManifest().version
+  }`;
+}
+
+function updateProxyUsage() {
+  const requestParams = {
+    isChromium: isChromium,
+    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
+    passportLevel: store.state.passportLevel,
+    fullModeEnabled: false,
+    isFlagged: false,
+  };
+
+  // Proxy usage label.
+  let usageScore = 0;
+  // Unoptimized mode penalty.
+  if (!store.state.optimizedProxiesEnabled) usageScore += 1;
+  // GraphQL integrity penalty and warning.
+  if (isRequestTypeProxied(ProxyRequestType.GraphQLIntegrity, requestParams)) {
+    usageScore += 1;
+    passportLevelWarningElement.style.display = "block";
   } else {
-    adLogEnabledCheckboxElement.checked = store.state.adLogEnabled;
-    adLogEnabledCheckboxElement.addEventListener("change", () => {
-      store.state.adLogEnabled = adLogEnabledCheckboxElement.checked;
-    });
+    passportLevelWarningElement.style.display = "none";
   }
-  if (!isChromium) {
-    unsetPacScriptButtonElement.style.display = "none";
+  switch (usageScore) {
+    case 0:
+      passportLevelProxyUsageSummaryElement.textContent = "🙂 Low proxy usage";
+      passportLevelProxyUsageElement.dataset.usage = "low";
+      break;
+    case 1:
+      passportLevelProxyUsageSummaryElement.textContent =
+        "😐 Medium proxy usage";
+      passportLevelProxyUsageElement.dataset.usage = "medium";
+      break;
+    case 2:
+      passportLevelProxyUsageSummaryElement.textContent = "🙁 High proxy usage";
+      passportLevelProxyUsageElement.dataset.usage = "high";
+      break;
+  }
+
+  // Passport
+  if (isRequestTypeProxied(ProxyRequestType.Passport, requestParams)) {
+    passportLevelProxyUsagePassportElement.textContent = "All";
+  } else {
+    passportLevelProxyUsagePassportElement.textContent = "None";
+  }
+  // Usher
+  passportLevelProxyUsageUsherElement.textContent = "All";
+  // Video Weaver
+  if (isRequestTypeProxied(ProxyRequestType.VideoWeaver, requestParams)) {
+    passportLevelProxyUsageVideoWeaverElement.textContent = "All";
+  } else {
+    passportLevelProxyUsageVideoWeaverElement.textContent = "Few";
+  }
+  // GraphQL
+  if (isRequestTypeProxied(ProxyRequestType.GraphQL, requestParams)) {
+    passportLevelProxyUsageGqlElement.textContent = "All";
+  } else if (
+    isRequestTypeProxied(ProxyRequestType.GraphQLIntegrity, requestParams)
+  ) {
+    passportLevelProxyUsageGqlElement.textContent = "Some";
+  } else if (
+    isRequestTypeProxied(ProxyRequestType.GraphQLToken, requestParams)
+  ) {
+    passportLevelProxyUsageGqlElement.textContent = "Few";
+  } else {
+    passportLevelProxyUsageGqlElement.textContent = "None";
+  }
+  // WWW
+  if (isRequestTypeProxied(ProxyRequestType.TwitchWebpage, requestParams)) {
+    passportLevelProxyUsageWwwElement.textContent = "All";
+  } else {
+    passportLevelProxyUsageWwwElement.textContent = "None";
   }
 }
 
@@ -425,33 +524,6 @@ function _listPrompt(
   if (options.focusPrompt) promptInput.focus();
 }
 
-adLogSendButtonElement.addEventListener("click", async () => {
-  const success = await sendAdLog();
-  if (success === null) {
-    return alert("No log entries to send.");
-  }
-  if (!success) {
-    return alert("Failed to send log.");
-  }
-  alert("Log sent successfully.");
-});
-
-adLogExportButtonElement.addEventListener("click", () => {
-  saveFile(
-    "ttv-lol-pro_ad-log.json",
-    JSON.stringify(store.state.adLog),
-    "application/json;charset=utf-8"
-  );
-});
-
-adLogClearButtonElement.addEventListener("click", () => {
-  const confirmation = confirm(
-    "Are you sure you want to clear the ad log? This cannot be undone."
-  );
-  if (!confirmation) return;
-  store.state.adLog = [];
-});
-
 exportButtonElement.addEventListener("click", () => {
   saveFile(
     "ttv-lol-pro_backup.json",
@@ -461,8 +533,7 @@ exportButtonElement.addEventListener("click", () => {
       normalProxies: store.state.normalProxies,
       optimizedProxies: store.state.optimizedProxies,
       optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-      proxyTwitchWebpage: store.state.proxyTwitchWebpage,
-      proxyUsherRequests: store.state.proxyUsherRequests,
+      passportLevel: store.state.passportLevel,
       whitelistedChannels: store.state.whitelistedChannels,
     } as Partial<State>),
     "application/json;charset=utf-8"
@@ -495,6 +566,13 @@ importButtonElement.addEventListener("click", async () => {
           item != null ? isNormalProxyUrlAllowed(item.toString())[0] : false
         );
       }
+      if (key === "passportLevel") {
+        if (typeof value !== "number") {
+          filteredValue = DEFAULT_STATE.passportLevel;
+        } else {
+          filteredValue = Math.min(Math.max(value, 0), 2);
+        }
+      }
       // @ts-ignore
       store.state[key] = filteredValue;
     }
@@ -511,6 +589,163 @@ resetButtonElement.addEventListener("click", () => {
   if (!confirmation) return;
   store.clear();
   window.location.reload(); // Reload page to update UI.
+});
+
+adLogSendButtonElement.addEventListener("click", async () => {
+  const success = await sendAdLog();
+  if (success === null) {
+    return alert("No log entries to send.");
+  }
+  if (!success) {
+    return alert("Failed to send log.");
+  }
+  alert("Log sent successfully.");
+});
+
+adLogExportButtonElement.addEventListener("click", () => {
+  saveFile(
+    "ttv-lol-pro_ad-log.json",
+    JSON.stringify(store.state.adLog),
+    "application/json;charset=utf-8"
+  );
+});
+
+adLogClearButtonElement.addEventListener("click", () => {
+  const confirmation = confirm(
+    "Are you sure you want to clear the ad log? This cannot be undone."
+  );
+  if (!confirmation) return;
+  store.state.adLog = [];
+});
+
+twitchTabsReportButtonElement.addEventListener("click", async () => {
+  let report = "**Twitch Tabs Report**\n\n";
+
+  const extensionInfo = await browser.management.getSelf();
+  const userAgentParser = Bowser.getParser(window.navigator.userAgent);
+  report += `Extension: ${extensionInfo.name} v${extensionInfo.version} (${extensionInfo.installType})\n`;
+  report += `Browser: ${userAgentParser.getBrowserName()} ${userAgentParser.getBrowserVersion()} (${userAgentParser.getOSName()} ${userAgentParser.getOSVersion()})\n\n`;
+
+  const openedTabs = await browser.tabs.query({
+    url: ["https://www.twitch.tv/*", "https://m.twitch.tv/*"],
+  });
+  const detectedTabs = store.state.openedTwitchTabs;
+
+  // Print all opened tabs.
+  report += `Opened Twitch tabs (${openedTabs.length}):\n`;
+  for (const tab of openedTabs) {
+    report += `- ${tab.url || tab.pendingUrl} (id: ${tab.id}, windowId: ${
+      tab.windowId
+    })\n`;
+  }
+  report += "\n";
+
+  // Whitelisted tabs in `openedTabs`.
+  const openedWhitelistedTabs = openedTabs.filter(tab => {
+    const url = tab.url || tab.pendingUrl;
+    if (!url) return false;
+    const channelName = findChannelFromTwitchTvUrl(url);
+    const isWhitelisted = channelName
+      ? isChannelWhitelisted(channelName)
+      : false;
+    return isWhitelisted;
+  });
+  report += `Out of the ${openedTabs.length} opened Twitch tabs, ${
+    openedWhitelistedTabs.length
+  } ${openedWhitelistedTabs.length === 1 ? "is" : "are"} whitelisted:\n`;
+  for (const tab of openedWhitelistedTabs) {
+    report += `- ${tab.url || tab.pendingUrl} (id: ${tab.id}, windowId: ${
+      tab.windowId
+    })\n`;
+  }
+  report += "\n";
+
+  // Check for missing tabs in `detectedTabs`.
+  const missingTabs = openedTabs.filter(
+    tab => !detectedTabs.some(extensionTab => extensionTab.id === tab.id)
+  );
+  if (missingTabs.length > 0) {
+    report += `The following Twitch tabs are missing from \`store.state.openedTwitchTabs\`:\n`;
+    for (const tab of missingTabs) {
+      report += `- ${tab.url || tab.pendingUrl} (id: ${tab.id}, windowId: ${
+        tab.windowId
+      })\n`;
+    }
+    report += "\n";
+  } else {
+    report +=
+      "All opened Twitch tabs are present in `store.state.openedTwitchTabs`.\n\n";
+  }
+
+  // Check for extra tabs in `detectedTabs`.
+  const extraTabs = detectedTabs.filter(
+    extensionTab => !openedTabs.some(tab => tab.id === extensionTab.id)
+  );
+  if (extraTabs.length > 0) {
+    report += `The following Twitch tabs are extra in \`store.state.openedTwitchTabs\`:\n`;
+    for (const tab of extraTabs) {
+      report += `- ${tab.url || tab.pendingUrl} (id: ${tab.id}, windowId: ${
+        tab.windowId
+      })\n`;
+    }
+    report += "\n";
+  } else {
+    report += "No extra Twitch tabs in `store.state.openedTwitchTabs`.\n\n";
+  }
+
+  // Whitelisted tabs in `detectedTabs`.
+  const detectedWhitelistedTabs = detectedTabs.filter(tab => {
+    const url = tab.url || tab.pendingUrl;
+    if (!url) return false;
+    const channelName = findChannelFromTwitchTvUrl(url);
+    const isWhitelisted = channelName
+      ? isChannelWhitelisted(channelName)
+      : false;
+    return isWhitelisted;
+  });
+  report += `Out of the ${
+    detectedTabs.length
+  } Twitch tabs in \`store.state.openedTwitchTabs\`, ${
+    detectedWhitelistedTabs.length
+  } ${detectedWhitelistedTabs.length === 1 ? "is" : "are"} whitelisted:\n`;
+  for (const tab of detectedWhitelistedTabs) {
+    report += `- ${tab.url || tab.pendingUrl} (id: ${tab.id}, windowId: ${
+      tab.windowId
+    })\n`;
+  }
+  report += "\n";
+
+  // Should the PAC script be set?
+  const allTabsAreWhitelisted =
+    openedWhitelistedTabs.length === openedTabs.length;
+  const shouldSetPacScript = openedTabs.length > 0 && !allTabsAreWhitelisted;
+  report += `Should the PAC script be set? ${
+    shouldSetPacScript ? "Yes" : "No"
+  }\n`;
+  report += `Is the PAC script set? ${
+    store.state.chromiumProxyActive ? "Yes" : "No"
+  }\n`;
+  report += "\n";
+
+  let fixed = false;
+  if (shouldSetPacScript && !store.state.chromiumProxyActive) {
+    store.state.openedTwitchTabs = openedTabs;
+    updateProxySettings();
+    fixed = true;
+    report += "Fixed issue by setting the PAC script.\n";
+  } else if (!shouldSetPacScript && store.state.chromiumProxyActive) {
+    store.state.openedTwitchTabs = openedTabs;
+    clearProxySettings();
+    fixed = true;
+    report += "Fixed issue by unsetting the PAC script.\n";
+  }
+
+  saveFile("ttv-lol-pro_tabs-report.txt", report, "text/plain;charset=utf-8");
+  alert(
+    `Report saved ${
+      fixed ? "and issue fixed " : ""
+    }successfully. Please send the report to the developer (on Discord or GitHub).`
+  );
 });
 
 unsetPacScriptButtonElement.addEventListener("click", () => {
