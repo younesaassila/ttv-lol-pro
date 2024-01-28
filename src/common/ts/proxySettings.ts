@@ -92,7 +92,12 @@ function getProxyInfoStringFromUrls(urls: string[]): string {
   return [
     ...urls.map(url => {
       const proxyInfo = getProxyInfoFromUrl(url);
-      return `PROXY ${getUrlFromProxyInfo(proxyInfo)}`;
+      return `PROXY ${getUrlFromProxyInfo({
+        ...proxyInfo,
+        // Don't include username/password in PAC script.
+        username: undefined,
+        password: undefined,
+      })}`;
     }),
     "DIRECT",
   ].join("; ");
