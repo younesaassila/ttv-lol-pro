@@ -71,7 +71,10 @@ export function getUrlFromProxyInfo(proxyInfo: ProxyInfo): string {
   } else if (username) {
     url = `${username}@`;
   }
-  if (ip.isV6Format(host)) {
+  const isIPv4 = ip.isV4Format(host);
+  const isIPv6 = ip.isV6Format(host);
+  // isV6Format() returns true for IPv4 addresses, so we need to exclude those.
+  if (isIPv6 && !isIPv4) {
     url += `[${host}]`;
   } else {
     url += host;
