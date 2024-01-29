@@ -17,9 +17,8 @@ export default function onInstalledStoreCleanup(
       store.state.normalProxies = store.state.normalProxies.filter(
         proxy => proxy !== oldChromiumProxy
       );
-      if (store.state.normalProxies.length === 0) {
-        store.state.optimizedProxiesEnabled = true;
-      }
+      store.state.optimizedProxiesEnabled =
+        store.state.normalProxies.length === 0;
     }
     // Add new Chromium optimized proxy.
     const newChromiumProxy = "chromium.api.cdn-perfprod.com:2023";
