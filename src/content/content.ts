@@ -52,10 +52,7 @@ function clearStats() {
   if (!channelName) return;
 
   if (store.state.streamStatuses.hasOwnProperty(channelName)) {
-    setStreamStatus(channelName, {
-      proxied: false,
-      reason: "",
-    });
+    delete store.state.streamStatuses[channelName];
   }
   console.log(
     `[TTV LOL PRO] Cleared stats for channel '${channelName}' (content script).`
