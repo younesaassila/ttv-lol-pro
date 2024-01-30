@@ -59,7 +59,7 @@ window.Worker = class Worker extends window.Worker {
       script = xhr.responseText;
     } else {
       console.warn(`[TTV LOL PRO] Failed to fetch script: ${xhr.statusText}`);
-      script = `importScripts("${fullUrl}");`; // Will fail on Firefox Nightly.
+      script = `importScripts('${fullUrl}');`; // Will fail on Firefox Nightly.
     }
     // ---------------------------------------
     // 🦊 Attention Firefox Addon Reviewer 🦊
@@ -69,18 +69,30 @@ window.Worker = class Worker extends window.Worker {
     const newScript = `
       var getParams = () => '${JSON.stringify(params)}';
       try {
-        importScripts("${params.workerScriptURL}");
+        importScripts('${params.workerScriptURL}');
       } catch (error) {
-        console.error("[TTV LOL PRO] Failed to load worker script: ${
+        console.error('[TTV LOL PRO] Failed to load script: ${
           params.workerScriptURL
-        }:", error);
+        }:', error);
       }
       ${script}
     `;
     const newScriptURL = URL.createObjectURL(
       new Blob([newScript], { type: "text/javascript" })
     );
-    super(newScriptURL, options);
+    // Required for VAFT compatibility.
+    const wrapperScript = `
+      try {
+        importScripts('${newScriptURL}');
+      } catch (error) {
+        console.warn('[TTV LOL PRO] Failed to wrap script: ${newScriptURL}:', error);
+        ${newScript}
+      }
+    `;
+    const wrapperScriptURL = URL.createObjectURL(
+      new Blob([wrapperScript], { type: "text/javascript" })
+    );
+    super(wrapperScriptURL, options);
     this.addEventListener("message", event => {
       if (
         event.data?.type === MessageType.ContentScriptMessage ||
