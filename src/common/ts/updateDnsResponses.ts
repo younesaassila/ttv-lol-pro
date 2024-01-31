@@ -41,11 +41,14 @@ export default async function updateDnsResponses() {
     }
 
     try {
-      const response = await fetch(`https://1.1.1.1/dns-query?name=${host}`, {
-        headers: {
-          Accept: "application/dns-json",
-        },
-      });
+      const response = await fetch(
+        `https://cloudflare-dns.com/dns-query?name=${host}`,
+        {
+          headers: {
+            Accept: "application/dns-json",
+          },
+        }
+      );
       const json = await response.json();
       const { Answer } = json;
       if (!Array.isArray(Answer)) {
