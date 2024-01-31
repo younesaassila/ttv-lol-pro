@@ -40,7 +40,8 @@ function injectPageScript() {
 
 function onStoreLoad() {
   // Clear stats for stream on page load/reload.
-  clearStats(findChannelFromTwitchTvUrl(location.href));
+  const channelName = findChannelFromTwitchTvUrl(location.href);
+  clearStats(channelName);
 }
 
 /**
