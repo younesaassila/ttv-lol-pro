@@ -148,7 +148,9 @@ window.addEventListener("message", event => {
   }
 });
 
-function onChannelChange(callback: (channelName: string) => void) {
+function onChannelChange(
+  callback: (channelName: string, oldChannelName: string | null) => void
+) {
   let channelName: string | null = findChannelFromTwitchTvUrl(location.href);
 
   const NATIVE_PUSH_STATE = window.history.pushState;
@@ -161,8 +163,9 @@ function onChannelChange(callback: (channelName: string) => void) {
     const fullUrl = toAbsoluteUrl(url.toString());
     const newChannelName = findChannelFromTwitchTvUrl(fullUrl);
     if (newChannelName != null && newChannelName !== channelName) {
+      const oldChannelName = channelName;
       channelName = newChannelName;
-      callback(channelName);
+      callback(channelName, oldChannelName);
     }
     return NATIVE_PUSH_STATE.call(window.history, data, unused, url);
   }
@@ -178,8 +181,9 @@ function onChannelChange(callback: (channelName: string) => void) {
     const fullUrl = toAbsoluteUrl(url.toString());
     const newChannelName = findChannelFromTwitchTvUrl(fullUrl);
     if (newChannelName != null && newChannelName !== channelName) {
+      const oldChannelName = channelName;
       channelName = newChannelName;
-      callback(channelName);
+      callback(channelName, oldChannelName);
     }
     return NATIVE_REPLACE_STATE.call(window.history, data, unused, url);
   }
@@ -188,17 +192,25 @@ function onChannelChange(callback: (channelName: string) => void) {
   window.addEventListener("popstate", () => {
     const newChannelName = findChannelFromTwitchTvUrl(location.href);
     if (newChannelName != null && newChannelName !== channelName) {
+      const oldChannelName = channelName;
       channelName = newChannelName;
-      callback(channelName);
+      callback(channelName, oldChannelName);
     }
   });
 }
 
-onChannelChange(() => {
-  sendMessageToContentScript({ type: MessageType.ClearStats });
-  sendMessageToPageScript({ type: MessageType.ClearStats });
+onChannelChange((channelName, oldChannelName) => {
+  sendMessageToContentScript({
+    type: MessageType.ClearStats,
+    channelName: oldChannelName,
+  });
+  sendMessageToPageScript({
+    type: MessageType.ClearStats,
+    channelName: oldChannelName,
+  });
   sendMessageToWorkerScript(pageState.twitchWorker, {
     type: MessageType.ClearStats,
+    channelName: oldChannelName,
   });
 });
 

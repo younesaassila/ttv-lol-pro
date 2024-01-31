@@ -69,10 +69,17 @@ export function getFetch(pageState: PageState): typeof fetch {
     switch (message.type) {
       case MessageType.ClearStats:
         console.log("[TTV LOL PRO] Cleared stats (getFetch).");
-        usherManifests = [];
-        cachedPlaybackTokenRequestHeaders = null;
-        cachedPlaybackTokenRequestBody = null;
-        cachedUsherRequestUrl = null;
+        const channelNameLower = message.channelName.toLowerCase();
+        usherManifests = usherManifests.filter(
+          manifest => manifest.channelName !== channelNameLower
+        );
+        if (cachedPlaybackTokenRequestBody?.includes(channelNameLower)) {
+          cachedPlaybackTokenRequestHeaders = null;
+          cachedPlaybackTokenRequestBody = null;
+        }
+        if (cachedUsherRequestUrl?.includes(channelNameLower)) {
+          cachedUsherRequestUrl = null;
+        }
         break;
     }
   });
