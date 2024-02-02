@@ -34,7 +34,7 @@ export default function onContentScriptMessage(
       requestType,
       setTimeout(() => {
         console.log(
-          `Disabling full mode (request type: ${requestType}, timeout)`
+          `🔴 Disabled full mode (request type: ${requestType}, timeout)`
         );
         timeoutMap.delete(requestType);
         if (store.state.chromiumProxyActive) {
@@ -47,7 +47,7 @@ export default function onContentScriptMessage(
     }
 
     console.log(
-      `Enabled full mode for ${
+      `🟢 Enabled full mode for ${
         fetchTimeoutMs + replyTimeoutMs
       }ms (request type: ${requestType})`
     );
@@ -70,6 +70,6 @@ export default function onContentScriptMessage(
     if (store.state.chromiumProxyActive) {
       updateProxySettings([...timeoutMap.keys()]);
     }
-    console.log(`Disabled full mode (request type: ${requestType})`);
+    console.log(`🔴 Disabled full mode (request type: ${requestType})`);
   }
 }
