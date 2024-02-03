@@ -7,7 +7,7 @@ type Timeout = string | number | NodeJS.Timeout | undefined;
 
 const timeoutMap: Map<ProxyRequestType, Timeout> = new Map();
 const fetchTimeoutMsOverride: Map<ProxyRequestType, number> = new Map([
-  [ProxyRequestType.Usher, 7000],
+  [ProxyRequestType.Usher, 7000], // Account for slow page load.
 ]);
 
 export default function onContentScriptMessage(
@@ -56,7 +56,7 @@ export default function onContentScriptMessage(
         type: MessageType.EnableFullModeResponse,
       });
     } catch (error) {
-      console.error("Failed to send EnableFullModeResponse message", error);
+      console.error("❌ Failed to send EnableFullModeResponse message", error);
     }
   }
 
