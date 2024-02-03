@@ -6,6 +6,9 @@ import { MessageType, ProxyRequestType } from "../../types";
 type Timeout = string | number | NodeJS.Timeout | undefined;
 
 const timeoutMap: Map<ProxyRequestType, Timeout> = new Map();
+const fetchTimeoutMsOverride: Map<ProxyRequestType, number> = new Map([
+  [ProxyRequestType.Usher, 7000], // Account for slow page load.
+]);
 
 export default function onContentScriptMessage(
   message: any,
@@ -23,13 +26,15 @@ export default function onContentScriptMessage(
     }
 
     // Set new timeout for request type.
-    const fetchTimeoutMs = 3000; // Time for fetch to be called.
+    const fetchTimeoutMs = fetchTimeoutMsOverride.has(requestType)
+      ? fetchTimeoutMsOverride.get(requestType)!
+      : 3000; // Time for fetch to be called.
     const replyTimeoutMs = Date.now() - message.timestamp; // Time for reply to be received.
     timeoutMap.set(
       requestType,
       setTimeout(() => {
         console.log(
-          `[TTV LOL PRO] Disabling full mode (request type: ${requestType}, timeout)`
+          `🔴 Disabled full mode (request type: ${requestType}, timeout)`
         );
         timeoutMap.delete(requestType);
         if (store.state.chromiumProxyActive) {
@@ -42,7 +47,7 @@ export default function onContentScriptMessage(
     }
 
     console.log(
-      `[TTV LOL PRO] Enabled full mode for ${
+      `🟢 Enabled full mode for ${
         fetchTimeoutMs + replyTimeoutMs
       }ms (request type: ${requestType})`
     );
@@ -51,10 +56,7 @@ export default function onContentScriptMessage(
         type: MessageType.EnableFullModeResponse,
       });
     } catch (error) {
-      console.error(
-        "[TTV LOL PRO] Failed to send EnableFullModeResponse message",
-        error
-      );
+      console.error("❌ Failed to send EnableFullModeResponse message", error);
     }
   }
 
@@ -68,8 +70,6 @@ export default function onContentScriptMessage(
     if (store.state.chromiumProxyActive) {
       updateProxySettings([...timeoutMap.keys()]);
     }
-    console.log(
-      `[TTV LOL PRO] Disabled full mode (request type: ${requestType})`
-    );
+    console.log(`🔴 Disabled full mode (request type: ${requestType})`);
   }
 }

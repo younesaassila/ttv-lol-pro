@@ -8,6 +8,7 @@ import {
 import { alpha2 } from "../common/ts/countryCodes";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import isChannelWhitelisted from "../common/ts/isChannelWhitelisted";
+import isChromium from "../common/ts/isChromium";
 import store from "../store";
 import type { StreamStatus } from "../types";
 
@@ -183,6 +184,7 @@ copyDebugInfoButtonElement.addEventListener("click", async e => {
     channelNameLower != null
       ? store.state.streamStatuses[channelNameLower]
       : null;
+  const proxySettings = await browser.proxy.settings.get({});
 
   const debugInfo = [
     `**Debug Info**\n`,
@@ -220,6 +222,9 @@ copyDebugInfoButtonElement.addEventListener("click", async e => {
                 }\n`,
                 `- Country: ${status.proxyCountry ?? "N/A"}\n`,
               ].join("")
+            : "",
+          isChromium
+            ? `Proxy level of control: ${proxySettings.levelOfControl}\n`
             : "",
         ].join("")
       : "",

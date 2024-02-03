@@ -40,25 +40,22 @@ function injectPageScript() {
 
 function onStoreLoad() {
   // Clear stats for stream on page load/reload.
-  clearStats();
+  const channelName = findChannelFromTwitchTvUrl(location.href);
+  clearStats(channelName);
 }
 
 /**
  * Clear stats for stream on page load/reload.
  * @returns
  */
-function clearStats() {
-  const channelName = findChannelFromTwitchTvUrl(location.href);
+function clearStats(channelName: string | null) {
   if (!channelName) return;
-
-  if (store.state.streamStatuses.hasOwnProperty(channelName)) {
-    setStreamStatus(channelName, {
-      proxied: false,
-      reason: "",
-    });
+  const channelNameLower = channelName.toLowerCase();
+  if (store.state.streamStatuses.hasOwnProperty(channelNameLower)) {
+    delete store.state.streamStatuses[channelNameLower];
   }
   console.log(
-    `[TTV LOL PRO] Cleared stats for channel '${channelName}' (content script).`
+    `[TTV LOL PRO] Cleared stats for channel '${channelNameLower}' (content script).`
   );
 }
 
@@ -154,7 +151,7 @@ function onPageMessage(event: MessageEvent) {
       });
       break;
     case MessageType.ClearStats:
-      clearStats();
+      clearStats(message.channelName);
       break;
   }
 }
