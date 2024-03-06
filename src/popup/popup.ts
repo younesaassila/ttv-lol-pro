@@ -72,7 +72,7 @@ function setStreamStatusElement(channelName: string) {
   const status = store.state.streamStatuses[channelNameLower];
   if (status) {
     setProxyStatus(channelNameLower, isWhitelisted, status);
-    setWhitelistStatus(channelNameLower);
+    setWhitelistStatus(channelNameLower, isWhitelisted);
     streamStatusElement.style.display = "flex";
   } else {
     streamStatusElement.style.display = "none";
@@ -145,29 +145,29 @@ function setProxyStatus(
   }
 }
 
-function setWhitelistStatus(channelNameLower: string) {
-  const whitelistedChannelsLower = store.state.whitelistedChannels.map(id =>
-    id.toLowerCase()
-  );
-  const isWhitelisted = whitelistedChannelsLower.includes(channelNameLower);
+function setWhitelistStatus(channelNameLower: string, isWhitelisted: boolean) {
+  whitelistStatusElement.setAttribute("data-channel", channelNameLower);
   whitelistStatusElement.setAttribute("data-whitelisted", `${isWhitelisted}`);
   whitelistToggleElement.checked = isWhitelisted;
-  whitelistToggleElement.addEventListener("change", e => {
-    const target = e.target as HTMLInputElement;
-    const isWhitelisted = target.checked;
-    if (isWhitelisted) {
-      // Add channel name to whitelist.
-      store.state.whitelistedChannels.push(channelNameLower);
-    } else {
-      // Remove channel name from whitelist.
-      store.state.whitelistedChannels = store.state.whitelistedChannels.filter(
-        id => id !== channelNameLower
-      );
-    }
-    whitelistStatusElement.setAttribute("data-whitelisted", `${isWhitelisted}`);
-    browser.tabs.reload();
-  });
 }
+
+whitelistToggleElement.addEventListener("change", e => {
+  const channelNameLower = whitelistStatusElement.getAttribute("data-channel");
+  if (!channelNameLower) return;
+  const target = e.target as HTMLInputElement;
+  const isWhitelisted = target.checked;
+  if (isWhitelisted) {
+    // Add channel name to whitelist.
+    store.state.whitelistedChannels.push(channelNameLower);
+  } else {
+    // Remove channel name from whitelist.
+    store.state.whitelistedChannels = store.state.whitelistedChannels.filter(
+      id => id !== channelNameLower
+    );
+  }
+  whitelistStatusElement.setAttribute("data-whitelisted", `${isWhitelisted}`);
+  browser.tabs.reload();
+});
 
 copyDebugInfoButtonElement.addEventListener("click", async e => {
   const extensionInfo = await browser.management.getSelf();
