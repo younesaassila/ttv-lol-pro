@@ -40,6 +40,7 @@ async function sendMessageAndWaitForResponse(
       const message = event.data?.message;
       if (!message) return;
       if (message.type === responseMessageType) {
+        self.removeEventListener("message", listener);
         resolve(message);
       }
     };

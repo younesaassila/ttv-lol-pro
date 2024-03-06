@@ -93,6 +93,9 @@ window.Worker = class Worker extends window.Worker {
       new Blob([wrapperScript], { type: "text/javascript" })
     );
     super(wrapperScriptURL, options);
+    URL.revokeObjectURL(newScriptURL);
+    URL.revokeObjectURL(wrapperScriptURL);
+    pageState.twitchWorker = this;
     this.addEventListener("message", event => {
       if (
         event.data?.type === MessageType.ContentScriptMessage ||
@@ -101,7 +104,6 @@ window.Worker = class Worker extends window.Worker {
         window.postMessage(event.data);
       }
     });
-    pageState.twitchWorker = this;
   }
 };
 
