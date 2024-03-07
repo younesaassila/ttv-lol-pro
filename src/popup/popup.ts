@@ -119,15 +119,14 @@ function setProxyStatus(
     reasonElement.style.display = "none";
   }
   // Info
-  infoContainerElement.innerHTML = "";
-  infoContainerElement.style.display = "none";
   const messages = getProxyStatusMessages(status);
+  infoContainerElement.innerHTML = "";
+  infoContainerElement.style.display = messages.length > 0 ? "flex" : "none";
   for (const message of messages) {
     const smallElement = document.createElement("small");
     smallElement.className = "info";
     smallElement.textContent = message;
     infoContainerElement.appendChild(smallElement);
-    infoContainerElement.style.display = "flex";
   }
 }
 
