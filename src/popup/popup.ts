@@ -119,7 +119,20 @@ function setProxyStatus(
     reasonElement.style.display = "none";
   }
   // Info
-  let messages = [];
+  infoContainerElement.innerHTML = "";
+  infoContainerElement.style.display = "none";
+  const messages = getProxyStatusMessages(status);
+  for (const message of messages) {
+    const smallElement = document.createElement("small");
+    smallElement.className = "info";
+    smallElement.textContent = message;
+    infoContainerElement.appendChild(smallElement);
+    infoContainerElement.style.display = "flex";
+  }
+}
+
+function getProxyStatusMessages(status: StreamStatus): string[] {
+  const messages = [];
   if (status.proxyHost) {
     messages.push(`Proxy: ${anonymizeIpAddress(status.proxyHost)}`);
   }
@@ -134,15 +147,7 @@ function setProxyStatus(
   if (store.state.optimizedProxiesEnabled) {
     messages.push("Using optimized proxies");
   }
-  infoContainerElement.innerHTML = "";
-  infoContainerElement.style.display = "none";
-  for (const message of messages) {
-    const smallElement = document.createElement("small");
-    smallElement.className = "info";
-    smallElement.textContent = message;
-    infoContainerElement.appendChild(smallElement);
-    infoContainerElement.style.display = "flex";
-  }
+  return messages;
 }
 
 function setWhitelistStatus(channelNameLower: string, isWhitelisted: boolean) {
@@ -153,7 +158,7 @@ function setWhitelistStatus(channelNameLower: string, isWhitelisted: boolean) {
 
 whitelistToggleElement.addEventListener("change", e => {
   const channelNameLower = whitelistStatusElement.getAttribute("data-channel");
-  if (!channelNameLower) return;
+  if (!channelNameLower) return alert("Channel name not found.");
   const target = e.target as HTMLInputElement;
   const isWhitelisted = target.checked;
   if (isWhitelisted) {
