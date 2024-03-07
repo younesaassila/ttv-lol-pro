@@ -225,15 +225,18 @@ hr {
   text-transform: uppercase;
 }
 
+li.hide-marker::marker {
+  display: none;
+  content: "";
+}
+
 .store-list > li > input {
   width: 100%;
   max-width: var(--input-max-width);
   margin-bottom: 0.25rem;
 }
-
-li.hide-marker::marker {
-  display: none;
-  content: "";
+input[type="radio"]:not(:checked) ~ .store-list {
+  opacity: 0.5;
 }
 
 .options-list {
