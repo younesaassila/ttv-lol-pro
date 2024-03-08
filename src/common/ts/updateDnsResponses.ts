@@ -55,9 +55,11 @@ export default async function updateDnsResponses() {
         console.error("Answer is not an array:", Answer);
         continue;
       }
-      const ips = Answer.map((answer: any) => answer.data);
-      const ttl =
-        Number(response.headers.get("Cache-Control")?.split("=")[1]) || 0;
+      const ips = Answer.map((answer: any) => answer.data as string);
+      const ttl = Math.max(
+        Math.max(...Answer.map((answer: any) => answer.TTL as number)),
+        300
+      );
       if (dnsResponseIndex !== -1) {
         store.state.dnsResponses.splice(dnsResponseIndex, 1);
       }
