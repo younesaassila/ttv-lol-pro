@@ -203,11 +203,9 @@ hr {
 .section {
   margin: 0 0 3rem 0;
 }
-
 .section:last-child {
   margin-bottom: 0;
 }
-
 .section > h2 {
   margin-top: 0;
   margin-bottom: 0.25rem;
@@ -230,13 +228,13 @@ li.hide-marker::marker {
   content: "";
 }
 
+input[type="radio"]:not(:checked) ~ .store-list {
+  opacity: 0.5;
+}
 .store-list > li > input {
   width: 100%;
   max-width: var(--input-max-width);
   margin-bottom: 0.25rem;
-}
-input[type="radio"]:not(:checked) ~ .store-list {
-  opacity: 0.5;
 }
 
 .options-list {
