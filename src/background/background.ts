@@ -26,13 +26,23 @@ browser.runtime.onStartup.addListener(onStartupStoreCleanup);
 // Handle proxy authentication.
 browser.webRequest.onAuthRequired.addListener(
   onAuthRequired,
-  { urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"] },
+  {
+    urls: [
+      "https://*.live-video.net/*",
+      "https://*.ttvnw.net/*",
+      "https://*.twitch.tv/*",
+    ],
+  },
   ["blocking"]
 );
 
 // Monitor proxied status of requests.
 browser.webRequest.onResponseStarted.addListener(onResponseStarted, {
-  urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
+  urls: [
+    "https://*.live-video.net/*",
+    "https://*.ttvnw.net/*",
+    "https://*.twitch.tv/*",
+  ],
 });
 
 if (isChromium) {
@@ -71,7 +81,11 @@ if (isChromium) {
   browser.proxy.onRequest.addListener(
     onProxyRequest,
     {
-      urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
+      urls: [
+        "https://*.live-video.net/*",
+        "https://*.ttvnw.net/*",
+        "https://*.twitch.tv/*",
+      ],
     },
     ["requestHeaders"]
   );
@@ -80,7 +94,11 @@ if (isChromium) {
   browser.webRequest.onBeforeSendHeaders.addListener(
     onBeforeSendHeaders,
     {
-      urls: ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"],
+      urls: [
+        "https://*.live-video.net/*",
+        "https://*.ttvnw.net/*",
+        "https://*.twitch.tv/*",
+      ],
     },
     ["blocking", "requestHeaders"]
   );
@@ -89,7 +107,7 @@ if (isChromium) {
   browser.webRequest.onBeforeRequest.addListener(
     onBeforeVideoWeaverRequest,
     {
-      urls: ["https://*.ttvnw.net/*"],
+      urls: ["https://*.live-video.net/*", "https://*.ttvnw.net/*"],
     },
     ["blocking"]
   );

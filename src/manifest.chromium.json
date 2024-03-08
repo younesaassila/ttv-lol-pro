@@ -47,5 +47,9 @@
     "webRequest",
     "webRequestAuthProvider"
   ],
-  "host_permissions": ["https://*.ttvnw.net/*", "https://*.twitch.tv/*"]
+  "host_permissions": [
+    "https://*.live-video.net/*",
+    "https://*.ttvnw.net/*",
+    "https://*.twitch.tv/*"
+  ]
 }

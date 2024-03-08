@@ -44,6 +44,7 @@
     "storage",
     "webRequest",
     "webRequestBlocking",
+    "https://*.live-video.net/*",
     "https://*.ttvnw.net/*",
     "https://*.twitch.tv/*",
     "https://perfprod.com/ttvlolpro/telemetry"
