@@ -133,7 +133,7 @@ export function getFetch(pageState: PageState): typeof fetch {
     //#region Requests
 
     // Twitch GraphQL requests.
-    graphql: if (host != null && twitchGqlHostRegex.test(host)) {
+    graphqlReq: if (host != null && twitchGqlHostRegex.test(host)) {
       requestType = ProxyRequestType.GraphQL;
 
       //#region GraphQL PlaybackAccessToken requests.
@@ -164,7 +164,7 @@ export function getFetch(pageState: PageState): typeof fetch {
           console.log(
             "[TTV LOL PRO] Not flagging PlaybackAccessToken request: not a livestream, is frontpage, or is whitelisted."
           );
-          break graphql;
+          break graphqlReq;
         }
 
         const isTemplateRequest = requestBody.includes(
@@ -218,7 +218,7 @@ export function getFetch(pageState: PageState): typeof fetch {
           console.log("[TTV LOL PRO] Flagging PlaybackAccessToken request…");
           isFlaggedRequest = true;
         }
-        break graphql;
+        break graphqlReq;
       }
       //#endregion
 
@@ -248,13 +248,13 @@ export function getFetch(pageState: PageState): typeof fetch {
             isFlaggedRequest = true;
           }
         }
-        break graphql;
+        break graphqlReq;
       }
       //#endregion
     }
 
     // Twitch Usher requests.
-    usher: if (host != null && usherHostRegex.test(host)) {
+    usherReq: if (host != null && usherHostRegex.test(host)) {
       requestType = ProxyRequestType.Usher;
 
       //#region Usher requests.
@@ -271,7 +271,7 @@ export function getFetch(pageState: PageState): typeof fetch {
         console.log(
           "[TTV LOL PRO] Not flagging Usher request: not a livestream, is frontpage, or is whitelisted."
         );
-        break usher;
+        break usherReq;
       }
 
       const shouldFlagRequest = isRequestTypeProxied(ProxyRequestType.Usher, {
@@ -288,7 +288,7 @@ export function getFetch(pageState: PageState): typeof fetch {
     }
 
     // Twitch Video Weaver requests.
-    weaver: if (host != null && videoWeaverHostRegex.test(host)) {
+    weaverReq: if (host != null && videoWeaverHostRegex.test(host)) {
       requestType = ProxyRequestType.VideoWeaver;
 
       //#region Video Weaver requests.
@@ -306,7 +306,7 @@ export function getFetch(pageState: PageState): typeof fetch {
             "[TTV LOL PRO] Not flagging Video Weaver request: is frontpage or is whitelisted."
           );
         }
-        break weaver;
+        break weaverReq;
       }
 
       // Check if we should replace the Video Weaver URL.
