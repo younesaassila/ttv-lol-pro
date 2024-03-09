@@ -6,6 +6,6 @@ export const twitchGqlHostRegex = /^gql\.twitch\.tv$/i;
 export const twitchTvHostRegex = /^(?:www|m)\.twitch\.tv$/i;
 export const usherHostRegex = /^usher\.ttvnw\.net$/i;
 export const videoWeaverHostRegex =
-  /^(?:video-weaver\.\w+\.hls\.ttvnw\.net|\w+\.playlist\.live-video\.net)$/i;
+  /^(?:\w+\.playlist\.live-video\.net|video-weaver\.\w+\.hls\.ttvnw\.net)$/i;
 export const videoWeaverUrlRegex =
-  /^https?:\/\/(?:video-weaver\.\w+\.hls\.ttvnw\.net|\w+\.playlist\.live-video\.net)\/v1\/playlist\/.+\.m3u8$/gim;
+  /^https?:\/\/(?:\w+\.playlist\.live-video\.net|video-weaver\.\w+\.hls\.ttvnw\.net)\/v1\/playlist\/.+\.m3u8$/gim;

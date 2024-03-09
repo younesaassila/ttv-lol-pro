@@ -201,7 +201,7 @@ function onChannelChange(
   });
 }
 
-onChannelChange((channelName, oldChannelName) => {
+onChannelChange((_channelName, oldChannelName) => {
   sendMessageToContentScript({
     type: MessageType.ClearStats,
     channelName: oldChannelName,

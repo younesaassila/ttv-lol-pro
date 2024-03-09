@@ -436,6 +436,7 @@ export function getFetch(pageState: PageState): typeof fetch {
       const videoWeaverUrls = [...(assignedMap?.values() ?? [])];
       videoWeaverUrls.forEach(url => {
         videoWeaverUrlsProxiedCount.delete(url); // Shouldn't be necessary, but just in case.
+        videoWeaverUrlsToNotProxy.delete(url); // Shouldn't be necessary, but just in case.
         if (isFrontpage || isWhitelisted) videoWeaverUrlsToNotProxy.add(url);
       });
       pageState.sendMessageToContentScript({
