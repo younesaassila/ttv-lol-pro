@@ -472,7 +472,7 @@ export function getFetch(pageState: PageState): typeof fetch {
       ) {
         console.log("[TTV LOL PRO] Midroll ad detected.");
         manifest.consecutiveMidrollResponses += 1;
-        manifest.consecutiveMidrollCooldown = 5;
+        manifest.consecutiveMidrollCooldown = 15;
         await waitForStore(pageState);
         const whitelistedChannelsLower =
           pageState.state?.whitelistedChannels.map(channel =>
