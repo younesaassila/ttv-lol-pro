@@ -1,5 +1,6 @@
 import Bowser from "bowser";
 import browser from "webextension-polyfill";
+import onStartupStoreCleanup from "../background/handlers/onStartupStoreCleanup";
 import $ from "../common/ts/$";
 import { readFile, saveFile } from "../common/ts/file";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
@@ -91,11 +92,17 @@ const adLogExportButtonElement = $(
 ) as HTMLButtonElement;
 const adLogClearButtonElement = $("#ad-log-clear-button") as HTMLButtonElement;
 // Troubleshooting
-const twitchTabsReportButtonElement = $(
-  "#twitch-tabs-report-button"
+const checkStatusOfProxiesButtonElement = $(
+  "#check-status-of-proxies-button"
+) as HTMLButtonElement;
+const clearSessionStorageButtonElement = $(
+  "#clear-session-storage-button"
 ) as HTMLButtonElement;
 const unsetPacScriptButtonElement = $(
   "#unset-pac-script-button"
+) as HTMLButtonElement;
+const generateTwitchTabsReportButtonElement = $(
+  "#generate-twitch-tabs-report-button"
 ) as HTMLButtonElement;
 // Footer
 const versionElement = $("#version") as HTMLParagraphElement;
@@ -618,7 +625,23 @@ adLogClearButtonElement.addEventListener("click", () => {
   store.state.adLog = [];
 });
 
-twitchTabsReportButtonElement.addEventListener("click", async () => {
+checkStatusOfProxiesButtonElement.addEventListener("click", () => {
+  location.href = "https://status.perfprod.com/";
+});
+
+clearSessionStorageButtonElement.addEventListener("click", () => {
+  onStartupStoreCleanup();
+  alert("Session storage cleared successfully.");
+});
+
+unsetPacScriptButtonElement.addEventListener("click", () => {
+  if (isChromium) {
+    clearProxySettings();
+    alert("PAC script unset successfully.");
+  }
+});
+
+generateTwitchTabsReportButtonElement.addEventListener("click", async () => {
   let report = "**Twitch Tabs Report**\n\n";
 
   const extensionInfo = await browser.management.getSelf();
@@ -727,30 +750,8 @@ twitchTabsReportButtonElement.addEventListener("click", async () => {
   }\n`;
   report += "\n";
 
-  let fixed = false;
-  if (shouldSetPacScript && !store.state.chromiumProxyActive) {
-    store.state.openedTwitchTabs = openedTabs;
-    updateProxySettings();
-    fixed = true;
-    report += "Fixed issue by setting the PAC script.\n";
-  } else if (!shouldSetPacScript && store.state.chromiumProxyActive) {
-    store.state.openedTwitchTabs = openedTabs;
-    clearProxySettings();
-    fixed = true;
-    report += "Fixed issue by unsetting the PAC script.\n";
-  }
-
   saveFile("ttv-lol-pro_tabs-report.txt", report, "text/plain;charset=utf-8");
   alert(
-    `Report saved ${
-      fixed ? "and issue fixed " : ""
-    }successfully. Please send the report to the developer (on Discord or GitHub).`
+    "Report saved successfully. Please send it to the developer if requested."
   );
-});
-
-unsetPacScriptButtonElement.addEventListener("click", () => {
-  if (isChromium) {
-    clearProxySettings();
-    alert("PAC script unset successfully.");
-  }
 });

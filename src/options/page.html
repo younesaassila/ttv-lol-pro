@@ -206,13 +206,25 @@
         </section>
 
         <!-- Troubleshooting -->
-        <section id="troubleshooting" class="chromium-only section">
+        <section id="troubleshooting" class="section">
           <h2>Troubleshooting</h2>
-          <br />
-          <button id="twitch-tabs-report-button">
+          <small>
+            If you are experiencing issues, try the following options.
+            <b>These will not fix slow loading times or buffering issues.</b>
+          </small>
+          <br /><br />
+          <button id="check-status-of-proxies-button">
+            Check status of proxies
+          </button>
+          <button id="clear-session-storage-button">
+            Clear session storage
+          </button>
+          <button id="unset-pac-script-button" class="chromium-only">
+            Unset PAC script
+          </button>
+          <button id="generate-twitch-tabs-report-button" class="chromium-only">
             Generate Twitch tabs report…
           </button>
-          <button id="unset-pac-script-button">Unset PAC script</button>
         </section>
       </main>
 
