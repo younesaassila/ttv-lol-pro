@@ -108,8 +108,8 @@ const generateTwitchTabsReportButtonElement = $(
 const versionElement = $("#version") as HTMLParagraphElement;
 //#endregion
 
-const DEFAULT_STATE = Object.freeze(getDefaultState());
-const DEFAULT_LIST_OPTIONS = Object.freeze({
+const DEFAULT_STATE: Readonly<State> = Object.freeze(getDefaultState());
+const DEFAULT_LIST_OPTIONS: Readonly<ListOptions> = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
   getPromptPlaceholder: () => "Enter text to create a new item…",
@@ -119,7 +119,7 @@ const DEFAULT_LIST_OPTIONS = Object.freeze({
   hidePromptMarker: false,
   insertMode: "append",
   spellcheck: false,
-} as ListOptions);
+});
 
 if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
@@ -532,17 +532,18 @@ function _listPrompt(
 }
 
 exportButtonElement.addEventListener("click", () => {
+  const state: Partial<State> = {
+    adLogEnabled: store.state.adLogEnabled,
+    anonymousMode: store.state.anonymousMode,
+    normalProxies: store.state.normalProxies,
+    optimizedProxies: store.state.optimizedProxies,
+    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
+    passportLevel: store.state.passportLevel,
+    whitelistedChannels: store.state.whitelistedChannels,
+  };
   saveFile(
     "ttv-lol-pro_backup.json",
-    JSON.stringify({
-      adLogEnabled: store.state.adLogEnabled,
-      anonymousMode: store.state.anonymousMode,
-      normalProxies: store.state.normalProxies,
-      optimizedProxies: store.state.optimizedProxies,
-      optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-      passportLevel: store.state.passportLevel,
-      whitelistedChannels: store.state.whitelistedChannels,
-    } as Partial<State>),
+    JSON.stringify(state),
     "application/json;charset=utf-8"
   );
 });
