@@ -1,7 +1,6 @@
 export default function getHostFromUrl(url: string) {
   try {
-    const Url = new URL(url);
-    return Url.host;
+    return new URL(url).host;
   } catch {
     return null;
   }
