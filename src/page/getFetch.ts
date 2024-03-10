@@ -407,6 +407,7 @@ export function getFetch(pageState: PageState): typeof fetch {
       usherHostRegex.test(host) &&
       response.status < 400
     ) {
+      //#region Usher responses.
       const isLivestream = !url.includes("/vod/");
       const isFrontpage = url.includes(
         encodeURIComponent('"player_type":"frontpage"')
@@ -446,6 +447,7 @@ export function getFetch(pageState: PageState): typeof fetch {
         proxyCountry:
           /USER-COUNTRY="([A-Z]+)"/i.exec(responseBody)?.[1] || undefined,
       });
+      //#endregion
     }
 
     // Twitch Video Weaver responses.
@@ -454,6 +456,7 @@ export function getFetch(pageState: PageState): typeof fetch {
       videoWeaverHostRegex.test(host) &&
       response.status < 400
     ) {
+      //#region Video Weaver responses.
       const manifest = usherManifests.find(manifest =>
         [...manifest.assignedMap.values()].includes(url)
       );
@@ -466,27 +469,23 @@ export function getFetch(pageState: PageState): typeof fetch {
 
       // Check if response contains midroll ad.
       responseBody ??= await readResponseBody();
+      const responseBodyLower = responseBody.toLowerCase();
       if (
-        responseBody.includes("stitched-ad") &&
-        responseBody.toLowerCase().includes("midroll")
+        responseBodyLower.includes("stitched-ad") &&
+        responseBodyLower.includes("midroll")
       ) {
         console.log("[TTV LOL PRO] Midroll ad detected.");
         manifest.consecutiveMidrollResponses += 1;
         manifest.consecutiveMidrollCooldown = 15;
-        await waitForStore(pageState);
-        const whitelistedChannelsLower =
-          pageState.state?.whitelistedChannels.map(channel =>
-            channel.toLowerCase()
-          );
-        const isWhitelisted =
-          manifest.channelName != null &&
-          whitelistedChannelsLower != null &&
-          whitelistedChannelsLower.includes(manifest.channelName.toLowerCase());
-        if (
+        const isWhitelisted = isChannelWhitelisted(
+          manifest.channelName,
+          pageState
+        );
+        const shouldUpdateReplacementMap =
           pageState.state?.optimizedProxiesEnabled === true &&
           manifest.consecutiveMidrollResponses <= 2 && // Avoid infinite loop.
-          !isWhitelisted
-        ) {
+          !isWhitelisted;
+        if (shouldUpdateReplacementMap) {
           const success = await updateVideoWeaverReplacementMap(
             pageState,
             cachedUsherRequestUrl,
@@ -504,6 +503,7 @@ export function getFetch(pageState: PageState): typeof fetch {
           manifest.consecutiveMidrollResponses = 0;
         }
       }
+      //#endregion
     }
 
     //#endregion
