@@ -77,7 +77,7 @@ TTV LOL PRO is a fork of TTV LOL that:
 
 TTV LOL PRO does not remove banner ads, nor does it remove ads from VODs. For the best experience, we recommend using [uBlock Origin](https://ublockorigin.com/) alongside TTV LOL PRO.
 
-**Any questions? Please read the [FAQ](FAQ.md).**
+Any questions? Please read the [wiki](https://wiki.cdn-perfprod.com/) first.
 
 ## Screenshots
 
@@ -86,7 +86,7 @@ TTV LOL PRO does not remove banner ads, nor does it remove ads from VODs. For th
   <div align="center">
     <img
       alt="Popup (Firefox)"
-      src="https://github.com/younesaassila/ttv-lol-pro/assets/47226184/45073ec3-c919-4c5e-9f4f-68cb99e0b7b5"
+      src="https://github.com/younesaassila/ttv-lol-pro/assets/47226184/722b2e22-50b0-4fc7-bd7b-61be2e1b592d"
       height="550"
     />
   </div>
@@ -97,7 +97,7 @@ TTV LOL PRO does not remove banner ads, nor does it remove ads from VODs. For th
   <div align="center">
     <img
       alt="Options page (Firefox)"
-      src="https://github.com/younesaassila/ttv-lol-pro/assets/47226184/289f8d7d-49be-4948-a086-fc63ee839500"
+      src="https://github.com/younesaassila/ttv-lol-pro/assets/47226184/83d96fcf-a8b1-4193-9dbe-232bf9d99529"
       height="550"
     />
   </div>
