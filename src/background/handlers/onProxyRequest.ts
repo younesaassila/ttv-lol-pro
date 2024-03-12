@@ -109,9 +109,11 @@ export default async function onProxyRequest(
 
   // Video Weaver requests.
   if (proxyVideoWeaverRequest && videoWeaverHostRegex.test(host)) {
-    const tab =
-      details.tabId !== -1 ? await browser.tabs.get(details.tabId) : null;
-    const tabUrl = tab?.url;
+    let tabUrl: string | undefined = undefined;
+    try {
+      const tab = await browser.tabs.get(details.tabId);
+      tabUrl = tab.url;
+    } catch {}
     const channelName =
       findChannelFromVideoWeaverUrl(details.url) ??
       findChannelFromTwitchTvUrl(tabUrl);
