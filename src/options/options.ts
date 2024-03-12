@@ -365,6 +365,11 @@ function isNormalProxyUrlAllowed(url: string): AllowedResult {
     return [false, "This proxy is not compatible with 'Proxy all requests'"];
   }
 
+  // Forbid proxies containing "optimized".
+  if (urlLower.includes("optimized")) {
+    return [false, "This proxy is not compatible with 'Proxy all requests'"];
+  }
+
   return [true];
 }
 
