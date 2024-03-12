@@ -4,7 +4,7 @@ import browser, { Storage } from "webextension-polyfill";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import isChromium from "../common/ts/isChromium";
 import store from "../store";
-import { State } from "../store/types";
+import type { State } from "../store/types";
 import { MessageType } from "../types";
 
 console.info("[TTV LOL PRO] Content script running.");
