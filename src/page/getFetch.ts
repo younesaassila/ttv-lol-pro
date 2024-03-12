@@ -661,7 +661,8 @@ function flagRequestCleanup(
   requestType: ProxyRequestType,
   pageState: PageState
 ) {
-  if (pageState.isChromium && pageState.state?.optimizedProxiesEnabled) {
+  if (pageState.isChromium) {
+    if (!pageState.state?.optimizedProxiesEnabled) return;
     pageState.sendMessageToContentScript({
       type: MessageType.DisableFullMode,
       timestamp: Date.now(),

@@ -3,7 +3,6 @@ import workerScriptURL from "url:../page/worker.ts";
 import browser, { Storage } from "webextension-polyfill";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
 import isChromium from "../common/ts/isChromium";
-import { getStreamStatus, setStreamStatus } from "../common/ts/streamStatus";
 import store from "../store";
 import { State } from "../store/types";
 import { MessageType } from "../types";
@@ -137,18 +136,14 @@ function onPageMessage(event: MessageEvent) {
       }
       break;
     case MessageType.UsherResponse:
-      const { channel, videoWeaverUrls, proxyCountry } = message;
-      // Update Video Weaver URLs.
-      store.state.videoWeaverUrlsByChannel[channel] = [
-        ...(store.state.videoWeaverUrlsByChannel[channel] ?? []),
-        ...videoWeaverUrls,
-      ];
-      // Update proxy country.
-      const streamStatus = getStreamStatus(channel);
-      setStreamStatus(channel, {
-        ...(streamStatus ?? { proxied: false, reason: "" }),
-        proxyCountry,
-      });
+      try {
+        browser.runtime.sendMessage(message);
+      } catch (error) {
+        console.error(
+          "[TTV LOL PRO] Failed to send UsherResponse message",
+          error
+        );
+      }
       break;
     case MessageType.ClearStats:
       clearStats(message.channelName);

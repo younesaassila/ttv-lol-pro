@@ -23,6 +23,9 @@ browser.runtime.onInstalled.addListener(onInstalledStoreCleanup);
 // Cleanup session data in the store on startup.
 browser.runtime.onStartup.addListener(onStartupStoreCleanup);
 
+// Listen to messages from the content script.
+browser.runtime.onMessage.addListener(onContentScriptMessage);
+
 // Handle proxy authentication.
 browser.webRequest.onAuthRequired.addListener(
   onAuthRequired,
@@ -46,9 +49,6 @@ browser.webRequest.onResponseStarted.addListener(onResponseStarted, {
 });
 
 if (isChromium) {
-  // Listen to messages from the content script.
-  browser.runtime.onMessage.addListener(onContentScriptMessage);
-
   // Check if there are any opened Twitch tabs on startup.
   checkForOpenedTwitchTabs();
 
