@@ -92,8 +92,8 @@ const adLogExportButtonElement = $(
 ) as HTMLButtonElement;
 const adLogClearButtonElement = $("#ad-log-clear-button") as HTMLButtonElement;
 // Troubleshooting
-const checkStatusOfProxiesButtonElement = $(
-  "#check-status-of-proxies-button"
+const viewStatusOfProxiesButtonElement = $(
+  "#view-status-of-proxies-button"
 ) as HTMLButtonElement;
 const clearSessionStorageButtonElement = $(
   "#clear-session-storage-button"
@@ -626,7 +626,7 @@ adLogClearButtonElement.addEventListener("click", () => {
   store.state.adLog = [];
 });
 
-checkStatusOfProxiesButtonElement.addEventListener("click", () => {
+viewStatusOfProxiesButtonElement.addEventListener("click", () => {
   location.href = "https://status.perfprod.com/";
 });
 
