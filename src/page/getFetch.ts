@@ -179,13 +179,22 @@ export function getFetch(pageState: PageState): typeof fetch {
             passportLevel: pageState.state?.passportLevel ?? 0,
           }
         );
+        const shouldFlagRequest = isRequestTypeProxied(
+          ProxyRequestType.GraphQLToken,
+          {
+            isChromium: pageState.isChromium,
+            optimizedProxiesEnabled:
+              pageState.state?.optimizedProxiesEnabled ?? true,
+            passportLevel: pageState.state?.passportLevel ?? 0,
+          }
+        );
         // "PlaybackAccessToken" requests contain a Client-Integrity header.
         // Thus, if integrity requests are not proxied, we can't proxy this request.
         let willFailIntegrityCheckIfProxied =
           !isTemplateRequest && !areIntegrityRequestsProxied;
         const shouldOverrideRequest =
           pageState.state?.anonymousMode === true ||
-          willFailIntegrityCheckIfProxied;
+          (shouldFlagRequest && willFailIntegrityCheckIfProxied);
         if (shouldOverrideRequest) {
           const newRequest = await getDefaultPlaybackAccessTokenRequest(
             channelName,
@@ -203,17 +212,7 @@ export function getFetch(pageState: PageState): typeof fetch {
             );
           }
         }
-
         // Notice that if anonymous mode fails, we still flag the request to avoid ads.
-        const shouldFlagRequest = isRequestTypeProxied(
-          ProxyRequestType.GraphQLToken,
-          {
-            isChromium: pageState.isChromium,
-            optimizedProxiesEnabled:
-              pageState.state?.optimizedProxiesEnabled ?? true,
-            passportLevel: pageState.state?.passportLevel ?? 0,
-          }
-        );
         if (shouldFlagRequest && !willFailIntegrityCheckIfProxied) {
           console.log("[TTV LOL PRO] Flagging PlaybackAccessToken request…");
           isFlaggedRequest = true;
