@@ -102,7 +102,7 @@ window.Worker = class Worker extends window.Worker {
         window.postMessage(event.data);
       }
     });
-    URL.revokeObjectURL(newScriptURL);
+    // Can't revoke `newScriptURL` because of a conflict with VAFT.
     URL.revokeObjectURL(wrapperScriptURL);
   }
 };
