@@ -51,7 +51,6 @@ main > * {
 a,
 a:visited {
   color: var(--link);
-  text-decoration: none;
   transition: color 100ms ease-in-out;
 }
 a:hover,
