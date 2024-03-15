@@ -1,4 +1,4 @@
-import { WebRequest } from "webextension-polyfill";
+import browser, { WebRequest } from "webextension-polyfill";
 import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
@@ -19,11 +19,11 @@ import { getStreamStatus, setStreamStatus } from "../../common/ts/streamStatus";
 import store from "../../store";
 import { ProxyInfo, ProxyRequestType } from "../../types";
 
-export default function onResponseStarted(
+export default async function onResponseStarted(
   details: WebRequest.OnResponseStartedDetailsType & {
     proxyInfo?: ProxyInfo;
   }
-): void {
+): Promise<void> {
   const host = getHostFromUrl(details.url);
   if (!host) return;
 
@@ -69,9 +69,14 @@ export default function onResponseStarted(
 
   // Video-weaver requests.
   if (proxiedVideoWeaverRequest && videoWeaverHostRegex.test(host)) {
+    let tabUrl: string | undefined = undefined;
+    try {
+      const tab = await browser.tabs.get(details.tabId);
+      tabUrl = tab.url;
+    } catch {}
     const channelName =
       findChannelFromVideoWeaverUrl(details.url) ??
-      findChannelFromTwitchTvUrl(details.documentUrl);
+      findChannelFromTwitchTvUrl(tabUrl);
     const streamStatus = getStreamStatus(channelName);
     const stats = streamStatus?.stats ?? { proxied: 0, notProxied: 0 };
     if (!proxy) {

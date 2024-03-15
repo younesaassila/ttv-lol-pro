@@ -3,7 +3,7 @@
   "name": "TTV LOL PRO",
   "description": "TTV LOL PRO removes most livestream ads from Twitch.",
   "homepage_url": "https://github.com/younesaassila/ttv-lol-pro",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "background": {
     "scripts": ["background/background.ts"],
     "persistent": false
@@ -19,6 +19,9 @@
     "gecko": {
       "id": "{76ef94a4-e3d0-4c6f-961a-d38a429a332b}",
       "strict_min_version": "91.1.0"
+    },
+    "gecko_android": {
+      "strict_min_version": "113.0"
     }
   },
   "content_scripts": [
@@ -41,6 +44,7 @@
     "storage",
     "webRequest",
     "webRequestBlocking",
+    "https://*.live-video.net/*",
     "https://*.ttvnw.net/*",
     "https://*.twitch.tv/*",
     "https://perfprod.com/ttvlolpro/telemetry"

@@ -19,6 +19,7 @@ const NATIVE_FETCH = self.fetch;
 export function getFetch(pageState: PageState): typeof fetch {
   let usherManifests: UsherManifest[] = [];
   let videoWeaverUrlsProxiedCount = new Map<string, number>(); // Used to count how many times each Video Weaver URL was proxied.
+  let videoWeaverUrlsToNotProxy = new Set<string>(); // Used to avoid proxying frontpage or whitelisted Video Weaver URLs.
 
   let cachedPlaybackTokenRequestHeaders: Map<string, string> | null = null; // Cached by page script.
   let cachedPlaybackTokenRequestBody: string | null = null; // Cached by page script.
@@ -69,6 +70,7 @@ export function getFetch(pageState: PageState): typeof fetch {
     switch (message.type) {
       case MessageType.ClearStats:
         console.log("[TTV LOL PRO] Cleared stats (getFetch).");
+        if (!message.channelName) break;
         const channelNameLower = message.channelName.toLowerCase();
         usherManifests = usherManifests.filter(
           manifest => manifest.channelName !== channelNameLower
@@ -131,8 +133,93 @@ export function getFetch(pageState: PageState): typeof fetch {
     //#region Requests
 
     // Twitch GraphQL requests.
-    graphql: if (host != null && twitchGqlHostRegex.test(host)) {
+    graphqlReq: if (host != null && twitchGqlHostRegex.test(host)) {
       requestType = ProxyRequestType.GraphQL;
+
+      //#region GraphQL PlaybackAccessToken requests.
+      requestBody ??= await readRequestBody();
+      if (requestBody != null && requestBody.includes("PlaybackAccessToken")) {
+        // Cache the request headers and body for later use.
+        cachedPlaybackTokenRequestHeaders = headersMap;
+        cachedPlaybackTokenRequestBody = requestBody;
+
+        // Check if this is a livestream and if it's whitelisted.
+        let graphQlBody = null;
+        try {
+          graphQlBody = JSON.parse(requestBody);
+        } catch (error) {
+          console.error(
+            "[TTV LOL PRO] Failed to parse GraphQL request body:",
+            error
+          );
+        }
+        await waitForStore(pageState);
+        const isLivestream = graphQlBody?.variables?.isLive as
+          | boolean
+          | undefined;
+        const isFrontpage = graphQlBody?.variables?.playerType === "frontpage";
+        const channelName = graphQlBody?.variables?.login as string | undefined;
+        const isWhitelisted = isChannelWhitelisted(channelName, pageState);
+        if (!isLivestream || isFrontpage || isWhitelisted) {
+          console.log(
+            "[TTV LOL PRO] Not flagging PlaybackAccessToken request: not a livestream, is frontpage, or is whitelisted."
+          );
+          break graphqlReq;
+        }
+
+        const isTemplateRequest = requestBody.includes(
+          "PlaybackAccessToken_Template"
+        );
+        const areIntegrityRequestsProxied = isRequestTypeProxied(
+          ProxyRequestType.GraphQLIntegrity,
+          {
+            isChromium: pageState.isChromium,
+            optimizedProxiesEnabled:
+              pageState.state?.optimizedProxiesEnabled ?? true,
+            passportLevel: pageState.state?.passportLevel ?? 0,
+          }
+        );
+        const shouldFlagRequest = isRequestTypeProxied(
+          ProxyRequestType.GraphQLToken,
+          {
+            isChromium: pageState.isChromium,
+            optimizedProxiesEnabled:
+              pageState.state?.optimizedProxiesEnabled ?? true,
+            passportLevel: pageState.state?.passportLevel ?? 0,
+          }
+        );
+        // "PlaybackAccessToken" requests contain a Client-Integrity header.
+        // Thus, if integrity requests are not proxied, we can't proxy this request.
+        let willFailIntegrityCheckIfProxied =
+          !isTemplateRequest && !areIntegrityRequestsProxied;
+        const shouldOverrideRequest =
+          pageState.state?.anonymousMode === true ||
+          (shouldFlagRequest && willFailIntegrityCheckIfProxied);
+        if (shouldOverrideRequest) {
+          const newRequest = await getDefaultPlaybackAccessTokenRequest(
+            channelName,
+            pageState.state?.anonymousMode === true
+          );
+          if (newRequest) {
+            console.log(
+              "[TTV LOL PRO] Overriding PlaybackAccessToken request…"
+            );
+            request = newRequest;
+            willFailIntegrityCheckIfProxied = false; // Template requests don't have integrity checks.
+          } else {
+            console.error(
+              "[TTV LOL PRO] Failed to override PlaybackAccessToken request."
+            );
+          }
+        }
+        // Notice that if anonymous mode fails, we still flag the request to avoid ads.
+        if (shouldFlagRequest && !willFailIntegrityCheckIfProxied) {
+          console.log("[TTV LOL PRO] Flagging PlaybackAccessToken request…");
+          isFlaggedRequest = true;
+        }
+        break graphqlReq;
+      }
+      //#endregion
 
       //#region GraphQL integrity requests.
       const integrityHeader = getHeaderFromMap(headersMap, "Client-Integrity");
@@ -160,139 +247,47 @@ export function getFetch(pageState: PageState): typeof fetch {
             isFlaggedRequest = true;
           }
         }
-        break graphql;
-      }
-      //#endregion
-
-      //#region GraphQL PlaybackAccessToken requests.
-      requestBody ??= await readRequestBody();
-      if (requestBody != null && requestBody.includes("PlaybackAccessToken")) {
-        // Cache the request headers and body for later use.
-        cachedPlaybackTokenRequestHeaders = headersMap;
-        cachedPlaybackTokenRequestBody = requestBody;
-
-        // Check if this is a livestream and if it's whitelisted.
-        let graphQlBody = null;
-        try {
-          graphQlBody = JSON.parse(requestBody);
-        } catch (error) {
-          console.error(
-            "[TTV LOL PRO] Failed to parse GraphQL request body:",
-            error
-          );
-        }
-        await waitForStore(pageState);
-        const channelName = graphQlBody?.variables?.login as string | undefined;
-        const isLivestream = graphQlBody?.variables?.isLive as
-          | boolean
-          | undefined;
-        const whitelistedChannelsLower =
-          pageState.state?.whitelistedChannels.map(channel =>
-            channel.toLowerCase()
-          );
-        const isWhitelisted =
-          channelName != null &&
-          whitelistedChannelsLower != null &&
-          whitelistedChannelsLower.includes(channelName.toLowerCase());
-
-        // Check if we should flag this request.
-        const shouldFlagRequest = isRequestTypeProxied(
-          ProxyRequestType.GraphQLToken,
-          {
-            isChromium: pageState.isChromium,
-            optimizedProxiesEnabled:
-              pageState.state?.optimizedProxiesEnabled ?? true,
-            passportLevel: pageState.state?.passportLevel ?? 0,
-          }
-        );
-        if (!isLivestream || isWhitelisted) {
-          console.log(
-            "[TTV LOL PRO] Not flagging PlaybackAccessToken request: not a livestream or is whitelisted."
-          );
-          break graphql;
-        }
-
-        const isTemplateRequest = requestBody.includes(
-          "PlaybackAccessToken_Template"
-        );
-        const areIntegrityRequestsProxied = isRequestTypeProxied(
-          ProxyRequestType.GraphQLIntegrity,
-          {
-            isChromium: pageState.isChromium,
-            optimizedProxiesEnabled:
-              pageState.state?.optimizedProxiesEnabled ?? true,
-            passportLevel: pageState.state?.passportLevel ?? 0,
-          }
-        );
-        // "PlaybackAccessToken" requests contain a Client-Integrity header.
-        // Thus, if integrity requests are not proxied, we can't proxy this request.
-        const willFailIntegrityCheckIfProxied =
-          !isTemplateRequest && !areIntegrityRequestsProxied;
-        const shouldOverrideRequest =
-          pageState.state?.anonymousMode === true ||
-          willFailIntegrityCheckIfProxied;
-
-        if (shouldOverrideRequest) {
-          const newRequest = await getDefaultPlaybackAccessTokenRequest(
-            channelName,
-            pageState.state?.anonymousMode === true
-          );
-          if (newRequest) {
-            console.log(
-              "[TTV LOL PRO] Overriding PlaybackAccessToken request…"
-            );
-            request = newRequest;
-            // Since this is a template request, whether or not integrity requests are proxied doesn't matter.
-          } else {
-            console.error(
-              "[TTV LOL PRO] Failed to override PlaybackAccessToken request."
-            );
-          }
-        }
-        // Notice that if anonymous mode fails, we still flag the request to avoid ads.
-        if (shouldFlagRequest && !willFailIntegrityCheckIfProxied) {
-          console.log("[TTV LOL PRO] Flagging PlaybackAccessToken request…");
-          isFlaggedRequest = true;
-        }
-        break graphql;
+        break graphqlReq;
       }
       //#endregion
     }
 
     // Twitch Usher requests.
-    usher: if (host != null && usherHostRegex.test(host)) {
-      cachedUsherRequestUrl = url; // Cache the URL for later use.
+    usherReq: if (host != null && usherHostRegex.test(host)) {
       requestType = ProxyRequestType.Usher;
+
+      //#region Usher requests.
+      cachedUsherRequestUrl = url; // Cache the URL for later use.
+
       await waitForStore(pageState);
-      const channelName = findChannelFromUsherUrl(url);
       const isLivestream = !url.includes("/vod/");
-      const whitelistedChannelsLower = pageState.state?.whitelistedChannels.map(
-        channel => channel.toLowerCase()
+      const isFrontpage = url.includes(
+        encodeURIComponent('"player_type":"frontpage"')
       );
-      const isWhitelisted =
-        channelName != null &&
-        whitelistedChannelsLower != null &&
-        whitelistedChannelsLower.includes(channelName.toLowerCase());
+      const channelName = findChannelFromUsherUrl(url);
+      const isWhitelisted = isChannelWhitelisted(channelName, pageState);
+      if (!isLivestream || isFrontpage || isWhitelisted) {
+        console.log(
+          "[TTV LOL PRO] Not flagging Usher request: not a livestream, is frontpage, or is whitelisted."
+        );
+        break usherReq;
+      }
+
       const shouldFlagRequest = isRequestTypeProxied(ProxyRequestType.Usher, {
         isChromium: pageState.isChromium,
         optimizedProxiesEnabled:
           pageState.state?.optimizedProxiesEnabled ?? true,
         passportLevel: pageState.state?.passportLevel ?? 0,
       });
-      if (!isLivestream || isWhitelisted) {
-        console.log(
-          "[TTV LOL PRO] Not flagging Usher request: not a livestream or is whitelisted."
-        );
-        break usher;
-      }
       if (shouldFlagRequest) {
         console.debug("[TTV LOL PRO] Flagging Usher request…");
         isFlaggedRequest = true;
       }
+      //#endregion
     }
 
     // Twitch Video Weaver requests.
-    weaver: if (host != null && videoWeaverHostRegex.test(host)) {
+    weaverReq: if (host != null && videoWeaverHostRegex.test(host)) {
       requestType = ProxyRequestType.VideoWeaver;
 
       //#region Video Weaver requests.
@@ -304,33 +299,13 @@ export function getFetch(pageState: PageState): typeof fetch {
           "[TTV LOL PRO] No associated Usher manifest found for Video Weaver request."
         );
       }
-
-      await waitForStore(pageState);
-      const channelName =
-        manifest?.channelName ?? findChannelFromTwitchTvUrl(location.href);
-      const whitelistedChannelsLower = pageState.state?.whitelistedChannels.map(
-        channel => channel.toLowerCase()
-      );
-      const isWhitelisted =
-        channelName != null &&
-        whitelistedChannelsLower != null &&
-        whitelistedChannelsLower.includes(channelName.toLowerCase());
-      const shouldFlagRequest = isRequestTypeProxied(
-        ProxyRequestType.VideoWeaver,
-        {
-          isChromium: pageState.isChromium,
-          optimizedProxiesEnabled:
-            pageState.state?.optimizedProxiesEnabled ?? true,
-          passportLevel: pageState.state?.passportLevel ?? 0,
-        }
-      );
-      if (isWhitelisted) {
+      if (videoWeaverUrlsToNotProxy.has(url)) {
         if (IS_DEVELOPMENT) {
           console.debug(
-            "[TTV LOL PRO] Not flagging Video Weaver request: is whitelisted."
+            "[TTV LOL PRO] Not flagging Video Weaver request: is frontpage or is whitelisted."
           );
         }
-        break weaver;
+        break weaverReq;
       }
 
       // Check if we should replace the Video Weaver URL.
@@ -357,8 +332,23 @@ export function getFetch(pageState: PageState): typeof fetch {
           );
         }
       }
+      if (videoWeaverUrl !== url) {
+        request ??= new Request(videoWeaverUrl, {
+          ...init,
+        });
+      }
 
       // Flag first request to each Video Weaver URL.
+      await waitForStore(pageState);
+      const shouldFlagRequest = isRequestTypeProxied(
+        ProxyRequestType.VideoWeaver,
+        {
+          isChromium: pageState.isChromium,
+          optimizedProxiesEnabled:
+            pageState.state?.optimizedProxiesEnabled ?? true,
+          passportLevel: pageState.state?.passportLevel ?? 0,
+        }
+      );
       const proxiedCount = videoWeaverUrlsProxiedCount.get(videoWeaverUrl) ?? 0;
       if (shouldFlagRequest && proxiedCount < 1) {
         videoWeaverUrlsProxiedCount.set(videoWeaverUrl, proxiedCount + 1);
@@ -381,12 +371,6 @@ export function getFetch(pageState: PageState): typeof fetch {
           )} request to Video Weaver URL '${videoWeaverUrl}'…`
         );
         isFlaggedRequest = true;
-      }
-
-      if (videoWeaverUrl !== url) {
-        request ??= new Request(videoWeaverUrl, {
-          ...init,
-        });
       }
       //#endregion
     }
@@ -417,9 +401,21 @@ export function getFetch(pageState: PageState): typeof fetch {
     //#region Responses
 
     // Twitch Usher responses.
-    if (host != null && usherHostRegex.test(host) && response.status < 400) {
-      responseBody ??= await readResponseBody();
+    usherRes: if (
+      host != null &&
+      usherHostRegex.test(host) &&
+      response.status < 400
+    ) {
+      //#region Usher responses.
+      const isLivestream = !url.includes("/vod/");
+      const isFrontpage = url.includes(
+        encodeURIComponent('"player_type":"frontpage"')
+      );
       const channelName = findChannelFromUsherUrl(url);
+      const isWhitelisted = isChannelWhitelisted(channelName, pageState);
+      if (!isLivestream) break usherRes;
+
+      responseBody ??= await readResponseBody();
       const assignedMap = parseUsherManifest(responseBody);
       if (assignedMap != null) {
         console.debug(
@@ -431,13 +427,18 @@ export function getFetch(pageState: PageState): typeof fetch {
           assignedMap: assignedMap,
           replacementMap: null,
           consecutiveMidrollResponses: 0,
+          consecutiveMidrollCooldown: 0,
         });
       } else {
         console.debug("[TTV LOL PRO] Received Usher response.");
       }
       // Send Video Weaver URLs to content script.
       const videoWeaverUrls = [...(assignedMap?.values() ?? [])];
-      videoWeaverUrls.forEach(url => videoWeaverUrlsProxiedCount.delete(url)); // Shouldn't be necessary, but just in case.
+      videoWeaverUrls.forEach(url => {
+        videoWeaverUrlsProxiedCount.delete(url); // Shouldn't be necessary, but just in case.
+        videoWeaverUrlsToNotProxy.delete(url); // Shouldn't be necessary, but just in case.
+        if (isFrontpage || isWhitelisted) videoWeaverUrlsToNotProxy.add(url);
+      });
       pageState.sendMessageToContentScript({
         type: MessageType.UsherResponse,
         channel: channelName,
@@ -445,14 +446,16 @@ export function getFetch(pageState: PageState): typeof fetch {
         proxyCountry:
           /USER-COUNTRY="([A-Z]+)"/i.exec(responseBody)?.[1] || undefined,
       });
+      //#endregion
     }
 
     // Twitch Video Weaver responses.
-    if (
+    weaverRes: if (
       host != null &&
       videoWeaverHostRegex.test(host) &&
       response.status < 400
     ) {
+      //#region Video Weaver responses.
       const manifest = usherManifests.find(manifest =>
         [...manifest.assignedMap.values()].includes(url)
       );
@@ -460,31 +463,28 @@ export function getFetch(pageState: PageState): typeof fetch {
         console.warn(
           "[TTV LOL PRO] No associated Usher manifest found for Video Weaver response."
         );
-        return response;
+        break weaverRes;
       }
 
       // Check if response contains midroll ad.
       responseBody ??= await readResponseBody();
+      const responseBodyLower = responseBody.toLowerCase();
       if (
-        responseBody.includes("stitched-ad") &&
-        responseBody.toLowerCase().includes("midroll")
+        responseBodyLower.includes("stitched-ad") &&
+        responseBodyLower.includes("midroll")
       ) {
         console.log("[TTV LOL PRO] Midroll ad detected.");
         manifest.consecutiveMidrollResponses += 1;
-        await waitForStore(pageState);
-        const whitelistedChannelsLower =
-          pageState.state?.whitelistedChannels.map(channel =>
-            channel.toLowerCase()
-          );
-        const isWhitelisted =
-          manifest.channelName != null &&
-          whitelistedChannelsLower != null &&
-          whitelistedChannelsLower.includes(manifest.channelName.toLowerCase());
-        if (
+        manifest.consecutiveMidrollCooldown = 15;
+        const isWhitelisted = isChannelWhitelisted(
+          manifest.channelName,
+          pageState
+        );
+        const shouldUpdateReplacementMap =
           pageState.state?.optimizedProxiesEnabled === true &&
           manifest.consecutiveMidrollResponses <= 2 && // Avoid infinite loop.
-          !isWhitelisted
-        ) {
+          !isWhitelisted;
+        if (shouldUpdateReplacementMap) {
           const success = await updateVideoWeaverReplacementMap(
             pageState,
             cachedUsherRequestUrl,
@@ -494,9 +494,15 @@ export function getFetch(pageState: PageState): typeof fetch {
         }
         manifest.replacementMap = null;
       } else {
-        // No ad, clear attempts.
-        manifest.consecutiveMidrollResponses = 0;
+        if (manifest.consecutiveMidrollCooldown > 0) {
+          // Avoid infinite loop if Twitch doesn't send an ad right away but sends one within a few requests.
+          manifest.consecutiveMidrollCooldown -= 1;
+        } else {
+          // No ad, clear attempts.
+          manifest.consecutiveMidrollResponses = 0;
+        }
       }
+      //#endregion
     }
 
     //#endregion
@@ -605,6 +611,18 @@ async function waitForStore(pageState: PageState) {
   }
 }
 
+function isChannelWhitelisted(
+  channelName: string | null | undefined,
+  pageState: PageState
+): boolean {
+  if (!channelName) return false;
+  const whitelistedChannelsLower =
+    pageState.state?.whitelistedChannels.map(channel =>
+      channel.toLowerCase()
+    ) ?? [];
+  return whitelistedChannelsLower.includes(channelName.toLowerCase());
+}
+
 async function flagRequest(
   request: Request,
   requestType: ProxyRequestType,
@@ -642,7 +660,8 @@ function flagRequestCleanup(
   requestType: ProxyRequestType,
   pageState: PageState
 ) {
-  if (pageState.isChromium && pageState.state?.optimizedProxiesEnabled) {
+  if (pageState.isChromium) {
+    if (!pageState.state?.optimizedProxiesEnabled) return;
     pageState.sendMessageToContentScript({
       type: MessageType.DisableFullMode,
       timestamp: Date.now(),

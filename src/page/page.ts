@@ -93,6 +93,7 @@ window.Worker = class Worker extends window.Worker {
       new Blob([wrapperScript], { type: "text/javascript" })
     );
     super(wrapperScriptURL, options);
+    pageState.twitchWorker = this;
     this.addEventListener("message", event => {
       if (
         event.data?.type === MessageType.ContentScriptMessage ||
@@ -101,7 +102,8 @@ window.Worker = class Worker extends window.Worker {
         window.postMessage(event.data);
       }
     });
-    pageState.twitchWorker = this;
+    // Can't revoke `newScriptURL` because of a conflict with VAFT.
+    URL.revokeObjectURL(wrapperScriptURL);
   }
 };
 
@@ -199,7 +201,7 @@ function onChannelChange(
   });
 }
 
-onChannelChange((channelName, oldChannelName) => {
+onChannelChange((_channelName, oldChannelName) => {
   sendMessageToContentScript({
     type: MessageType.ClearStats,
     channelName: oldChannelName,

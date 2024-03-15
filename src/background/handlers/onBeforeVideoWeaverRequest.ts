@@ -1,6 +1,5 @@
 import { WebRequest } from "webextension-polyfill";
 import filterResponseDataWrapper from "../../common/ts/filterResponseDataWrapper";
-import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
 import getHostFromUrl from "../../common/ts/getHostFromUrl";
 import { getUrlFromProxyInfo } from "../../common/ts/proxyInfo";
@@ -34,9 +33,7 @@ export default function onBeforeVideoWeaverRequest(
     );
     if (isDuplicate) return text;
 
-    const channelName =
-      findChannelFromVideoWeaverUrl(details.url) ??
-      findChannelFromTwitchTvUrl(details.documentUrl);
+    const channelName = findChannelFromVideoWeaverUrl(details.url);
     const isPurpleScreen = textLower.includes(
       "https://help.twitch.tv/s/article/ad-experience-on-twitch"
     );

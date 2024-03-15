@@ -1,5 +1,6 @@
 import browser, { Runtime } from "webextension-polyfill";
 import { updateProxySettings } from "../../common/ts/proxySettings";
+import { getStreamStatus, setStreamStatus } from "../../common/ts/streamStatus";
 import store from "../../store";
 import { MessageType, ProxyRequestType } from "../../types";
 
@@ -71,5 +72,20 @@ export default function onContentScriptMessage(
       updateProxySettings([...timeoutMap.keys()]);
     }
     console.log(`🔴 Disabled full mode (request type: ${requestType})`);
+  }
+
+  if (message.type === MessageType.UsherResponse) {
+    const { channel, videoWeaverUrls, proxyCountry } = message;
+    // Update Video Weaver URLs.
+    store.state.videoWeaverUrlsByChannel[channel] = [
+      ...(store.state.videoWeaverUrlsByChannel[channel] ?? []),
+      ...videoWeaverUrls,
+    ];
+    // Update proxy country.
+    const streamStatus = getStreamStatus(channel);
+    setStreamStatus(channel, {
+      ...(streamStatus ?? { proxied: false, reason: "" }),
+      proxyCountry,
+    });
   }
 }

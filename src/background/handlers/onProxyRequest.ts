@@ -1,4 +1,4 @@
-import { Proxy } from "webextension-polyfill";
+import browser, { Proxy } from "webextension-polyfill";
 import findChannelFromTwitchTvUrl from "../../common/ts/findChannelFromTwitchTvUrl";
 import findChannelFromUsherUrl from "../../common/ts/findChannelFromUsherUrl";
 import findChannelFromVideoWeaverUrl from "../../common/ts/findChannelFromVideoWeaverUrl";
@@ -109,9 +109,14 @@ export default async function onProxyRequest(
 
   // Video Weaver requests.
   if (proxyVideoWeaverRequest && videoWeaverHostRegex.test(host)) {
+    let tabUrl: string | undefined = undefined;
+    try {
+      const tab = await browser.tabs.get(details.tabId);
+      tabUrl = tab.url;
+    } catch {}
     const channelName =
       findChannelFromVideoWeaverUrl(details.url) ??
-      findChannelFromTwitchTvUrl(details.documentUrl);
+      findChannelFromTwitchTvUrl(tabUrl);
     if (isChannelWhitelisted(channelName)) {
       console.log(`✋ Channel '${channelName}' is whitelisted.`);
       return { type: "direct" };

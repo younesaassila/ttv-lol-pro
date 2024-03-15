@@ -51,6 +51,25 @@ export interface DnsResponse {
   ttl: number;
 }
 
+export interface DnsResponseJson {
+  Status: number;
+  TC: boolean; // Truncated
+  RD: boolean; // Recursion Desired
+  RA: boolean; // Recursion Available
+  AD: boolean; // Authentic Data
+  CD: boolean; // Checking Disabled
+  Question: {
+    name: string;
+    type: number;
+  }[];
+  Answer: {
+    name: string;
+    type: number;
+    TTL: number;
+    data: string;
+  }[];
+}
+
 export const enum MessageType {
   ContentScriptMessage = "TLP_ContentScriptMessage",
   PageScriptMessage = "TLP_PageScriptMessage",

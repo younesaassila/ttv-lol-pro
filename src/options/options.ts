@@ -1,5 +1,6 @@
 import Bowser from "bowser";
 import browser from "webextension-polyfill";
+import onStartupStoreCleanup from "../background/handlers/onStartupStoreCleanup";
 import $ from "../common/ts/$";
 import { readFile, saveFile } from "../common/ts/file";
 import findChannelFromTwitchTvUrl from "../common/ts/findChannelFromTwitchTvUrl";
@@ -91,18 +92,24 @@ const adLogExportButtonElement = $(
 ) as HTMLButtonElement;
 const adLogClearButtonElement = $("#ad-log-clear-button") as HTMLButtonElement;
 // Troubleshooting
-const twitchTabsReportButtonElement = $(
-  "#twitch-tabs-report-button"
+const viewStatusOfProxiesButtonElement = $(
+  "#view-status-of-proxies-button"
+) as HTMLButtonElement;
+const clearSessionStorageButtonElement = $(
+  "#clear-session-storage-button"
 ) as HTMLButtonElement;
 const unsetPacScriptButtonElement = $(
   "#unset-pac-script-button"
+) as HTMLButtonElement;
+const generateTwitchTabsReportButtonElement = $(
+  "#generate-twitch-tabs-report-button"
 ) as HTMLButtonElement;
 // Footer
 const versionElement = $("#version") as HTMLParagraphElement;
 //#endregion
 
-const DEFAULT_STATE = Object.freeze(getDefaultState());
-const DEFAULT_LIST_OPTIONS = Object.freeze({
+const DEFAULT_STATE: Readonly<State> = Object.freeze(getDefaultState());
+const DEFAULT_LIST_OPTIONS: Readonly<ListOptions> = Object.freeze({
   getAlreadyExistsAlertMessage: text => `'${text}' is already in the list`,
   getItemPlaceholder: text => `Leave empty to remove '${text}' from the list`,
   getPromptPlaceholder: () => "Enter text to create a new item…",
@@ -112,7 +119,7 @@ const DEFAULT_LIST_OPTIONS = Object.freeze({
   hidePromptMarker: false,
   insertMode: "append",
   spellcheck: false,
-} as ListOptions);
+});
 
 if (store.readyState === "complete") main();
 else store.addEventListener("load", main);
@@ -358,6 +365,11 @@ function isNormalProxyUrlAllowed(url: string): AllowedResult {
     return [false, "This proxy is not compatible with 'Proxy all requests'"];
   }
 
+  // Forbid proxies containing "optimized".
+  if (urlLower.includes("optimized")) {
+    return [false, "This proxy is not compatible with 'Proxy all requests'"];
+  }
+
   return [true];
 }
 
@@ -525,17 +537,18 @@ function _listPrompt(
 }
 
 exportButtonElement.addEventListener("click", () => {
+  const state: Partial<State> = {
+    adLogEnabled: store.state.adLogEnabled,
+    anonymousMode: store.state.anonymousMode,
+    normalProxies: store.state.normalProxies,
+    optimizedProxies: store.state.optimizedProxies,
+    optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
+    passportLevel: store.state.passportLevel,
+    whitelistedChannels: store.state.whitelistedChannels,
+  };
   saveFile(
     "ttv-lol-pro_backup.json",
-    JSON.stringify({
-      adLogEnabled: store.state.adLogEnabled,
-      anonymousMode: store.state.anonymousMode,
-      normalProxies: store.state.normalProxies,
-      optimizedProxies: store.state.optimizedProxies,
-      optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,
-      passportLevel: store.state.passportLevel,
-      whitelistedChannels: store.state.whitelistedChannels,
-    } as Partial<State>),
+    JSON.stringify(state),
     "application/json;charset=utf-8"
   );
 });
@@ -618,7 +631,23 @@ adLogClearButtonElement.addEventListener("click", () => {
   store.state.adLog = [];
 });
 
-twitchTabsReportButtonElement.addEventListener("click", async () => {
+viewStatusOfProxiesButtonElement.addEventListener("click", () => {
+  location.href = "https://status.perfprod.com/";
+});
+
+clearSessionStorageButtonElement.addEventListener("click", () => {
+  onStartupStoreCleanup();
+  alert("Session storage cleared successfully.");
+});
+
+unsetPacScriptButtonElement.addEventListener("click", () => {
+  if (isChromium) {
+    clearProxySettings();
+    alert("PAC script unset successfully.");
+  }
+});
+
+generateTwitchTabsReportButtonElement.addEventListener("click", async () => {
   let report = "**Twitch Tabs Report**\n\n";
 
   const extensionInfo = await browser.management.getSelf();
@@ -727,30 +756,8 @@ twitchTabsReportButtonElement.addEventListener("click", async () => {
   }\n`;
   report += "\n";
 
-  let fixed = false;
-  if (shouldSetPacScript && !store.state.chromiumProxyActive) {
-    store.state.openedTwitchTabs = openedTabs;
-    updateProxySettings();
-    fixed = true;
-    report += "Fixed issue by setting the PAC script.\n";
-  } else if (!shouldSetPacScript && store.state.chromiumProxyActive) {
-    store.state.openedTwitchTabs = openedTabs;
-    clearProxySettings();
-    fixed = true;
-    report += "Fixed issue by unsetting the PAC script.\n";
-  }
-
   saveFile("ttv-lol-pro_tabs-report.txt", report, "text/plain;charset=utf-8");
   alert(
-    `Report saved ${
-      fixed ? "and issue fixed " : ""
-    }successfully. Please send the report to the developer (on Discord or GitHub).`
+    "Report saved successfully. Please send it to the developer if requested."
   );
-});
-
-unsetPacScriptButtonElement.addEventListener("click", () => {
-  if (isChromium) {
-    clearProxySettings();
-    alert("PAC script unset successfully.");
-  }
 });

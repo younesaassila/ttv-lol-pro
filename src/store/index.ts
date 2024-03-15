@@ -10,7 +10,10 @@ class Store<T extends Record<string | symbol, any>> {
   private readonly _areaName: StorageAreaName;
   private readonly _getDefaultState: () => T;
   private _state: T; // Raw state
-  private _listenersByEvent: Record<string, Function[]> = {};
+  private _listenersByEvent: Record<EventType, Function[]> = {
+    load: [],
+    change: [],
+  };
 
   readyState: ReadyState = "loading";
   state: T; // Proxy state
@@ -18,12 +21,13 @@ class Store<T extends Record<string | symbol, any>> {
   constructor(areaName: StorageAreaName, getDefaultState: () => T) {
     this._areaName = areaName;
     this._getDefaultState = getDefaultState;
-    // Temporary state until init() is called to satisfy TypeScript.
+    // Temporary state to satisfy TypeScript until init() is called.
     this._state = this._getDefaultState();
     this.state = this._state;
     this._init().then(() => {
       this.readyState = "complete";
       this.dispatchEvent("load");
+      this._listenersByEvent["load"] = []; // Remove all load listeners.
     });
     browser.storage.onChanged.addListener((changes, area) => {
       if (area !== this._areaName) return;

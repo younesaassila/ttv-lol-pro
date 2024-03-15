@@ -25,5 +25,6 @@ export default function checkForOpenedTwitchTabs() {
           clearProxySettings();
         }
       }
-    });
+    })
+    .catch(() => console.error("❌ Failed to query opened Twitch tabs."));
 }

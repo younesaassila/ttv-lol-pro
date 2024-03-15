@@ -1,72 +1,74 @@
 import ip from "ip";
 import store from "../../store";
-import type { DnsResponse } from "../../types";
+import type { DnsResponse, DnsResponseJson } from "../../types";
 import { getProxyInfoFromUrl } from "./proxyInfo";
 
 export default async function updateDnsResponses() {
-  const proxies = [
-    ...store.state.optimizedProxies,
-    ...store.state.normalProxies,
-  ];
+  const proxies = store.state.optimizedProxiesEnabled
+    ? store.state.optimizedProxies
+    : store.state.normalProxies;
   const proxyInfoArray = proxies.map(getProxyInfoFromUrl);
 
   for (const proxyInfo of proxyInfoArray) {
     const { host } = proxyInfo;
 
+    // Check if we already have a valid DNS response for this host.
     const dnsResponseIndex = store.state.dnsResponses.findIndex(
       dnsResponse => dnsResponse.host === host
     );
-    const dnsResponse =
-      dnsResponseIndex !== -1
-        ? store.state.dnsResponses[dnsResponseIndex]
-        : null;
-    if (
-      dnsResponse != null &&
-      Date.now() - dnsResponse.timestamp < dnsResponse.ttl * 1000
-    ) {
+    const isDnsResponseValid =
+      dnsResponseIndex !== -1 &&
+      Date.now() - store.state.dnsResponses[dnsResponseIndex].timestamp <
+        store.state.dnsResponses[dnsResponseIndex].ttl * 1000;
+    if (isDnsResponseValid) {
       continue;
     }
 
-    if (ip.isV4Format(host) || ip.isV6Format(host)) {
+    // If the host is an IP address, we don't need to make a DNS request.
+    const isIp = ip.isV4Format(host) || ip.isV6Format(host);
+    if (isIp) {
       if (dnsResponseIndex !== -1) {
         store.state.dnsResponses.splice(dnsResponseIndex, 1);
       }
-      store.state.dnsResponses.push({
+      const dnsResponse: DnsResponse = {
         host,
         ips: [host],
         timestamp: Date.now(),
         ttl: Infinity,
-      } as DnsResponse);
+      };
+      store.state.dnsResponses.push(dnsResponse);
       continue;
     }
 
+    // Make the DNS request.
     try {
       const response = await fetch(
-        `https://cloudflare-dns.com/dns-query?name=${host}`,
+        `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host)}`,
         {
           headers: {
             Accept: "application/dns-json",
           },
         }
       );
-      const json = await response.json();
-      const { Answer } = json;
-      if (!Array.isArray(Answer)) {
-        console.error("Answer is not an array:", Answer);
-        continue;
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
-      const ips = Answer.map((answer: any) => answer.data);
-      const ttl =
-        Number(response.headers.get("Cache-Control")?.split("=")[1]) || 0;
+      const data: DnsResponseJson = await response.json();
+      if (data.Status !== 0) {
+        throw new Error(`DNS status ${data.Status}`);
+      }
+      const { Answer } = data;
+
       if (dnsResponseIndex !== -1) {
         store.state.dnsResponses.splice(dnsResponseIndex, 1);
       }
-      store.state.dnsResponses.push({
+      const dnsResponse: DnsResponse = {
         host,
-        ips,
+        ips: Answer.map(answer => answer.data),
         timestamp: Date.now(),
-        ttl,
-      } as DnsResponse);
+        ttl: Math.max(Math.max(...Answer.map(answer => answer.TTL)), 300),
+      };
+      store.state.dnsResponses.push(dnsResponse);
     } catch (error) {
       console.error(error);
     }
