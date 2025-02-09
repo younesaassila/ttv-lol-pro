@@ -1,0 +1,11 @@
+! Title: TTV LOL PRO ruleset
+! Updated: 2025-02-09T17:04:55Z
+! Expires: 2 days
+! Homepage: https://github.com/younesaassila/ttv-lol-pro/tree/gh-pages
+
+! Want to contribute? Open an issue or a pull request on GitHub (https://github.com/younesaassila/ttv-lol-pro)
+! From the original ruleset by zGato (https://cdn.perfprod.com/static/ttvlolpro-rules.txt)
+
+edge.ads.twitch.tv
+twitch.tv##.video-player--stream-display-ad_lower-third.video-ref
+twitch.tv##.video-player__overlay .player-overlay-background:has(> div[class^="Layout-"] > div[class^="Layout-"] > div[class^="Layout-"] > a:is([href*="/how-to-allow-ads-browser"], [href="https://www.twitch.tv/turbo"]))
