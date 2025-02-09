@@ -1,9 +1,19 @@
 # Privacy policy
 
-TTV LOL PRO proxies Twitch requests via standard HTTP proxies. As a result of the secure HTTPS connection between you and Twitch, the traffic cannot be read or intercepted by proxies during transmission. However, please note that the domain name of the Twitch website being accessed may be visible to the proxies involved in the process.
+## Proxy Services & Data Security
 
-TTV LOL PRO includes default proxies to proxy Twitch requests through several ad-free countries. We want to ensure transparency by informing you that these default proxies may keep a log of IP addresses for a limited period, typically for the last 24 hours. This logging practice is in place to prevent abuse and maintain the integrity of the proxy service. It's important to note that the default proxies do not share this logged data with any third parties, further prioritizing the privacy and security of our users.
+TTV LOL PRO routes certain Twitch requests through proxy servers using industry-standard protocols[^1]. Due to HTTPS encryption, the actual content of these requests remains unreadable and unmodifiable by the proxies. However, the proxies can still see the domain names associated with the requests.
 
-While we strive to provide a secure and reliable add-on, we cannot control or monitor the actions of user-provided HTTP proxies. Each proxy may have its own policies and practices regarding data collection, storage, and usage. Therefore, we recommend reviewing the privacy policies or terms of service of these proxies to understand how they handle your information.
+## Default Proxy Logging
 
-By default, the Firefox extension logs any ads that manage to bypass the ad-blocker. This log is stored locally and can be cleared or disabled in the Firefox extension options. You have control over the log and can choose to send it to us for analysis or keep it private. We do not collect personally identifiable information through the log. Additionally, it's important to note that log entries are automatically cleared after 7 days to ensure data freshness and minimize storage.
+TTV LOL PRO includes default proxies that redirect Twitch traffic through ad-free regions. To prevent abuse and ensure service quality, these proxies may temporarily log IP addresses for up to 24 hours. These logs are strictly for security and operational purposes and are never sold or shared with third parties.
+
+## Third-Party Proxy Use
+
+Users who opt to use third-party proxies should be aware that these services operate under their own privacy policies, independent of TTV LOL PRO. Since TTV LOL PRO does not control these external providers, users are encouraged to review their policies before use.
+
+## Local Ad-Bypass Logging
+
+TTV LOL PRO logs instances where ads bypass the ad-blocking mechanism. These logs are stored locally on the user's device and can be viewed, disabled, or cleared through the extension’s settings. Users may choose to send these logs for analysis, with no personally identifiable information collected. To minimize storage, log entries are automatically deleted after seven days.
+
+[^1]: HTTP, HTTPS, SOCKS4, and SOCKS5
