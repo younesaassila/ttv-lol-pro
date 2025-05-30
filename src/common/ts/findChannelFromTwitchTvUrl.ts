@@ -10,6 +10,10 @@ export default function findChannelFromTwitchTvUrl(
   twitchTvUrl: string | undefined
 ): string | null {
   if (!twitchTvUrl) return null;
+  const url = new URL(twitchTvUrl)
+  if (url.host === "player.twitch.tv") {
+    return url.searchParams.get("channel")
+  }
   const match = twitchChannelNameRegex.exec(twitchTvUrl);
   if (!match) return null;
   const [, channelName] = match;

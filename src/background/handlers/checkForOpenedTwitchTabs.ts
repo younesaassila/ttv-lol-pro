@@ -12,7 +12,7 @@ export default function checkForOpenedTwitchTabs() {
     return store.addEventListener("load", checkForOpenedTwitchTabs);
 
   browser.tabs
-    .query({ url: ["https://www.twitch.tv/*", "https://m.twitch.tv/*"] })
+    .query({ url: ["https://www.twitch.tv/*", "https://m.twitch.tv/*", "https://player.twitch.tv/*"] })
     .then(tabs => {
       console.log(`🔍 Found ${tabs.length} opened Twitch tabs.`);
       store.state.openedTwitchTabs = tabs;

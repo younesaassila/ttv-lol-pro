@@ -62,7 +62,7 @@ if (isChromium) {
   browser.webRequest.onBeforeSendHeaders.addListener(
     onBeforeTwitchTvSendHeaders,
     {
-      urls: ["https://www.twitch.tv/*", "https://m.twitch.tv/*"],
+      urls: ["https://www.twitch.tv/*", "https://m.twitch.tv/*", "https://player.twitch.tv/*"],
       types: ["main_frame"],
     },
     ["blocking", "requestHeaders"]
