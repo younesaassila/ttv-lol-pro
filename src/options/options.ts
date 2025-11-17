@@ -783,7 +783,7 @@ generateTwitchTabsReportButtonElement.addEventListener("click", async () => {
   report += `Browser: ${userAgentParser.getBrowserName()} ${userAgentParser.getBrowserVersion()} (${userAgentParser.getOSName()} ${userAgentParser.getOSVersion()})\n\n`;
 
   const openedTabs = await browser.tabs.query({
-    url: ["https://www.twitch.tv/*", "https://m.twitch.tv/*"],
+    url: ["https://www.twitch.tv/*", "https://m.twitch.tv/*", "https://player.twitch.tv/*"],
   });
   const detectedTabs = store.state.openedTwitchTabs;
 
