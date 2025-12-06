@@ -220,6 +220,23 @@ function main() {
     store.state.adLogEnabled = adLogEnabledCheckboxElement.checked;
   });
   adLogSendButtonElement.addEventListener("click", async () => {
+    if (!isChromium) {
+      let response: boolean;
+      try {
+        response = await browser.permissions.request({
+          data_collection: ["websiteContent"],
+        });
+      } catch (error) {
+        console.error(error);
+        response = confirm(
+          "Allow extension developer to collect website content?"
+        );
+      }
+      if (!response) {
+        alert("Log sending cancelled. Permission not granted.");
+        return;
+      }
+    }
     const success = await sendAdLog();
     if (success === null) {
       return alert("No log entries to send.");
