@@ -18,10 +18,18 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "{76ef94a4-e3d0-4c6f-961a-d38a429a332b}",
-      "strict_min_version": "128.0"
+      "strict_min_version": "128.0",
+      "data_collection_permissions": {
+        "required": ["none"],
+        "optional": ["websiteActivity"]
+      }
     },
     "gecko_android": {
-      "strict_min_version": "128.0"
+      "strict_min_version": "128.0",
+      "data_collection_permissions": {
+        "required": ["none"],
+        "optional": ["websiteActivity"]
+      }
     }
   },
   "content_scripts": [
