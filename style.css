@@ -1,0 +1,92 @@
+:root {
+  --background-color: #151619;
+  --color: #e4e6e7;
+  --accent-color: #aa51b8;
+  --link: #be68ce;
+  --link-hover: #cc88d8;
+  --code-background-color: #353840;
+  --code-color: #c3c4ca;
+
+  /* picocss */
+  --pico-background-color: var(--background-color);
+  --pico-color: var(--color);
+  --pico-primary: var(--accent-color);
+  --pico-text-selection-color: var(--accent-color);
+
+  /* markdown-it-github-alerts */
+  /* From: https://app.unpkg.com/markdown-it-github-alerts@1.0.1/files/styles/github-colors-dark-media.css */
+  --color-note: #2f81f7;
+  --color-tip: #3fb950;
+  --color-warning: #d29922;
+  --color-severe: #db6d28;
+  --color-caution: #f85149;
+  --color-important: #a371f7;
+}
+
+body {
+  padding: calc(var(--pico-block-spacing-vertical) * 2) 0;
+}
+
+#app {
+  max-width: 1100px;
+}
+
+div[align="center"] {
+  & :where(a:not([role="button"])),
+  [role="link"] {
+    --pico-text-decoration: none;
+  }
+
+  &
+    :where(a:not([role="button"])):is(
+      [aria-current]:not([aria-current="false"]),
+      :hover,
+      :active,
+      :focus
+    ),
+  &
+    [role="link"]:is(
+      [aria-current]:not([aria-current="false"]),
+      :hover,
+      :active,
+      :focus
+    ) {
+    --pico-text-decoration: none;
+  }
+}
+
+:where(a:not([role="button"])),
+[role="link"] {
+  --pico-color: var(--link);
+  --pico-underline: var(--link);
+}
+
+:where(a:not([role="button"])):is(
+  [aria-current]:not([aria-current="false"]),
+  :hover,
+  :active,
+  :focus
+),
+[role="link"]:is(
+  [aria-current]:not([aria-current="false"]),
+  :hover,
+  :active,
+  :focus
+) {
+  --pico-color: var(--link-hover);
+  --pico-underline: var(--link-hover);
+}
+
+code,
+kbd,
+pre,
+samp {
+  background: var(--code-background-color);
+  color: var(--code-color);
+}
+
+@media (min-width: 576px) {
+  #app {
+    padding: 0 var(--pico-spacing);
+  }
+}
