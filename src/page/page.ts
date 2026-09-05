@@ -16,6 +16,17 @@ import {
 import type { PageState } from "./types";
 
 const logger = new Logger("Page");
+type PageRuntime = {
+  state: "initializing" | "ready";
+  broadcastChannelName: string;
+};
+
+declare global {
+  interface Window {
+    __TTV_LOL_PRO_PAGE_RUNTIME__?: PageRuntime;
+  }
+}
+
 const performanceNavigationEntry =
   performance.getEntriesByType("navigation")[0];
 if (performanceNavigationEntry) {
@@ -87,6 +98,22 @@ async function waitForParams(): Promise<any> {
 }
 
 async function main(params: any) {
+  // Twitch is a single-page application and can reinject the page script when
+  // navigating between views. Replacing fetch/Worker and adding history/channel
+  // listeners more than once retains the previous closures and causes player
+  // EventEmitter listeners to accumulate. Keep one runtime per document.
+  if (window.__TTV_LOL_PRO_PAGE_RUNTIME__) {
+    logger.debug(
+      "Page script already initialized; skipping duplicate initialization."
+    );
+    return;
+  }
+  const runtime: PageRuntime = {
+    state: "initializing",
+    broadcastChannelName: params.broadcastChannelName,
+  };
+  window.__TTV_LOL_PRO_PAGE_RUNTIME__ = runtime;
+
   delete document.documentElement.dataset.tlpParams;
 
   const broadcastChannel = new BroadcastChannel(params.broadcastChannelName);
@@ -252,4 +279,6 @@ async function main(params: any) {
       channelName: oldChannelName,
     });
   });
+
+  runtime.state = "ready";
 }
