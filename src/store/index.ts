@@ -73,7 +73,7 @@ class Store<T extends Record<string | symbol, any>> {
   }
 
   dispatchEvent(type: EventType, ...args: any[]) {
-    const listeners = this._listenersByEvent[type] || [];
+    const listeners = [...(this._listenersByEvent[type] || [])];
     listeners.forEach(listener => listener(...args));
   }
 }
