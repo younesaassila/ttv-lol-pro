@@ -32,7 +32,9 @@
     "prebuild:firefox": "npm run clean && shx cp src/manifest.firefox.json src/manifest.json",
     "prebuild:chromium": "npm run clean && shx cp src/manifest.chromium.json src/manifest.json",
     "build:firefox": "parcel build --target webext-prod",
-    "build:chromium": "parcel build --target webext-prod"
+    "build:chromium": "parcel build --target webext-prod",
+    "zip:firefox": "npm run build:firefox && tar -caf v$npm_package_version-firefox.zip -C dist/webext-prod .",
+    "zip:chromium": "npm run build:chromium && tar -caf v$npm_package_version-chromium.zip -C dist/webext-prod ."
   },
   "dependencies": {
     "async-mutex": "^0.5.0",
