@@ -232,7 +232,3 @@ $RECYCLE.BIN/
 
 releases/
 manifest.json
-
-# Output of zip:chromium and zip:firefox commands
-v*-chromium.zip
-v*-firefox.zip
