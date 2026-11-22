@@ -23,6 +23,7 @@ export interface State {
   customPassport: PassportConfig;
   customPassportEnabled: boolean;
   dnsResponses: DnsResponse[];
+  dnsServer: string;
   lastStoreCleanupTimestamp: number;
   normalProxies: string[];
   openedTwitchTabs: Tabs.Tab[];

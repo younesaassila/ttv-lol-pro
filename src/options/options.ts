@@ -121,6 +121,8 @@ const adLogExportButtonElement = $(
   "#ad-log-export-button"
 ) as HTMLButtonElement;
 const adLogClearButtonElement = $("#ad-log-clear-button") as HTMLButtonElement;
+// DNS server
+const dnsServerInputElement = $("#dns-server") as HTMLInputElement;
 // Troubleshooting
 const viewStatusOfProxiesButtonElement = $(
   "#view-status-of-proxies-button"
@@ -260,6 +262,10 @@ function main() {
     if (!confirmation) return;
     store.state.adLog = [];
   });
+  // DNS server
+  dnsServerInputElement.addEventListener("change", () => {
+    store.state.dnsServer = dnsServerInputElement.value;
+  });
   // Footer
   versionElement.textContent = `Version ${
     browser.runtime.getManifest().version
@@ -323,6 +329,8 @@ function updateUI() {
   otherProtocolsCheckboxElement.checked = store.state.allowOtherProxyProtocols;
   // Ad log
   adLogEnabledCheckboxElement.checked = store.state.adLogEnabled;
+  // DNS server
+  dnsServerInputElement.value = store.state.dnsServer;
 }
 
 /**
@@ -792,6 +800,7 @@ exportButtonElement.addEventListener("click", () => {
     anonymousMode: store.state.anonymousMode,
     customPassport: store.state.customPassport,
     customPassportEnabled: store.state.customPassportEnabled,
+    dnsServer: store.state.dnsServer,
     normalProxies: store.state.normalProxies,
     optimizedProxies: store.state.optimizedProxies,
     optimizedProxiesEnabled: store.state.optimizedProxiesEnabled,

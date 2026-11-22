@@ -3,7 +3,6 @@ import store from "../../store";
 import type { DnsResponse, DnsResponseJson } from "../../types";
 import { getProxyInfoFromUrl } from "./proxyInfo";
 
-const DNS_API = "https://cloudflare-dns.com/dns-query";
 const MIN_TTL = 300;
 const INFINITE_TTL = -1;
 
@@ -44,11 +43,12 @@ export default async function updateDnsResponses() {
 
     // Otherwise, fetch DNS records from the DNS-over-HTTPS API.
     try {
+      const dnsServer = store.state.dnsServer;
       const requests = [
-        fetch(`${DNS_API}?name=${encodeURIComponent(host)}&type=A`, {
+        fetch(`${dnsServer}?name=${encodeURIComponent(host)}&type=A`, {
           headers: { Accept: "application/dns-json" },
         }),
-        fetch(`${DNS_API}?name=${encodeURIComponent(host)}&type=AAAA`, {
+        fetch(`${dnsServer}?name=${encodeURIComponent(host)}&type=AAAA`, {
           headers: { Accept: "application/dns-json" },
         }),
       ];

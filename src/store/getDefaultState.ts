@@ -22,6 +22,7 @@ export default function getDefaultState() {
     },
     customPassportEnabled: false,
     dnsResponses: [],
+    dnsServer: "https://cloudflare-dns.com/dns-query",
     lastStoreCleanupTimestamp: 0,
     normalProxies: getDefaultNormalProxies(),
     openedTwitchTabs: [],
